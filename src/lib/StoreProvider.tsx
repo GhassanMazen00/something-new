@@ -1,18 +1,8 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { DAILY_MULTIPLIER, RARITY_XP } from '../data/quests'
-import {
-  StoreContext,
-  defaultState,
-  load,
-  rewardCode,
-  save,
-  uid,
-  type Completion,
-  type Redemption,
-  type State,
-  type StoreValue,
-} from './store'
-import { dayKey } from './time'
+import { CONFIG } from '../config'
+import { HINT_PENALTY } from './game'
+import { StoreContext, defaultState, load, questKey, save, type Claim, type QuestRecord, type State, type StoreValue } from './store'
+import { claimCode } from './verify'
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<State>(load)
@@ -29,33 +19,26 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const value: StoreValue = {
     state,
     setLang: (lang) => setState((s) => ({ ...s, lang })),
-    createProfile: (p) => setState((s) => ({ ...s, profile: { ...p, joinedAt: Date.now() } })),
-    completeQuest: (quest, daily, photo, caption) => {
-      const completion: Completion = {
-        id: uid(),
-        questId: quest.id,
-        day: dayKey(),
-        daily,
-        xp: RARITY_XP[quest.rarity] * (daily ? DAILY_MULTIPLIER : 1),
-        photo,
-        caption: caption.trim(),
-        at: Date.now(),
-      }
-      setState((s) => ({ ...s, completions: [...s.completions, completion] }))
-      return completion
+    createRunner: (callsign, id) => setState((s) => ({ ...s, runner: { id, callsign, createdAt: Date.now() } })),
+    completeQuest: (season, quest) => {
+      const key = questKey(season, quest)
+      const xp = state.hints[key] ? Math.round(quest.xp * (1 - HINT_PENALTY)) : quest.xp
+      const record: QuestRecord = { status: 'done', xp, at: Date.now() }
+      setState((s) => ({ ...s, quests: { ...s.quests, [key]: record } }))
+      return record
     },
-    redeem: (reward) => {
-      const r: Redemption = { id: uid(), rewardId: reward.id, code: rewardCode(), cost: reward.cost, at: Date.now() }
-      setState((s) => ({ ...s, redemptions: [...s.redemptions, r] }))
-      return r
+    submitProof: (season, quest, url) => {
+      const record: QuestRecord = { status: 'pending', xp: 0, at: Date.now(), proofUrl: url }
+      setState((s) => ({ ...s, quests: { ...s.quests, [questKey(season, quest)]: record } }))
     },
-    vote: (postId, v) =>
-      setState((s) => {
-        const votes = { ...s.votes }
-        if (votes[postId] === v) delete votes[postId]
-        else votes[postId] = v
-        return { ...s, votes }
-      }),
+    revealHint: (season, quest) =>
+      setState((s) => ({ ...s, hints: { ...s.hints, [questKey(season, quest)]: true } })),
+    markSeen: (key) => setState((s) => (s.seen[key] ? s : { ...s, seen: { ...s.seen, [key]: true } })),
+    claimLoot: (item) => {
+      const claim: Claim = { code: claimCode(state.runner?.id ?? '', item.id, CONFIG.claimSalt), at: Date.now() }
+      setState((s) => ({ ...s, claims: { ...s.claims, [item.id]: claim } }))
+      return claim
+    },
     reset: () => setState({ ...defaultState(), lang: state.lang }),
   }
 

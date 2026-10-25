@@ -1,71 +1,83 @@
-# IRL — your life is the game
+# IRL // GHOST SIGNAL
 
-**Real-life quests every day. Your school vs every school.**
+**A season-based quest game played in the real world and on the internet.**
 
-Every day, everyone gets the same quest: talk to a stranger, watch the sunset, feed the street cats, two hours with no phone. Do it in real life, snap a photo as proof, and earn XP for **you and your school**. Schools fight in a weekly league. XP buys real rewards from partner cafés, cinemas and gyms.
+Neo-Cairo, 2049. Nobody looks up anymore. A hacker called ZERO is recruiting Runners.
 
-Stop being an NPC. 🤖 → 🎭 → 🌟 → 👑
+Each **season** tells its own story. Each season has **levels**; finish a level's ops to unlock the next. Every op has to be **proven**:
 
-## What's in this version (v0.1, demo)
+| Op type | How it's proven |
+|---|---|
+| `>_` **Terminal** | Hack a node in the in-app terminal (`help`, `scan`, `connect`) and enter the passphrase |
+| `#` **Cipher** | Crack a puzzle shown in the app (Caesar, binary, riddles, hidden messages) |
+| `@` **Social // Find** | Find a code hidden on the official Instagram / TikTok (bio, one video frame, a post's corner) |
+| `@` **Social // Post** | Post publicly with your personal Runner tag (`#GSXXXXXX`), submit the link for verification |
+| `◎` **Real world** | Find a physical item (card, poster, keycard...) and scan its QR or type its code |
 
-- ⚡ **Daily quest**: the same quest for everyone on Earth that day (like Wordle), worth 2× XP, with a countdown to the next one
-- ➕ **3 bonus quests** a day; 28 quests across 7 categories (Social, Brave, Kind, Explore, Create, Body, Mind) and 3 rarities
-- 📸 **Photo proof** for every quest, compressed on the phone
-- 🎉 **Share card**: a story-sized image (1080×1920) for Instagram, TikTok and WhatsApp, made in the browser
-- 🏆 **School league**: weekly table of schools and of players in your school, with invite links (`?school=cu`) that pre-select your school for friends
-- 📰 **Feed**: see who did today's quest, and vote ✅ Legit / 🚩 Fake
-- 🎁 **Rewards**: spend XP, get a redeem code
-- 🔥 Streaks, levels (NPC → Side Character → Main Character → Legend)
-- 🇪🇬 **Arabic and English**, with full right-to-left layout
+Main ops drop **fragments**: letters of ZERO's final passphrase. Collect them, crack the core, clear the season. Finishing levels unlocks **real-world loot** (stickers, codes, keycards, pins, patches) that players claim from you in person.
 
-> **Demo mode:** other players, schools' points and rewards are sample data, clearly labeled in the app. Your own progress is real but only saved on your device. The next step is a real backend (see roadmap).
-
-## Run it on your computer
+## Run it
 
 You need [Node.js](https://nodejs.org) 20 or newer.
 
 ```bash
-npm install      # once, downloads the libraries
-npm run dev      # starts the app at http://localhost:5173
+npm install
+npm run dev        # http://localhost:5173
 ```
 
-Open it in your browser. To see it like a phone, press F12 and click the phone icon.
+`npm run build` makes the final website in `dist/`. `npm run lint` checks for common mistakes.
 
-Other commands:
+## Game Master (you)
 
-```bash
-npm run build    # checks types and makes the final website in dist/
-npm run lint     # finds common mistakes
-npm run preview  # serves the built dist/ folder
-```
+Open the app with **`#gm`** at the end of the link (e.g. `http://localhost:5173/#gm`):
+
+1. **Code forge**: pick a quest, type or generate a code. You get the hash to add to the quest, and a **QR code to print** on the item. Scanning that QR with any phone camera opens the app and claims the code automatically.
+2. **Verify a claim**: when a Runner comes for their loot, type their Runner ID and the reward. Their screen must show the same claim code.
+
+Or from the terminal: `node scripts/hash.mjs s1 l1-deaddrop YOUR-CODE`
+
+All Season 1 answers and test codes are in [`gm/SEASON-01-ANSWERS.md`](gm/SEASON-01-ANSWERS.md). **Replace the real-world codes with your own before printing anything.**
+
+## Before launch
+
+- [ ] Put your Instagram and TikTok handles in `src/config.ts`
+- [ ] Change `claimSalt` in `src/config.ts` to random text
+- [ ] Make your own real-world codes with `#gm` and swap the hashes in `src/data/season1.ts`
+- [ ] Set the season end date (`endsAt` in `src/data/season1.ts`)
+- [ ] Put the bio code, TikTok frame code and static post on your accounts
 
 ## How the code is organized
 
 ```
 src/
-  App.tsx              the bottom tabs and which screen is shown
-  screens/             one file per screen: Onboarding, Today, Feed, League, Rewards, Profile
-  components/          reusable pieces: quest cards, the proof sheet, buttons, popups
+  config.ts              your handles, hashtag, claim salt
   data/
-    quests.ts          ← all quests live here. Add yours!
-    schools.ts         the starter list of schools/universities
-    rewards.ts         the reward shop
+    season1.ts           ← the whole Season 1 story, levels and quests
+    seasons.ts           list of seasons, the Season 2 teaser, and the loot
+    types.ts             what a season / level / quest looks like
+  screens/               Boot, Ops (map), LevelView, Log, Scan, Loot, Id, GameMaster
+  components/            Terminal, QuestSheet (every quest type), ui (neon panels, buttons, glitch text)
   lib/
-    i18n.ts            every piece of text, in English and Arabic
-    game.ts            game rules: XP, levels, streaks, today's quests
-    store.ts           what the app saves (profile, quests done, rewards)
-    StoreProvider.tsx  the code that changes and saves that data
-    demo.ts            SAMPLE data for the league and feed (delete when the backend exists)
-    media.ts           photo compression, share card drawing, invite links
+    verify.ts            how answers are checked (SHA-256 hashes, never plain text)
+    game.ts              rules: unlocking levels, fragments, ranks, loot
+    store.ts             what the app saves
+    i18n.ts              every piece of text in English and Arabic
+    share.ts             the share card image
+gm/                      your private answer sheet
+scripts/hash.mjs         make a code hash from the terminal
 ```
 
-**Easy first changes:** add a quest in `src/data/quests.ts`, add a school in `src/data/schools.ts`, or change any text in `src/lib/i18n.ts`.
+**New season:** copy `src/data/season1.ts` to `season2.ts`, write the new story, and add it to `SEASONS` in `src/data/seasons.ts`.
+
+## What's honest about v0.2
+
+- Progress is saved **on the player's device**. No accounts yet.
+- Answers are checked **in the browser** with hashes. A determined hacker could still brute-force short answers, so real anti-cheat (one-time codes per card, rate limits) needs the backend.
+- **Social // Post** proofs are collected but wait as "pending": the verification step needs the backend.
 
 ## Roadmap
 
-1. **Real backend** (Supabase): accounts, real players, real league points, photo storage, so friends actually see each other
-2. **Put it online** (Vercel, Netlify or GitHub Pages, all free) so anyone can open it from a link
-3. **AI proof check**: an AI looks at each photo and confirms it matches the quest, so the league stays fair
-4. **Real partners**: cafés, gyms and brands give rewards in exchange for reaching students
-5. **Moderation and safety**: reporting, age-appropriate quests, no faces of strangers
-6. **Install as an app** (PWA), then the app stores
+1. **Backend** (Supabase): accounts, live leaderboard per season, one-time codes per physical item, social-post review queue for the Game Master
+2. **Put it online** (free on Vercel / Netlify / GitHub Pages) so QR codes work from anywhere
+3. **Auto-verification bot** for social posts
+4. **Phone apps** (iOS / Android)

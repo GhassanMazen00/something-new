@@ -1,73 +1,123 @@
-import { QUESTS, type Quest } from '../data/quests'
-import { CUSTOM_PREFIX, schoolById } from '../data/schools'
-import type { Lang, TKey } from './i18n'
-import { hash, rng, shuffle } from './random'
-import type { Profile, State } from './store'
-import { addDays, dayKey, startOfWeek } from './time'
+import { LOOT, SEASONS } from '../data/seasons'
+import type { Level, LootItem, Quest, Season } from '../data/types'
+import type { TKey } from './i18n'
+import { questKey, type State } from './store'
+import { checkAnswer } from './verify'
 
-export interface Level {
-  key: 'npc' | 'side' | 'main' | 'legend'
+export const HINT_PENALTY = 0.3
+
+export interface Rank {
+  key: 'ghost' | 'runner' | 'netrunner' | 'legend'
   min: number
-  emoji: string
 }
 
-export const LEVELS: Level[] = [
-  { key: 'npc', min: 0, emoji: '🤖' },
-  { key: 'side', min: 300, emoji: '🎭' },
-  { key: 'main', min: 1000, emoji: '🌟' },
-  { key: 'legend', min: 3000, emoji: '👑' },
+export const RANKS: Rank[] = [
+  { key: 'ghost', min: 0 },
+  { key: 'runner', min: 500 },
+  { key: 'netrunner', min: 1500 },
+  { key: 'legend', min: 3000 },
 ]
 
-export const levelLabel = (l: Level): TKey => `level_${l.key}`
+export const rankLabel = (r: Rank): TKey => `rank_${r.key}`
 
-export function levelFor(xp: number) {
+export function rankFor(xp: number) {
   let i = 0
-  while (i + 1 < LEVELS.length && xp >= LEVELS[i + 1].min) i++
-  const level = LEVELS[i]
-  const next = LEVELS[i + 1]
-  const progress = next ? (xp - level.min) / (next.min - level.min) : 1
-  return { level, next, progress }
+  while (i + 1 < RANKS.length && xp >= RANKS[i + 1].min) i++
+  const rank = RANKS[i]
+  const next = RANKS[i + 1]
+  const progress = next ? (xp - rank.min) / (next.min - rank.min) : 1
+  return { rank, next, progress }
 }
 
-// Same quests for everyone on a given day: 1 daily (never legendary) + 3 bonus.
-export function questsForDay(day = dayKey()): { daily: Quest; bonus: Quest[] } {
-  const order = shuffle(QUESTS, rng(hash(`irl:${day}`)))
-  const daily = order.find((q) => q.rarity !== 'legendary')!
-  const bonus = order.filter((q) => q.id !== daily.id).slice(0, 3)
-  return { daily, bonus }
+export const isDone = (state: State, season: Season, quest: Quest) => state.quests[questKey(season, quest)]?.status === 'done'
+export const isPending = (state: State, season: Season, quest: Quest) => state.quests[questKey(season, quest)]?.status === 'pending'
+
+export const requiredQuests = (level: Level) => level.quests.filter((q) => !q.optional)
+
+export function levelProgress(state: State, season: Season, level: Level) {
+  const required = requiredQuests(level)
+  const done = required.filter((q) => isDone(state, season, q)).length
+  return { done, total: required.length, complete: done === required.length }
 }
 
-// Consecutive days with the daily quest done, counting back from today
-// (or from yesterday, so the streak isn't "lost" before you've had a chance today).
-export function streakOf(state: State, now = new Date()): number {
-  const days = new Set(state.completions.filter((c) => c.daily).map((c) => c.day))
-  let cursor = days.has(dayKey(now)) ? now : addDays(now, -1)
-  let n = 0
-  while (days.has(dayKey(cursor))) {
-    n++
-    cursor = addDays(cursor, -1)
+// A level opens once every required op in the previous level is done.
+export function isLevelUnlocked(state: State, season: Season, level: Level): boolean {
+  const i = season.levels.indexOf(level)
+  return i <= 0 || levelProgress(state, season, season.levels[i - 1]).complete
+}
+
+export function isSeasonComplete(state: State, season: Season): boolean {
+  return season.levels.every((l) => levelProgress(state, season, l).complete)
+}
+
+export function seasonProgress(state: State, season: Season) {
+  const required = season.levels.flatMap(requiredQuests)
+  return { done: required.filter((q) => isDone(state, season, q)).length, total: required.length }
+}
+
+// The letters of the final passphrase, in order, and whether the player has each one.
+export function fragmentsOf(state: State, season: Season) {
+  return season.levels
+    .flatMap((l) => l.quests)
+    .filter((q) => q.fragment)
+    .map((q) => ({ letter: q.fragment!, got: isDone(state, season, q), quest: q }))
+}
+
+export function totalXp(state: State): number {
+  return Object.values(state.quests).reduce((sum, r) => sum + (r.status === 'done' ? r.xp : 0), 0)
+}
+
+export function isLootUnlocked(state: State, item: LootItem): boolean {
+  const season = SEASONS.find((s) => s.id === item.seasonId)
+  if (!season) return false
+  if (!item.levelId) return isSeasonComplete(state, season)
+  const level = season.levels.find((l) => l.id === item.levelId)
+  return !!level && levelProgress(state, season, level).complete
+}
+
+export const lootFor = (season: Season) => LOOT.filter((l) => l.seasonId === season.id)
+
+// For the SCAN screen and QR links: which quest does this code belong to?
+// Only real-world and social codes can be scanned; puzzles are solved in their own screen.
+export function findQuestByCode(state: State, code: string) {
+  for (const season of SEASONS) {
+    for (const level of season.levels) {
+      for (const quest of level.quests) {
+        if ((quest.kind !== 'real' && quest.kind !== 'social-find') || !quest.answers) continue
+        if (checkAnswer(season.id, quest.id, code, quest.answers)) {
+          return {
+            season,
+            level,
+            quest,
+            unlocked: isLevelUnlocked(state, season, level),
+            done: isDone(state, season, quest),
+          }
+        }
+      }
+    }
   }
-  return n
+  return null
 }
 
-export function statsOf(state: State, now = new Date()) {
-  const totalXp = state.completions.reduce((sum, c) => sum + c.xp, 0)
-  const spent = state.redemptions.reduce((sum, r) => sum + r.cost, 0)
-  const weekStart = startOfWeek(now).getTime()
-  const weekXp = state.completions.filter((c) => c.at >= weekStart).reduce((sum, c) => sum + c.xp, 0)
-  const today = dayKey(now)
-  const doneToday = new Set(state.completions.filter((c) => c.day === today).map((c) => c.questId))
+export function daysLeft(season: Season, now = new Date()): number {
+  return Math.max(0, Math.ceil((new Date(season.endsAt).getTime() - now.getTime()) / 86_400_000))
+}
+
+export interface QuestResult {
+  xp: number
+  levelUnlocked?: number
+  seasonDone?: boolean
+}
+
+// Works out what finishing this quest unlocks, by comparing state before and after.
+export function resultOf(before: State, after: State, season: Season, level: Level, xp: number): QuestResult {
+  const next = season.levels[season.levels.indexOf(level) + 1]
   return {
-    totalXp,
-    balance: totalXp - spent,
-    weekXp,
-    doneToday,
-    streak: streakOf(state, now),
-    ...levelFor(totalXp),
+    xp,
+    levelUnlocked: next && !isLevelUnlocked(before, season, next) && isLevelUnlocked(after, season, next) ? next.number : undefined,
+    seasonDone: !isSeasonComplete(before, season) && isSeasonComplete(after, season),
   }
 }
 
-export function schoolName(profile: Pick<Profile, 'schoolId' | 'schoolName'>, lang: Lang): string {
-  if (profile.schoolId.startsWith(CUSTOM_PREFIX)) return profile.schoolName ?? '?'
-  return schoolById(profile.schoolId)?.name[lang] ?? '?'
-}
+// Players add this to social-post quests so the Game Master can match posts to Runners.
+export const runnerTag = (runnerId: string) => `#GS${runnerId.replace(/^R-/, '')}`

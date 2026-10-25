@@ -1,49 +1,150 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Rubik", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Orbitron", "Cairo", ui-sans-serif, sans-serif;
+  --font-mono: "Share Tech Mono", "Cairo", ui-monospace, monospace;
+  --font-sans: "Rajdhani", "Cairo", ui-sans-serif, sans-serif;
 
-  --color-ink: #0b0b12;
-  --color-surface: #15151f;
-  --color-surface-2: #1f1f2d;
-  --color-line: #2c2c3d;
-  --color-muted: #9b9bb2;
-  --color-lime: #c6ff3d;
-  --color-violet: #7c5cff;
-  --color-pink: #ff4da6;
-  --color-gold: #ffb627;
-  --color-sky: #3dc8ff;
+  --color-void: #04050a;
+  --color-panel: #0a0e18;
+  --color-panel-2: #101727;
+  --color-edge: #1d2a45;
+  --color-dim: #7183a8;
+  --color-cyan: #00f0ff;
+  --color-magenta: #ff2bd6;
+  --color-acid: #f5f000;
+  --color-alert: #ff2a4f;
+  --color-matrix: #3dff8b;
 
-  --animate-pop: pop 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+  --animate-blink: blink 1s steps(1) infinite;
+  --animate-flicker: flicker 4s linear infinite;
+  --animate-pulse-dot: pulse-dot 1.6s ease-in-out infinite;
+  --animate-shake: shake 0.4s ease-in-out;
   --animate-rise: rise 0.35s ease-out both;
-  --animate-fall: fall 2.4s ease-in forwards;
+  --animate-boot: boot 0.6s steps(6) both;
+  --animate-sweep: sweep 3s linear infinite;
 
-  @keyframes pop {
-    from { transform: scale(0.6); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+  @keyframes flicker {
+    0%, 19%, 21%, 23%, 54%, 56%, 100% { opacity: 1; }
+    20%, 22%, 55% { opacity: 0.55; }
+  }
+  @keyframes pulse-dot {
+    0%, 100% { box-shadow: 0 0 0 0 currentColor; }
+    50% { box-shadow: 0 0 0 5px transparent; }
+  }
+  @keyframes shake {
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
   }
   @keyframes rise {
-    from { transform: translateY(24px); opacity: 0; }
+    from { transform: translateY(16px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
   }
-  @keyframes fall {
-    from { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
-    to { transform: translateY(105vh) rotate(720deg); opacity: 0.6; }
+  @keyframes boot {
+    from { opacity: 0; transform: scaleY(0.2); }
+    to { opacity: 1; transform: scaleY(1); }
   }
+  @keyframes sweep {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(100vh); }
+  }
+}
+
+/* Angled "cut corner" panels, the core cyberpunk shape. */
+@utility chamfer {
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+}
+@utility chamfer-sm {
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+}
+@utility text-glow {
+  text-shadow: 0 0 6px currentColor, 0 0 18px color-mix(in srgb, currentColor 45%, transparent);
 }
 
 html,
 body {
-  background: var(--color-ink);
-  color: #f4f4f8;
+  background-color: var(--color-void);
+  color: #e6f1ff;
 }
 
 body {
   font-family: var(--font-sans);
+  font-weight: 500;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: none;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, #00f0ff1f, transparent 70%),
+    radial-gradient(ellipse 70% 40% at 50% 110%, #ff2bd61a, transparent 70%),
+    linear-gradient(#0f1b31 1px, transparent 1px),
+    linear-gradient(90deg, #0f1b31 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+  background-attachment: fixed;
+}
+
+/* CRT scanlines over everything */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  background: repeating-linear-gradient(to bottom, rgb(255 255 255 / 0.03) 0 1px, transparent 1px 3px);
 }
 
 button {
   cursor: pointer;
+}
+
+::selection {
+  background: var(--color-magenta);
+  color: black;
+}
+
+/* Glitching headline: <h1 class="glitch" data-text="TEXT">TEXT</h1> */
+.glitch {
+  position: relative;
+}
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.glitch::before {
+  color: var(--color-magenta);
+  animation: glitch-a 3.2s infinite steps(1);
+}
+.glitch::after {
+  color: var(--color-cyan);
+  animation: glitch-b 2.7s infinite steps(1);
+}
+@keyframes glitch-a {
+  0%, 88%, 100% { clip-path: inset(0 0 100% 0); transform: none; }
+  89% { clip-path: inset(15% 0 55% 0); transform: translate(-4px, 1px); }
+  92% { clip-path: inset(60% 0 10% 0); transform: translate(3px, -1px); }
+  95% { clip-path: inset(35% 0 40% 0); transform: translate(-2px, 0); }
+}
+@keyframes glitch-b {
+  0%, 84%, 100% { clip-path: inset(0 0 100% 0); transform: none; }
+  85% { clip-path: inset(70% 0 5% 0); transform: translate(4px, 0); }
+  88% { clip-path: inset(10% 0 70% 0); transform: translate(-3px, 1px); }
+  91% { clip-path: inset(45% 0 30% 0); transform: translate(2px, -1px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glitch::before,
+  .glitch::after {
+    animation: none;
+    clip-path: inset(0 0 100% 0);
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

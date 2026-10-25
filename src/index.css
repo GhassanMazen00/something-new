@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Rubik", ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #0b0b12;
+  --color-surface: #15151f;
+  --color-surface-2: #1f1f2d;
+  --color-line: #2c2c3d;
+  --color-muted: #9b9bb2;
+  --color-lime: #c6ff3d;
+  --color-violet: #7c5cff;
+  --color-pink: #ff4da6;
+  --color-gold: #ffb627;
+  --color-sky: #3dc8ff;
+
+  --animate-pop: pop 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+  --animate-rise: rise 0.35s ease-out both;
+  --animate-fall: fall 2.4s ease-in forwards;
+
+  @keyframes pop {
+    from { transform: scale(0.6); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  @keyframes rise {
+    from { transform: translateY(24px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes fall {
+    from { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+    to { transform: translateY(105vh) rotate(720deg); opacity: 0.6; }
+  }
+}
+
+html,
+body {
+  background: var(--color-ink);
+  color: #f4f4f8;
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+button {
+  cursor: pointer;
+}

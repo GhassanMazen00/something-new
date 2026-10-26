@@ -1,53 +1,119 @@
-import type { CSSProperties } from 'react'
-import { privacy } from '../content'
-import { Mashrabiya } from '../fragments/Drawings'
-import { BeforeAfter } from '../fragments/Report'
+import { useState } from 'react'
+import { anonymizer, privacy } from '../content'
+import { order, Scramble } from '../fx'
 import { useLang } from '../lang'
+import { Lock, ruleIcons } from './Icons'
 
-const order = (n: number) => ({ '--i': n }) as CSSProperties
+// Same name, same code: a small stable hash, like the template's lookup key.
+function code(name: string) {
+  const clean = name.trim().toLowerCase()
+  if (!clean) return 'C-0000'
+  let h = 5381
+  for (const ch of clean) h = ((h << 5) + h + ch.charCodeAt(0)) >>> 0
+  return `C-${String((h % 9000) + 1000)}`
+}
+
+function Anonymizer() {
+  const { t, lang } = useLang()
+  const d = anonymizer.defaults
+  const [name, setName] = useState(lang === 'ar' ? d.nameAr : d.name)
+  const [phone, setPhone] = useState(d.phone)
+  const [id, setId] = useState(d.id)
+  const [amount, setAmount] = useState(d.amount)
+  const f = anonymizer.fields
+
+  const rows = [
+    { key: 'name', label: f.name, value: name, set: setName, out: code(name), kind: 'coded' },
+    { key: 'phone', label: f.phone, value: phone, set: setPhone, out: t(anonymizer.removed), kind: 'gone' },
+    { key: 'id', label: f.id, value: id, set: setId, out: t(anonymizer.removed), kind: 'gone' },
+    { key: 'amount', label: f.amount, value: amount, set: setAmount, out: amount || '0', kind: 'kept' },
+  ] as const
+
+  return (
+    <div className="anon glass spot" data-reveal>
+      <div className="anon-head">
+        <span className="badge-ico">
+          <Lock />
+        </span>
+        <div>
+          <h3>{t(anonymizer.title)}</h3>
+          <p>{t(anonymizer.lead)}</p>
+        </div>
+      </div>
+      <div className="anon-cols">
+        <span className="col-title">{t(anonymizer.yourFile)}</span>
+        <span />
+        <span className="col-title">{t(anonymizer.weGet)}</span>
+        {rows.map((r) => (
+          <div key={r.key} className="anon-row">
+            <label className="field">
+              <span>{t(r.label)}</span>
+              <input value={r.value} onChange={(e) => r.set(e.target.value)} dir="auto" spellCheck={false} />
+            </label>
+            <span className="anon-arrow" aria-hidden="true">
+              <span />
+            </span>
+            <div className={`out ${r.kind}`} aria-live="polite">
+              {r.kind === 'coded' && <Scramble text={r.out} />}
+              {r.kind === 'gone' && (
+                <>
+                  <s dir="ltr">{r.value}</s>
+                  <em>{r.out}</em>
+                </>
+              )}
+              {r.kind === 'kept' && (
+                <>
+                  <span dir="ltr">{r.out}</span>
+                  <em>{t(anonymizer.kept)}</em>
+                </>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export function Privacy() {
   const { t, lang } = useLang()
-  const [first, second] = privacy.heading[lang]
+  const [a, b] = privacy.heading[lang]
   return (
-    <>
-      <section id="privacy" className="privacy" aria-labelledby="privacy-h">
-        <div className="privacy-grid wrap">
-          <h2 id="privacy-h" className="privacy-head" data-reveal>
-            <span className="h-line">{first}</span>
-            <span className="h-line indent">{second}</span>
-          </h2>
-          <p className="privacy-lead" data-reveal style={order(1)}>
-            {t(privacy.lead)}
-          </p>
-          <figure className="lattice" data-reveal style={order(2)}>
-            <Mashrabiya />
-            <figcaption className="small muted">{t(privacy.lattice)}</figcaption>
-          </figure>
-          <div className="privacy-small" data-reveal style={order(1)}>
-            <BeforeAfter />
-          </div>
+    <section id="privacy" className="section privacy" aria-labelledby="privacy-h">
+      <div className="wrap">
+        <div className="privacy-top">
+          <header className="sec-head">
+            <span className="kicker" data-reveal>
+              01 · {t({ en: 'Privacy before anything', ar: 'الخصوصية قبل أي شيء' })}
+            </span>
+            <h2 id="privacy-h" data-reveal style={order(1)}>
+              {a} <span className="grad-text">{b}</span>
+            </h2>
+            <p className="sec-lead" data-reveal style={order(2)}>
+              {t(privacy.lead)}
+            </p>
+            <p className="proof" data-reveal style={order(3)}>
+              <span className="pulse" aria-hidden="true" />
+              {t(privacy.siteProof)}
+            </p>
+          </header>
+          <Anonymizer />
         </div>
-      </section>
 
-      <section className="rules on-field" aria-labelledby="rules-h">
-        <div className="wrap rules-inner">
-          <h2 id="rules-h" className="rules-head" data-reveal>
-            {t(privacy.rulesHeading)}
-          </h2>
-          <ul className="rules-list">
-            {privacy.rules.map((rule, n) => (
-              <li key={rule.title.en} data-reveal style={order(n % 2)}>
-                <h3>{t(rule.title)}</h3>
-                <p>{t(rule.text)}</p>
-              </li>
-            ))}
-          </ul>
-          <p className="rules-proof" data-reveal>
-            {t(privacy.siteProof)}
-          </p>
-        </div>
-      </section>
-    </>
+        <h3 className="sub-head" data-reveal>
+          {t(privacy.rulesHeading)}
+        </h3>
+        <ul className="rules">
+          {privacy.rules.map((rule, n) => (
+            <li key={rule.title.en} className="rule glass spot" data-reveal style={order(n % 4)}>
+              <span className="rule-ico">{ruleIcons[n]}</span>
+              <span className="rule-n">0{n + 1}</span>
+              <h4>{t(rule.title)}</h4>
+              <p>{t(rule.text)}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
   )
 }

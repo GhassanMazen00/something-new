@@ -1,141 +1,121 @@
-import type { CSSProperties } from 'react'
-import { CONTACT, brand, contact, faq, footer, nav } from '../content'
-import { Nilometer } from '../fragments/Drawings'
+import { useState } from 'react'
+import { brand, CONTACT, contact, faq, footer, nav } from '../content'
+import { order } from '../fx'
 import { useLang } from '../lang'
-
-const order = (n: number) => ({ '--i': n }) as CSSProperties
+import { Arrow, Plus } from './Icons'
 
 export function Faq() {
   const { t } = useLang()
+  const [open, setOpen] = useState(0)
   return (
-    <section id="faq" className="faq" aria-labelledby="faq-h">
-      <div className="faq-title wrap">
-        <h2 id="faq-h" data-reveal>
-          {t(faq.heading)}
-        </h2>
-      </div>
-      {faq.items.map((item) => (
-        <div key={item.q.en} className="faq-band wrap">
-          <h3 data-reveal>{t(item.q)}</h3>
-          <p data-reveal style={order(1)}>
-            {t(item.a)}
-          </p>
+    <section id="faq" className="section faq" aria-labelledby="faq-h">
+      <div className="wrap faq-grid">
+        <header className="sec-head">
+          <span className="kicker" data-reveal>
+            06 · {t(faq.heading)}
+          </span>
+          <h2 id="faq-h" data-reveal style={order(1)}>
+            {t({ en: 'Good questions.', ar: 'أسئلة في محلها.' })} <span className="grad-text">{t({ en: 'Straight answers.', ar: 'وإجابات واضحة.' })}</span>
+          </h2>
+        </header>
+        <div className="faq-list">
+          {faq.items.map((item, n) => {
+            const isOpen = open === n
+            return (
+              <div key={item.q.en} className={`qa glass${isOpen ? ' is-open' : ''}`} data-reveal style={order(n % 3)}>
+                <h3>
+                  <button type="button" aria-expanded={isOpen} aria-controls={`qa-${n}`} id={`q-${n}`} onClick={() => setOpen(isOpen ? -1 : n)}>
+                    <span>{t(item.q)}</span>
+                    <span className="qa-ico">
+                      <Plus />
+                    </span>
+                  </button>
+                </h3>
+                <div className="qa-body" id={`qa-${n}`} role="region" aria-labelledby={`q-${n}`}>
+                  <div>
+                    <p>{t(item.a)}</p>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
         </div>
-      ))}
+      </div>
     </section>
   )
 }
 
-function mailto(lang: 'en' | 'ar') {
-  const subject = encodeURIComponent(contact.mailSubject[lang])
-  const body = encodeURIComponent(contact.mailBody[lang])
-  return `mailto:${CONTACT.email}?subject=${subject}&body=${body}`
-}
-
 export function Contact() {
-  const { t, lang } = useLang()
+  const { t } = useLang()
+  const mail = `mailto:${CONTACT.email}?subject=${encodeURIComponent(t(contact.mailSubject))}&body=${encodeURIComponent(t(contact.mailBody))}`
   return (
-    <section id="contact" className="contact wrap" aria-labelledby="contact-h">
-      <p className="contact-sentence" data-reveal>
-        {t(contact.sentence)}
-      </p>
-      <div className="contact-gauge" role="img" aria-label={t(contact.gauge)} data-reveal style={order(1)}>
-        <Nilometer marks={false} />
-      </div>
-      <div className="contact-links" data-reveal style={order(2)}>
-        <h2 id="contact-h">{t(contact.question)}</h2>
-        <ul>
-          <li>
-            <a className="link-plain" href={mailto(lang)} dir="ltr">
-              {CONTACT.email}
-            </a>
-          </li>
-          <li>
-            {CONTACT.whatsapp ? (
-              <a className="link-plain" href={`https://wa.me/${CONTACT.whatsapp}`} rel="noopener">
-                {t(contact.whatsapp)}
+    <section id="contact" className="section contact" aria-labelledby="contact-h">
+      <div className="wrap">
+        <div className="cta-card" data-reveal>
+          <div className="cta-inner">
+            <h2 id="contact-h">
+              <span className="grad-text">{t(contact.question)}</span>
+            </h2>
+            <p>{t(contact.sentence)}</p>
+            <div className="hero-cta center">
+              <a className="btn btn-primary" href={mail}>
+                {t(nav.book)} <Arrow />
               </a>
-            ) : (
-              <a className="link-plain" href="#privacy">
+              {CONTACT.whatsapp && (
+                <a className="btn btn-glass" href={`https://wa.me/${CONTACT.whatsapp}`} rel="noopener">
+                  {t(contact.whatsapp)}
+                </a>
+              )}
+              <a className="btn btn-glass" href="#privacy">
                 {t(contact.rules)}
               </a>
-            )}
-          </li>
-        </ul>
-        <p className="place small muted">{t(contact.place)}</p>
+            </div>
+            <a className="cta-mail" href={mail} dir="ltr">
+              {CONTACT.email}
+            </a>
+            <span className="muted">{t(contact.place)}</span>
+          </div>
+        </div>
       </div>
     </section>
   )
 }
 
 export function Footer() {
-  const { t, lang } = useLang()
-  const word = t(brand)
+  const { t } = useLang()
   return (
     <footer className="footer">
-      <div className="footer-cols">
+      <div className="wrap footer-grid">
         <div>
-          <h2>{word}</h2>
+          <a className="logo" href="#top">
+            <span className="logo-mark" aria-hidden="true" />
+            <span>{t(brand)}</span>
+          </a>
           <p>{t(footer.about)}</p>
-          <p>{t(footer.place)}</p>
+          <p className="muted">{t(footer.place)}</p>
         </div>
         <div>
-          <h2>{t(footer.navTitle)}</h2>
-          <ul>
-            <li>
-              <a className="link" href="#privacy">
-                {t(nav.privacy)}
-              </a>
-            </li>
-            <li>
-              <a className="link" href="#services">
-                {t(nav.services)}
-              </a>
-            </li>
-            <li>
-              <a className="link" href="#process">
-                {t(nav.process)}
-              </a>
-            </li>
-            <li>
-              <a className="link" href="#faq">
-                {t(nav.faq)}
-              </a>
-            </li>
-          </ul>
+          <h3>{t(footer.navTitle)}</h3>
+          <a href="#privacy">{t(nav.privacy)}</a>
+          <a href="#services">{t(nav.services)}</a>
+          <a href="#checker">{t(nav.checker)}</a>
+          <a href="#demos">{t(nav.demo)}</a>
+          <a href="#process">{t(nav.process)}</a>
+          <a href="#faq">{t(nav.faq)}</a>
         </div>
         <div>
-          <h2>{t(footer.contactTitle)}</h2>
-          <ul>
-            <li>
-              <a className="link" href={mailto(lang)} dir="ltr">
-                {CONTACT.email}
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div>
-          <h2>{t(footer.privacyTitle)}</h2>
+          <h3>{t(footer.privacyTitle)}</h3>
           <p>{t(footer.privacyText)}</p>
+          <h3>{t(footer.contactTitle)}</h3>
+          <a href={`mailto:${CONTACT.email}`} dir="ltr" className="break">
+            {CONTACT.email}
+          </a>
         </div>
       </div>
-      <div />
-      <div className="footer-word">
-        {lang === 'ar' ? (
-          <svg viewBox="0 0 1000 300" role="img" aria-label={word}>
-            <text x="1000" y="235" fontSize="300" textAnchor="start" direction="rtl" textLength="1000" lengthAdjust="spacingAndGlyphs">
-              {word}
-            </text>
-          </svg>
-        ) : (
-          <svg viewBox="0 0 1000 198" role="img" aria-label={word}>
-            <text x="0" y="186" fontSize="258" textLength="1000" lengthAdjust="spacingAndGlyphs">
-              {word.toUpperCase()}
-            </text>
-          </svg>
-        )}
-        <p className="legal">{t(footer.legal)}</p>
+      <div className="wrap footer-word" aria-hidden="true">
+        {t(brand)}
       </div>
+      <p className="wrap legal">{t(footer.legal)}</p>
     </footer>
   )
 }

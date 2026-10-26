@@ -1,10 +1,8 @@
-import { useRef, useState, type CSSProperties, type KeyboardEvent } from 'react'
+import { useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { departments, nav, servicesSection } from '../content'
+import { order } from '../fx'
 import { useLang } from '../lang'
 
-const order = (n: number) => ({ '--i': n }) as CSSProperties
-
-// Shown in the order owners think about their business.
 const ORDER = ['data', 'marketing', 'sales', 'accounting', 'people', 'market']
 const depts = ORDER.map((id) => departments.find((d) => d.id === id)!)
 
@@ -12,17 +10,34 @@ export function Services() {
   const { t, lang } = useLang()
   const [active, setActive] = useState('accounting')
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
-  const labels = servicesSection.labels
+  const pillRef = useRef<HTMLSpanElement>(null)
+  const { labels } = servicesSection
   const [soft, strong] = servicesSection.heading[lang]
+  const dept = depts.find((d) => d.id === active)!
 
-  const onKey = (e: KeyboardEvent, index: number) => {
-    const forward = ['ArrowDown', lang === 'ar' ? 'ArrowLeft' : 'ArrowRight']
-    const back = ['ArrowUp', lang === 'ar' ? 'ArrowRight' : 'ArrowLeft']
+  // Slide the highlight under the active tab.
+  useLayoutEffect(() => {
+    const place = () => {
+      const btn = tabRefs.current[depts.findIndex((d) => d.id === active)]
+      const pill = pillRef.current
+      if (!btn || !pill) return
+      pill.style.width = `${btn.offsetWidth}px`
+      pill.style.height = `${btn.offsetHeight}px`
+      pill.style.transform = `translate(${btn.offsetLeft}px, ${btn.offsetTop}px)`
+    }
+    place()
+    window.addEventListener('resize', place)
+    return () => window.removeEventListener('resize', place)
+  }, [active, lang])
+
+  const onKey = (e: KeyboardEvent, n: number) => {
+    const back = lang === 'ar' ? 'ArrowRight' : 'ArrowLeft'
+    const fwd = lang === 'ar' ? 'ArrowLeft' : 'ArrowRight'
     let next = -1
-    if (forward.includes(e.key)) next = (index + 1) % depts.length
-    if (back.includes(e.key)) next = (index - 1 + depts.length) % depts.length
-    if (e.key === 'Home') next = 0
-    if (e.key === 'End') next = depts.length - 1
+    if (e.key === fwd) next = (n + 1) % depts.length
+    else if (e.key === back) next = (n - 1 + depts.length) % depts.length
+    else if (e.key === 'Home') next = 0
+    else if (e.key === 'End') next = depts.length - 1
     if (next < 0) return
     e.preventDefault()
     setActive(depts[next].id)
@@ -30,69 +45,69 @@ export function Services() {
   }
 
   return (
-    <section id="services" className="services wrap" aria-labelledby="services-h">
-      <div className="services-top">
-        <h2 id="services-h" className="services-head" data-reveal>
-          <span className="soft">{soft}</span> {strong}
-        </h2>
-        <div className="services-aside">
-          <p className="services-intro" data-reveal style={order(1)}>
+    <section id="services" className="section services" aria-labelledby="services-h">
+      <div className="wrap">
+        <header className="sec-head center">
+          <span className="kicker" data-reveal>
+            02 · {t(nav.services)}
+          </span>
+          <h2 id="services-h" data-reveal style={order(1)}>
+            {soft} <span className="grad-text">{strong}</span>
+          </h2>
+          <p className="sec-lead" data-reveal style={order(2)}>
             {t(servicesSection.intro)}
           </p>
-          <a className="button" href="#contact" data-reveal style={order(2)}>
-            {t(nav.book)}
-          </a>
-        </div>
-      </div>
+        </header>
 
-      <div className="services-body">
-        <div className="dept-tabs" role="tablist" aria-label={t(nav.services)} aria-orientation="vertical">
-          {depts.map((d, n) => (
-            <button
-              key={d.id}
-              ref={(el) => {
-                tabRefs.current[n] = el
-              }}
-              type="button"
-              role="tab"
-              id={`tab-${d.id}`}
-              aria-selected={active === d.id}
-              aria-controls={`panel-${d.id}`}
-              tabIndex={active === d.id ? 0 : -1}
-              className="dept-tab"
-              onClick={() => setActive(d.id)}
-              onKeyDown={(e) => onKey(e, n)}
-            >
-              <span className="dept-name">{t(d.name)}</span>
-              <span className="dept-count">{t(servicesSection.count).replace('{n}', String(d.services.length))}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="panels">
-        {depts.map((d) => (
-          <div key={d.id} id={`panel-${d.id}`} role="tabpanel" aria-labelledby={`tab-${d.id}`} hidden={active !== d.id} className="bands" tabIndex={0}>
-            {d.services.map((s, n) => (
-              <article key={s.name.en} className="band-row" data-reveal style={order(n)}>
-                <div>
-                  <h3>{t(s.name)}</h3>
-                  <p className="get">{t(s.get)}</p>
-                  <p className="method">
-                    {t(labels.method)}: {t(s.method)}
-                  </p>
-                </div>
-                <div>
-                  <span className="label">{t(labels.data)}</span>
-                  <p className="value">{t(s.data)}</p>
-                </div>
-                <div>
-                  <span className="label">{t(labels.missing)}</span>
-                  <p className="value">{t(s.missing)}</p>
-                </div>
-              </article>
+        <div className="tabs-wrap" data-reveal>
+          <div className="tabs glass" role="tablist" aria-label={t(nav.services)}>
+            <span className="tab-pill" ref={pillRef} aria-hidden="true" />
+            {depts.map((d, n) => (
+              <button
+                key={d.id}
+                ref={(el) => {
+                  tabRefs.current[n] = el
+                }}
+                id={`tab-${d.id}`}
+                role="tab"
+                type="button"
+                aria-selected={active === d.id}
+                aria-controls="dept-panel"
+                tabIndex={active === d.id ? 0 : -1}
+                onClick={() => setActive(d.id)}
+                onKeyDown={(e) => onKey(e, n)}
+              >
+                {t(d.name)}
+                <span className="tab-count">{d.services.length}</span>
+              </button>
             ))}
           </div>
-        ))}
+        </div>
+
+        <div id="dept-panel" role="tabpanel" aria-labelledby={`tab-${active}`} className="svc-grid" key={active}>
+          {dept.services.map((s, n) => (
+            <article key={s.name.en} className="svc glass spot" style={order(n)}>
+              <div className="svc-top">
+                <span className="svc-n">{String(n + 1).padStart(2, '0')}</span>
+                <h3>{t(s.name)}</h3>
+                <p className="svc-get">{t(s.get)}</p>
+              </div>
+              <dl className="svc-facts">
+                <div>
+                  <dt>{t(labels.method)}</dt>
+                  <dd>{t(s.method)}</dd>
+                </div>
+                <div>
+                  <dt>{t(labels.data)}</dt>
+                  <dd>{t(s.data)}</dd>
+                </div>
+                <div className="alt">
+                  <dt>{t(labels.missing)}</dt>
+                  <dd>{t(s.missing)}</dd>
+                </div>
+              </dl>
+            </article>
+          ))}
         </div>
       </div>
     </section>

@@ -16,6 +16,8 @@ export const nav = {
   privacy: { en: 'Privacy', ar: 'الخصوصية' },
   services: { en: 'Services', ar: 'الخدمات' },
   process: { en: 'How we work', ar: 'كيف نعمل' },
+  demo: { en: 'Try it', ar: 'جرّب' },
+  checker: { en: 'Your data', ar: 'بياناتك' },
   faq: { en: 'Questions', ar: 'أسئلة' },
   book: { en: 'Book a free call', ar: 'احجز مكالمة مجانية' },
   switchTo: { en: 'عربي', ar: 'English' },
@@ -597,5 +599,124 @@ export const meta = {
   description: {
     en: 'Basira finds errors in your books, forecasts what comes next and shows what each decision will do, across sales, marketing, accounting, people and market research. Privacy first.',
     ar: 'بصيرة تكتشف الأخطاء في حساباتك، وتتوقع ما هو قادم، وتوضح أثر كل قرار، في المبيعات والتسويق والمحاسبة والموارد البشرية وأبحاث السوق. الخصوصية أولًا.',
+  },
+}
+
+// ---- Interactive parts ----
+
+export const heroExtra = {
+  badge: { en: 'Privacy first · we never need names', ar: 'الخصوصية أولًا · لا نحتاج أي أسماء' },
+  try: { en: 'Try the live demo', ar: 'جرّب العرض الحي' },
+  stats: [
+    { value: 6, suffix: '', label: { en: 'departments', ar: 'أقسام' } },
+    { value: 27, suffix: '', label: { en: 'services', ar: 'خدمة' } },
+    { value: 0, suffix: '', label: { en: 'names we need', ar: 'أسماء نحتاجها' } },
+    { value: 30, suffix: '', label: { en: 'days, then deleted', ar: 'يومًا ثم الحذف' } },
+  ],
+  card: {
+    title: { en: 'Live report preview', ar: 'معاينة حية للتقرير' },
+    found: { en: 'Paid twice', ar: 'دُفع مرتين' },
+    runway: { en: 'Cash short', ar: 'عجز السيولة' },
+    week: { en: 'Week 9', ar: 'الأسبوع 9' },
+    scanned: { en: 'Entries scanned', ar: 'قيود تم فحصها' },
+  },
+}
+
+export const methods = [
+  'ETS', 'ARIMA', 'Prophet', 'Chronos', 'Benford’s law', 'Isolation Forest', 'RFM', 'BG/NBD',
+  'Monte Carlo', 'Pareto 80/20', 'Van Westendorp', 'PESTEL', 'Google Meridian', 'Meta Robyn', 'eNPS', 'Survival analysis',
+]
+
+export const anonymizer = {
+  title: { en: 'Try our name remover', ar: 'جرّب أداة حذف الأسماء' },
+  lead: {
+    en: 'Type anything. This runs only in your browser, like our template runs only on your computer. Nothing is sent.',
+    ar: 'اكتب أي شيء. هذا يعمل في متصفحك فقط، كما يعمل قالبنا على جهازك فقط. لا يُرسل أي شيء.',
+  },
+  fields: {
+    name: { en: 'Customer name', ar: 'اسم العميل' },
+    phone: { en: 'Phone', ar: 'الهاتف' },
+    id: { en: 'National ID', ar: 'الرقم القومي' },
+    amount: { en: 'Amount (EGP)', ar: 'المبلغ (جنيه)' },
+  },
+  yourFile: { en: 'Your file', ar: 'ملفك' },
+  weGet: { en: 'What we receive', ar: 'ما يصلنا' },
+  kept: { en: 'kept: we need it', ar: 'يبقى: نحتاجه' },
+  removed: { en: 'removed', ar: 'محذوف' },
+  defaults: { name: 'Hany Adel', nameAr: 'هاني عادل', phone: '+20 100 123 4547', id: '29801011234021', amount: '18,400' },
+}
+
+export interface CheckerService {
+  name: T
+  dept: string
+  // Each inner list is one way to get there: all items in it are needed.
+  high: string[][]
+  medium: string[][]
+  low?: string[][]
+  publicData?: boolean
+}
+
+export const checker = {
+  heading: { en: 'What can we do with what you have?', ar: 'ماذا نستطيع أن نفعل بما لديك؟' },
+  lead: {
+    en: 'Tick the files you have. See which services you can get, and how sure each one would be. Missing data often has a stand-in.',
+    ar: 'اختر الملفات الموجودة لديك، وشاهد الخدمات المتاحة ومدى دقة كل منها. البيانات الناقصة غالبًا لها بديل.',
+  },
+  have: { en: 'I have…', ar: 'لديّ…' },
+  ready: { en: '{n} of {total} services ready', ar: '{n} من {total} خدمة جاهزة' },
+  none: { en: 'Pick a file to start', ar: 'اختر ملفًا للبدء' },
+  publicNote: { en: 'Uses public data', ar: 'تعتمد على بيانات عامة' },
+  items: [
+    { id: 'sales', label: { en: 'Sales list', ar: 'قائمة المبيعات' } },
+    { id: 'einv', label: { en: 'E-invoices', ar: 'الفواتير الإلكترونية' } },
+    { id: 'bank', label: { en: 'Bank statements', ar: 'كشوف البنك' } },
+    { id: 'ledger', label: { en: 'Ledger / books', ar: 'الدفاتر' } },
+    { id: 'unpaid', label: { en: 'Unpaid invoices', ar: 'الفواتير غير المحصّلة' } },
+    { id: 'pnl', label: { en: 'Profit & loss', ar: 'الأرباح والخسائر' } },
+    { id: 'cost', label: { en: 'Prices & costs', ar: 'الأسعار والتكاليف' } },
+    { id: 'stock', label: { en: 'Stock on hand', ar: 'المخزون الحالي' } },
+    { id: 'ads', label: { en: 'Ad spend per channel', ar: 'الإنفاق الإعلاني لكل قناة' } },
+    { id: 'payroll', label: { en: 'Payroll', ar: 'الرواتب' } },
+    { id: 'staff', label: { en: 'Staff list', ar: 'قائمة الموظفين' } },
+  ],
+  services: [
+    { name: { en: 'Data health check', ar: 'فحص جودة البيانات' }, dept: 'data', high: [['sales'], ['einv'], ['bank'], ['ledger'], ['payroll'], ['staff']], medium: [] },
+    { name: { en: 'Sales forecast', ar: 'توقع المبيعات' }, dept: 'sales', high: [['sales'], ['einv']], medium: [['bank']] },
+    { name: { en: 'Price change what-if', ar: 'ماذا لو غيّرنا السعر؟' }, dept: 'sales', high: [['cost', 'sales'], ['cost', 'einv']], medium: [['cost']] },
+    { name: { en: 'Stock reorder plan', ar: 'خطة إعادة طلب المخزون' }, dept: 'sales', high: [['stock', 'sales'], ['stock', 'einv']], medium: [['sales'], ['einv']] },
+    { name: { en: 'Customer groups', ar: 'شرائح العملاء' }, dept: 'marketing', high: [['sales']], medium: [['einv']] },
+    { name: { en: 'Ad channel performance', ar: 'أداء قنوات الإعلان' }, dept: 'marketing', high: [['ads', 'sales'], ['ads', 'einv']], medium: [['ads']] },
+    { name: { en: 'Error and fraud scan', ar: 'فحص الأخطاء والاحتيال' }, dept: 'accounting', high: [['ledger', 'bank']], medium: [['einv', 'bank'], ['ledger']], low: [['einv'], ['bank']] },
+    { name: { en: 'Books, e-invoices and bank, matched', ar: 'مطابقة الدفاتر والفواتير والبنك' }, dept: 'accounting', high: [['ledger', 'einv', 'bank']], medium: [['ledger', 'einv'], ['ledger', 'bank'], ['einv', 'bank']] },
+    { name: { en: '13-week cash forecast', ar: 'توقع السيولة لـ13 أسبوعًا' }, dept: 'accounting', high: [['bank', 'unpaid']], medium: [['bank']] },
+    { name: { en: 'Profit projection', ar: 'توقع الأرباح' }, dept: 'accounting', high: [['pnl']], medium: [['ledger'], ['sales', 'cost']], low: [['bank']] },
+    { name: { en: 'Payroll error scan', ar: 'فحص أخطاء الرواتب' }, dept: 'people', high: [['payroll']], medium: [['bank']] },
+    { name: { en: 'Staff turnover', ar: 'تحليل دوران الموظفين' }, dept: 'people', high: [['staff']], medium: [['payroll']] },
+    { name: { en: 'Market size & demand trends', ar: 'حجم السوق واتجاهات الطلب' }, dept: 'market', high: [], medium: [], publicData: true },
+  ] as CheckerService[],
+}
+
+export const demos = {
+  heading: { en: ['Don’t take our word for it.', 'Try it.'], ar: ['لا تكتفِ بكلامنا.', 'جرّب بنفسك.'] },
+  lead: { en: 'Two small versions of what we run on your files. Made-up data.', ar: 'نسختان صغيرتان مما نشغّله على ملفاتك. ببيانات افتراضية.' },
+  scan: {
+    title: { en: 'Error scan', ar: 'فحص الأخطاء' },
+    run: { en: 'Run the scan', ar: 'شغّل الفحص' },
+    running: { en: 'Scanning…', ar: 'جارٍ الفحص…' },
+    reset: { en: 'Reset', ar: 'إعادة' },
+    done: { en: '3 entries need a look · EGP 37,600 at risk', ar: '3 قيود تحتاج مراجعة · 37,600 جنيه معرّضة للخطر' },
+    flags: {
+      dup: { en: 'Paid twice', ar: 'مدفوعة مرتين' },
+      gap: { en: 'Number skipped', ar: 'رقم مفقود' },
+      odd: { en: 'Unusual amount', ar: 'مبلغ غير معتاد' },
+      ok: { en: 'OK', ar: 'سليم' },
+    },
+  },
+  price: {
+    title: { en: 'Price change what-if', ar: 'ماذا لو غيّرت السعر؟' },
+    rise: { en: 'Price rise', ar: 'نسبة رفع السعر' },
+    margin: { en: 'Your profit margin now', ar: 'هامش ربحك الحالي' },
+    result: { en: 'Still worth it unless sales fall more than', ar: 'يظل مربحًا ما لم تنخفض المبيعات أكثر من' },
+    note: { en: 'Break-even formula: rise ÷ (margin + rise)', ar: 'معادلة التعادل: نسبة الرفع ÷ (الهامش + نسبة الرفع)' },
   },
 }

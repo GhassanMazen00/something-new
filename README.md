@@ -16,6 +16,12 @@ npm run build    # the finished site, in dist/
 - **Email and WhatsApp**: `CONTACT` at the top of `src/content.ts`. Replace the placeholder email before launch.
 - **Colours and sizes**: the top of `src/styles.css`
 
-## Put it online (free)
+## Put it online (free, GitHub Pages)
 
-Upload the `dist/` folder to Cloudflare Pages, Netlify or GitHub Pages. The site loads nothing from other companies: fonts are hosted with the site, and there are no cookies or trackers.
+Every push builds the site automatically (`.github/workflows/deploy.yml`) and publishes it to the `gh-pages` branch.
+
+One-time setting: **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: `gh-pages`, folder `/ (root)` → Save.**
+
+Don't point Pages at `main` or this branch directly: that serves the raw source code, which shows a white screen.
+
+The site loads nothing from other companies: fonts are hosted with the site, and there are no cookies or trackers.

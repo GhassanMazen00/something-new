@@ -1,75 +1,134 @@
-import type { CSSProperties } from 'react'
-import { process } from '../content'
-import { DataPlan, Received, ReportPage } from '../fragments/Report'
+import { process, report } from '../content'
+import { order, useScrollProgress } from '../fx'
 import { useLang } from '../lang'
 
-const order = (n: number) => ({ '--i': n }) as CSSProperties
 const FILES = ['einvoices_2025-2026.xlsx', 'bank_statements_2026.pdf', 'salaries_coded.xlsx']
+
+function Chip({ level }: { level: string }) {
+  const { t } = useLang()
+  return <span className={`chip ${level}`}>{t(process.levels[level as 'high' | 'medium' | 'low' | 'none'])}</span>
+}
+
+function DataPlan() {
+  const { t } = useLang()
+  const p = process.plan
+  return (
+    <div className="panel">
+      <span className="col-title">{t(p.title)}</span>
+      {p.rows.map((r) => (
+        <div key={r.service.en} className="plan-row">
+          <div>
+            <strong>{t(r.service)}</strong>
+            <span>{t(r.from)}</span>
+          </div>
+          <Chip level={r.level} />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function Received() {
+  const { t } = useLang()
+  const r = process.received
+  return (
+    <div className="panel">
+      <div className="files">
+        {FILES.map((f) => (
+          <span key={f} className="file" dir="ltr">
+            {f}
+          </span>
+        ))}
+      </div>
+      <span className="col-title">
+        {t(r.title)} <Chip level="high" />
+      </span>
+      <dl className="recv">
+        {r.lines.map((l) => (
+          <div key={l.k.en}>
+            <dt>{t(l.k)}</dt>
+            <dd>{t(l.v)}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  )
+}
+
+function ReportPage() {
+  const { t } = useLang()
+  return (
+    <div className="panel report">
+      <div className="report-head">
+        <span className="col-title">{t(report.title)}</span>
+        <span className="muted">{t(report.period)}</span>
+      </div>
+      {report.items.map((item, i) => (
+        <div key={i} className="report-item">
+          <span className="ri-n">{i + 1}</span>
+          <div>
+            <p>{t(item.finding)}</p>
+            <strong>{t(item.action)}</strong>
+          </div>
+          <Chip level={item.level} />
+        </div>
+      ))}
+      <span className="muted small">{t(report.footer)}</span>
+    </div>
+  )
+}
+
+const VISUALS = [DataPlan, Received, ReportPage]
 
 export function Process() {
   const { t } = useLang()
-  const [first, second, third] = process.steps
+  const lineRef = useScrollProgress<HTMLOListElement>()
   return (
-    <section id="process" className="process wrap" aria-labelledby="process-h">
-      <div className="process-inner">
-      <div className="process-col">
-        <h2 id="process-h" className="process-head" data-reveal>
-          {t(process.heading)}
-        </h2>
-        <ol className="exchanges">
-          <li className="exchange">
-            <p className="exchange-say" data-reveal>
-              {t(first.say)}
-            </p>
-            <p className="call" data-reveal style={order(1)}>
-              “{t(first.call)}”
-            </p>
-            <div className="response" data-reveal style={order(2)}>
-              <DataPlan />
-            </div>
-          </li>
-          <li className="exchange">
-            <p className="exchange-say" data-reveal>
-              {t(second.say)}
-            </p>
-            <div className="call files" data-reveal style={order(1)}>
-              {FILES.map((f) => (
-                <span key={f} dir="ltr" style={{ textAlign: 'start' }}>
-                  {f}
+    <section id="process" className="section process" aria-labelledby="process-h">
+      <div className="wrap">
+        <header className="sec-head center">
+          <span className="kicker" data-reveal>
+            05 · {t(process.heading)}
+          </span>
+          <h2 id="process-h" data-reveal style={order(1)}>
+            {t({ en: 'Three steps.', ar: 'ثلاث خطوات.' })} <span className="grad-text">{t({ en: 'One page.', ar: 'صفحة واحدة.' })}</span>
+          </h2>
+        </header>
+
+        <ol className="timeline" ref={lineRef}>
+          <span className="tl-line" aria-hidden="true">
+            <span />
+          </span>
+          {process.steps.map((step, n) => {
+            const Visual = VISUALS[n]
+            return (
+              <li key={step.say.en} className="step">
+                <span className="step-n" aria-hidden="true">
+                  0{n + 1}
                 </span>
-              ))}
-              <span className="tick">{t(second.call)}</span>
-            </div>
-            <div className="response" data-reveal style={order(2)}>
-              <Received />
-            </div>
-          </li>
-          <li className="exchange">
-            <p className="exchange-say" data-reveal>
-              {t(third.say)}
-            </p>
-            <p className="call" data-reveal style={order(1)}>
-              “{t(third.call)}”
-            </p>
-            <div className="response wide" data-reveal style={order(2)}>
-              <ReportPage />
-            </div>
-          </li>
+                <div className="step-copy" data-reveal>
+                  <h3>{t(step.say)}</h3>
+                  <p className="bubble">{n === 1 ? t(step.call) : `“${t(step.call)}”`}</p>
+                </div>
+                <div className="step-visual glass spot" data-reveal style={order(1)}>
+                  <Visual />
+                </div>
+              </li>
+            )
+          })}
         </ol>
-      </div>
-      <aside className="legend" data-reveal aria-labelledby="legend-h">
-        <h3 id="legend-h">{t(process.legend.title)}</h3>
-        <dl>
-          {process.legend.rows.map((row) => (
-            <div key={row.level} className={`lv-${row.level}`}>
-              <dt>
-                <span>{t(process.levels[row.level as 'high' | 'medium' | 'low'])}</span>
-              </dt>
-              <dd>{t(row.text)}</dd>
-            </div>
-          ))}
-        </dl>
-      </aside>
+
+        <div className="legend glass" data-reveal>
+          <h3>{t(process.legend.title)}</h3>
+          <ul>
+            {process.legend.rows.map((row) => (
+              <li key={row.level}>
+                <Chip level={row.level} />
+                <span>{t(row.text)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </section>
   )

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { Line } from '../charts/Charts'
 import { demos, showcase } from '../content'
 import { order, reducedMotion } from '../fx'
 import { useLang } from '../lang'
-import { Spark } from './Icons'
 
 type Flag = 'ok' | 'dup' | 'gap' | 'odd'
 const INVOICES: [string, string, string, Flag][] = [
@@ -51,7 +51,7 @@ function ErrorScan() {
   const finished = done >= INVOICES.length - 1 && !running
 
   return (
-    <div className="demo glass spot" data-reveal>
+    <div className="demo card" data-reveal>
       <div className="demo-head">
         <h3>{t(s.title)}</h3>
         <span className="tag">{t(showcase.example)}</span>
@@ -81,12 +81,12 @@ function ErrorScan() {
           {finished ? t(s.done) : ''}
         </p>
         {finished ? (
-          <button type="button" className="btn btn-glass btn-sm" onClick={reset}>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={reset}>
             {t(s.reset)}
           </button>
         ) : (
           <button type="button" className="btn btn-primary btn-sm" onClick={run} disabled={running}>
-            <Spark /> {running ? t(s.running) : t(s.run)}
+            {running ? t(s.running) : t(s.run)}
           </button>
         )}
       </div>
@@ -101,9 +101,13 @@ function PriceWhatIf() {
   const [margin, setMargin] = useState(30)
   const limit = (rise / (margin + rise)) * 100
   const shown = Math.round(limit)
+  // Profit change (%) at sales drops of 0, 5, … 50%.
+  const curve = Array.from({ length: 11 }, (_, k) => (((margin + rise) * (1 - k / 20) - margin) / margin) * 100)
+  const lo = Math.min(-20, Math.floor(Math.min(...curve) / 10) * 10)
+  const hi = Math.max(20, Math.ceil(Math.max(...curve) / 10) * 10)
 
   return (
-    <div className="demo glass spot" data-reveal style={order(1)}>
+    <div className="demo card" data-reveal style={order(1)}>
       <div className="demo-head">
         <h3>{t(p.title)}</h3>
         <span className="tag">{t(showcase.example)}</span>
@@ -122,12 +126,24 @@ function PriceWhatIf() {
       </label>
       <div className="whatif-out">
         <p>{t(p.result)}</p>
-        <strong className="big grad-text">{shown}%</strong>
+        <strong className="big">{shown}%</strong>
         <div className="zone" aria-hidden="true">
           <span className="safe" style={{ width: `${limit}%` }} />
           <span className="mark" style={{ insetInlineStart: `${limit}%` }} />
         </div>
         <span className="note">{t(p.note)}</span>
+      </div>
+      <div className="whatif-chart">
+        <span className="chart-title">{t({ en: 'Profit change as sales fall', ar: 'تغيّر الربح مع انخفاض المبيعات' })}</span>
+        <Line
+          label="Profit change against sales drop"
+          series={[{ values: curve }]}
+          min={lo}
+          max={hi}
+          threshold={{ value: 0, text: 'Break-even' }}
+          marks={limit <= 50 ? [{ series: 0, at: limit / 5, value: 0, text: `−${shown}%`, tone: 'bad' }] : []}
+          xLabels={['0% sales drop', '50%']}
+        />
       </div>
     </div>
   )
@@ -137,14 +153,14 @@ export function Demos() {
   const { t, lang } = useLang()
   const [a, b] = demos.heading[lang]
   return (
-    <section id="demos" className="section demos" aria-labelledby="demos-h">
+    <section id="demos" className="section demos night" aria-labelledby="demos-h">
       <div className="wrap">
         <header className="sec-head center">
           <span className="kicker" data-reveal>
-            04 · {t({ en: 'Live demo', ar: 'عرض حي' })}
+            {t({ en: 'Live demo', ar: 'عرض حي' })}
           </span>
           <h2 id="demos-h" data-reveal style={order(1)}>
-            {a} <span className="grad-text">{b}</span>
+            {a} <span className="accent">{b}</span>
           </h2>
           <p className="sec-lead" data-reveal style={order(2)}>
             {t(demos.lead)}

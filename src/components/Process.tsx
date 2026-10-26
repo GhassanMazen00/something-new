@@ -1,3 +1,5 @@
+import { Line } from '../charts/Charts'
+import { CASH } from '../charts/serviceCharts'
 import { process, report } from '../content'
 import { order, useScrollProgress } from '../fx'
 import { useLang } from '../lang'
@@ -73,6 +75,9 @@ function ReportPage() {
           <Chip level={item.level} />
         </div>
       ))}
+      <div className="report-chart">
+        <Line label="Cash for 13 weeks against payroll" series={[{ values: CASH, area: true }]} threshold={{ value: 180, text: 'Payroll', tone: 'bad' }} marks={[{ series: 0, at: 8, text: 'Week 9', tone: 'bad' }]} />
+      </div>
       <span className="muted small">{t(report.footer)}</span>
     </div>
   )
@@ -88,10 +93,10 @@ export function Process() {
       <div className="wrap">
         <header className="sec-head center">
           <span className="kicker" data-reveal>
-            05 · {t(process.heading)}
+            {t(process.heading)}
           </span>
           <h2 id="process-h" data-reveal style={order(1)}>
-            {t({ en: 'Three steps.', ar: 'ثلاث خطوات.' })} <span className="grad-text">{t({ en: 'One page.', ar: 'صفحة واحدة.' })}</span>
+            {t({ en: 'Three steps.', ar: 'ثلاث خطوات.' })} <span className="accent">{t({ en: 'One page.', ar: 'صفحة واحدة.' })}</span>
           </h2>
         </header>
 
@@ -110,7 +115,7 @@ export function Process() {
                   <h3>{t(step.say)}</h3>
                   <p className="bubble">{n === 1 ? t(step.call) : `“${t(step.call)}”`}</p>
                 </div>
-                <div className="step-visual glass spot" data-reveal style={order(1)}>
+                <div className="step-visual card" data-reveal style={order(1)}>
                   <Visual />
                 </div>
               </li>
@@ -118,7 +123,7 @@ export function Process() {
           })}
         </ol>
 
-        <div className="legend glass" data-reveal>
+        <div className="legend card" data-reveal>
           <h3>{t(process.legend.title)}</h3>
           <ul>
             {process.legend.rows.map((row) => (

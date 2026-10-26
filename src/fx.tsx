@@ -89,34 +89,6 @@ export function Scramble({ text, className }: { text: string; className?: string
   )
 }
 
-// Page-wide pointer effects: the glow that follows the cursor, and the spotlight on .spot cards.
-export function usePointerFx() {
-  useEffect(() => {
-    const glow = document.querySelector<HTMLElement>('.cursor-glow')
-    let raf = 0
-    let x = 0
-    let y = 0
-    const on = (e: PointerEvent) => {
-      x = e.clientX
-      y = e.clientY
-      const el = (e.target as Element | null)?.closest?.('.spot') as HTMLElement | null
-      if (el) {
-        const r = el.getBoundingClientRect()
-        el.style.setProperty('--mx', `${x - r.left}px`)
-        el.style.setProperty('--my', `${y - r.top}px`)
-      }
-      if (!raf && glow) {
-        raf = requestAnimationFrame(() => {
-          glow.style.transform = `translate(${x}px, ${y}px)`
-          raf = 0
-        })
-      }
-    }
-    window.addEventListener('pointermove', on, { passive: true })
-    return () => window.removeEventListener('pointermove', on)
-  }, [])
-}
-
 // Sets --p (0 to 1) on the element as it scrolls through the viewport.
 export function useScrollProgress<E extends HTMLElement>() {
   const ref = useRef<E>(null)

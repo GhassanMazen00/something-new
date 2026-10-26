@@ -15,15 +15,14 @@ export function useLang(): LangValue {
   return ctx
 }
 
-// ?lang=ar in the link wins, then a saved choice, then the browser language.
+// English first. Arabic only when the link says ?lang=ar or the visitor switched during this visit.
 export function initialLang(): Lang {
   const param = new URLSearchParams(window.location.search).get('lang')
   if (param === 'ar' || param === 'en') return param
   try {
-    const saved = localStorage.getItem('basira:lang')
-    if (saved === 'ar' || saved === 'en') return saved
+    if (sessionStorage.getItem('basira:lang') === 'ar') return 'ar'
   } catch {
     // Storage blocked: fall through.
   }
-  return navigator.language?.toLowerCase().startsWith('ar') ? 'ar' : 'en'
+  return 'en'
 }

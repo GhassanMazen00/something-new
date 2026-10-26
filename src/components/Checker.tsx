@@ -37,7 +37,7 @@ export function Checker() {
       <div className="wrap">
         <header className="sec-head center">
           <span className="kicker" data-reveal>
-            03 · {t({ en: 'What each service needs', ar: 'ما تحتاجه كل خدمة' })}
+            {t({ en: 'What each service needs', ar: 'ما تحتاجه كل خدمة' })}
           </span>
           <h2 id="checker-h" data-reveal style={order(1)}>
             {t(checker.heading)}
@@ -48,7 +48,7 @@ export function Checker() {
         </header>
 
         <div className="checker-grid">
-          <div className="have glass" data-reveal>
+          <div className="have card" data-reveal>
             <span className="col-title">{t(checker.have)}</span>
             <div className="have-chips">
               {checker.items.map((item) => {
@@ -65,9 +65,8 @@ export function Checker() {
               <svg viewBox="0 0 120 120" aria-hidden="true">
                 <defs>
                   <linearGradient id="ringGrad" x1="0" x2="1" y1="0" y2="1">
-                    <stop offset="0" stopColor="#a78bfa" />
-                    <stop offset="0.5" stopColor="#22d3ee" />
-                    <stop offset="1" stopColor="#34d399" />
+                    <stop offset="0" stopColor="#1d4ed8" />
+                    <stop offset="1" stopColor="#3b82f6" />
                   </linearGradient>
                 </defs>
                 <circle cx="60" cy="60" r="52" className="ring-bg" />
@@ -89,7 +88,7 @@ export function Checker() {
             </div>
           </div>
 
-          <ul className="results glass" data-reveal style={order(1)} aria-live="polite">
+          <ul className="results card" data-reveal style={order(1)} aria-live="polite">
             {results.map(({ s, level }) => (
               <li key={s.name.en} className={`res lv-${level}`}>
                 <div className="res-name">

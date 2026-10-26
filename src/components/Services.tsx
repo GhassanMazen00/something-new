@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { serviceCharts } from '../charts/serviceCharts'
 import { departments, nav, servicesSection } from '../content'
 import { order } from '../fx'
 import { useLang } from '../lang'
@@ -49,10 +50,10 @@ export function Services() {
       <div className="wrap">
         <header className="sec-head center">
           <span className="kicker" data-reveal>
-            02 · {t(nav.services)}
+            {t(nav.services)}
           </span>
           <h2 id="services-h" data-reveal style={order(1)}>
-            {soft} <span className="grad-text">{strong}</span>
+            {soft} <span className="accent">{strong}</span>
           </h2>
           <p className="sec-lead" data-reveal style={order(2)}>
             {t(servicesSection.intro)}
@@ -60,7 +61,7 @@ export function Services() {
         </header>
 
         <div className="tabs-wrap" data-reveal>
-          <div className="tabs glass" role="tablist" aria-label={t(nav.services)}>
+          <div className="tabs" role="tablist" aria-label={t(nav.services)}>
             <span className="tab-pill" ref={pillRef} aria-hidden="true" />
             {depts.map((d, n) => (
               <button
@@ -86,12 +87,13 @@ export function Services() {
 
         <div id="dept-panel" role="tabpanel" aria-labelledby={`tab-${active}`} className="svc-grid" key={active}>
           {dept.services.map((s, n) => (
-            <article key={s.name.en} className="svc glass spot" style={order(n)}>
+            <article key={s.name.en} className="svc card" style={order(n)}>
               <div className="svc-top">
                 <span className="svc-n">{String(n + 1).padStart(2, '0')}</span>
                 <h3>{t(s.name)}</h3>
                 <p className="svc-get">{t(s.get)}</p>
               </div>
+              <div className="svc-chart">{serviceCharts[s.name.en]}</div>
               <dl className="svc-facts">
                 <div>
                   <dt>{t(labels.method)}</dt>

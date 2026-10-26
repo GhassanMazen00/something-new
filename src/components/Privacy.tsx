@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { HBars } from '../charts/Charts'
 import { anonymizer, privacy } from '../content'
 import { order, Scramble } from '../fx'
 import { useLang } from '../lang'
@@ -30,7 +31,7 @@ function Anonymizer() {
   ] as const
 
   return (
-    <div className="anon glass spot" data-reveal>
+    <div className="anon card" data-reveal style={order(1)}>
       <div className="anon-head">
         <span className="badge-ico">
           <Lock />
@@ -84,15 +85,27 @@ export function Privacy() {
         <div className="privacy-top">
           <header className="sec-head">
             <span className="kicker" data-reveal>
-              01 · {t({ en: 'Privacy before anything', ar: 'الخصوصية قبل أي شيء' })}
+              {t({ en: 'Privacy before anything', ar: 'الخصوصية قبل أي شيء' })}
             </span>
             <h2 id="privacy-h" data-reveal style={order(1)}>
-              {a} <span className="grad-text">{b}</span>
+              {a} <span className="accent">{b}</span>
             </h2>
             <p className="sec-lead" data-reveal style={order(2)}>
               {t(privacy.lead)}
             </p>
-            <p className="proof" data-reveal style={order(3)}>
+            <div className="mini card" data-reveal style={order(3)}>
+              <span className="chart-title">{t({ en: 'What leaves your computer, in a typical job', ar: 'ما يخرج من جهازك في مهمة معتادة' })}</span>
+              <HBars
+                label="Columns in a typical file, columns we ask for, and personal columns we receive"
+                max={24}
+                items={[
+                  { label: 'In your file', value: 24, text: '24 columns', tone: 'soft' },
+                  { label: 'We ask for', value: 7, text: '7 columns' },
+                  { label: 'Personal data', value: 0, text: '0 columns', tone: 'ink' },
+                ]}
+              />
+            </div>
+            <p className="proof" data-reveal style={order(4)}>
               <span className="pulse" aria-hidden="true" />
               {t(privacy.siteProof)}
             </p>
@@ -105,9 +118,8 @@ export function Privacy() {
         </h3>
         <ul className="rules">
           {privacy.rules.map((rule, n) => (
-            <li key={rule.title.en} className="rule glass spot" data-reveal style={order(n % 4)}>
+            <li key={rule.title.en} className="rule" data-reveal style={order(n % 4)}>
               <span className="rule-ico">{ruleIcons[n]}</span>
-              <span className="rule-n">0{n + 1}</span>
               <h4>{t(rule.title)}</h4>
               <p>{t(rule.text)}</p>
             </li>

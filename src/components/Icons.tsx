@@ -39,11 +39,6 @@ export const Lock = () => (
     <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
   </Icon>
 )
-export const Spark = () => (
-  <Icon size={18}>
-    <path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6" />
-  </Icon>
-)
 
 // One icon per privacy rule, in the same order as privacy.rules.
 export const ruleIcons = [

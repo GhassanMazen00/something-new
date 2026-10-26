@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Line } from '../charts/Charts'
 import { brand, CONTACT, contact, faq, footer, nav } from '../content'
 import { order } from '../fx'
 import { useLang } from '../lang'
@@ -12,17 +13,34 @@ export function Faq() {
       <div className="wrap faq-grid">
         <header className="sec-head">
           <span className="kicker" data-reveal>
-            06 · {t(faq.heading)}
+            {t(faq.heading)}
           </span>
           <h2 id="faq-h" data-reveal style={order(1)}>
-            {t({ en: 'Good questions.', ar: 'أسئلة في محلها.' })} <span className="grad-text">{t({ en: 'Straight answers.', ar: 'وإجابات واضحة.' })}</span>
+            {t({ en: 'Good questions.', ar: 'أسئلة في محلها.' })} <span className="accent">{t({ en: 'Straight answers.', ar: 'وإجابات واضحة.' })}</span>
           </h2>
+          <div className="mini card" data-reveal style={order(2)}>
+            <span className="chart-title">{t({ en: 'How we prove accuracy: last year, forecast blind', ar: 'كيف نثبت الدقة: العام الماضي، بتوقع أعمى' })}</span>
+            <Line
+              label="Actual sales against a forecast made without seeing them"
+              series={[
+                { values: [40, 43, 41, 46, 49, 47, 51, 54, 52, 56, 59, 58] },
+                { values: [41, 42, 43, 45, 47, 48, 50, 52, 53, 55, 57, 59], tone: 'ink', dashed: true },
+              ]}
+              min={30}
+              max={65}
+              xLabels={['Jan', 'Dec']}
+              legend={[
+                ['main', 'Actual'],
+                ['ink', 'Our forecast · 3.1% average error'],
+              ]}
+            />
+          </div>
         </header>
         <div className="faq-list">
           {faq.items.map((item, n) => {
             const isOpen = open === n
             return (
-              <div key={item.q.en} className={`qa glass${isOpen ? ' is-open' : ''}`} data-reveal style={order(n % 3)}>
+              <div key={item.q.en} className={`qa card${isOpen ? ' is-open' : ''}`} data-reveal style={order(n % 3)}>
                 <h3>
                   <button type="button" aria-expanded={isOpen} aria-controls={`qa-${n}`} id={`q-${n}`} onClick={() => setOpen(isOpen ? -1 : n)}>
                     <span>{t(item.q)}</span>
@@ -54,7 +72,7 @@ export function Contact() {
         <div className="cta-card" data-reveal>
           <div className="cta-inner">
             <h2 id="contact-h">
-              <span className="grad-text">{t(contact.question)}</span>
+              <span className="accent">{t(contact.question)}</span>
             </h2>
             <p>{t(contact.sentence)}</p>
             <div className="hero-cta center">
@@ -62,11 +80,11 @@ export function Contact() {
                 {t(nav.book)} <Arrow />
               </a>
               {CONTACT.whatsapp && (
-                <a className="btn btn-glass" href={`https://wa.me/${CONTACT.whatsapp}`} rel="noopener">
+                <a className="btn btn-ghost-light" href={`https://wa.me/${CONTACT.whatsapp}`} rel="noopener">
                   {t(contact.whatsapp)}
                 </a>
               )}
-              <a className="btn btn-glass" href="#privacy">
+              <a className="btn btn-ghost-light" href="#privacy">
                 {t(contact.rules)}
               </a>
             </div>

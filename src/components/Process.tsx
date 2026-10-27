@@ -3,7 +3,7 @@ import { serviceCharts } from '../charts/serviceCharts'
 import { process } from '../content'
 import { depts } from '../depts'
 import { order, useScrollProgress } from '../fx'
-import { journeys, stepNotes, stepTitles } from '../journeys'
+import { journeys, stepNotes, stepTexts, stepTitles } from '../journeys'
 import { useLang } from '../lang'
 import { Check, Lock } from './Icons'
 import { Level } from './Level'
@@ -58,10 +58,7 @@ export function Process() {
   return (
     <section id="process" className="section process" aria-labelledby="process-h">
       <div className="wrap">
-        <header className="sec-head center">
-          <span className="kicker" data-reveal>
-            {t(process.heading)}
-          </span>
+        <header className="sec-head wide">
           <h2 id="process-h" data-reveal style={order(1)}>
             {t({ en: 'Four steps.', ar: 'أربع خطوات.' })} <span className="accent">{t({ en: 'One clear page.', ar: 'صفحة واحدة واضحة.' })}</span>
           </h2>
@@ -91,6 +88,7 @@ export function Process() {
               </span>
               <div className="step-copy" data-reveal>
                 <h3>{t(title)}</h3>
+                <p>{t(stepTexts[n])}</p>
               </div>
               <div className="step-visual glass" key={`${dept}-${n}`}>
                 {visuals[n]}

@@ -42,10 +42,7 @@ export function Checker() {
   return (
     <section id="checker" className="section checker" aria-labelledby="checker-h">
       <div className="wrap">
-        <header className="sec-head center">
-          <span className="kicker" data-reveal>
-            {t({ en: 'What each service needs', ar: 'ما تحتاجه كل خدمة' })}
-          </span>
+        <header className="sec-head wide">
           <h2 id="checker-h" data-reveal style={order(1)}>
             {t(checker.heading)}
           </h2>

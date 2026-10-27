@@ -4,7 +4,7 @@ import { CONTACT, contact, faq, footer, nav } from '../content'
 import { order } from '../fx'
 import { useLang } from '../lang'
 import { Arrow, Plus } from './Icons'
-import { Logo } from './Sidebar'
+import { Logo } from './Header'
 
 export function Faq() {
   const { t } = useLang()
@@ -13,9 +13,6 @@ export function Faq() {
     <section id="faq" className="section faq" aria-labelledby="faq-h">
       <div className="wrap faq-grid">
         <header className="sec-head">
-          <span className="kicker" data-reveal>
-            {t(faq.heading)}
-          </span>
           <h2 id="faq-h" data-reveal style={order(1)}>
             {t({ en: 'Good questions.', ar: 'أسئلة في محلها.' })} <span className="accent">{t({ en: 'Straight answers.', ar: 'وإجابات واضحة.' })}</span>
           </h2>

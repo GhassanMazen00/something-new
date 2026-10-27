@@ -14,9 +14,6 @@ export function Privacy() {
       <div className="wrap">
         <div className="privacy-top">
           <header className="sec-head">
-            <span className="kicker" data-reveal>
-              {t({ en: 'Privacy before anything', ar: 'الخصوصية قبل أي شيء' })}
-            </span>
             <h2 id="privacy-h" data-reveal style={order(1)}>
               {a} <span className="accent">{b}</span>
             </h2>

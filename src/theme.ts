@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react'
 
 export type Theme = 'light' | 'dark'
 
-// index.html sets data-theme before the first paint; this keeps React in step with it.
+// Dark by default. index.html sets data-theme before the first paint; this keeps React in step with it.
 export function useTheme() {
-  const [theme, setTheme] = useState<Theme>(() => (document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'))
+  const [theme, setTheme] = useState<Theme>(() => (document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'))
   useEffect(() => {
     document.documentElement.dataset.theme = theme
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#0a0f1c' : '#f5f7fa')
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#05080f' : '#eef2f8')
     try {
       localStorage.setItem('clearline:theme', theme)
     } catch {

@@ -18,6 +18,25 @@ export const stepTitles: T[] = [
   { en: 'You read one page and decide', ar: 'تقرأ صفحة واحدة وتقرّر' },
 ]
 
+export const stepTexts: T[] = [
+  {
+    en: 'A free 20-minute call. You tell us the decision or the worry, and we tell you exactly which data would answer it.',
+    ar: 'مكالمة مجانية لمدة 20 دقيقة. تخبرنا بالقرار أو القلق، ونخبرك بالبيانات التي تجيب عنه بالضبط.',
+  },
+  {
+    en: 'Only the files on your data plan, through an encrypted link that expires. The confidentiality agreement is signed first.',
+    ar: 'الملفات الموجودة في خطة بياناتك فقط، عبر رابط مشفّر تنتهي صلاحيته. ونوقّع اتفاقية السرية أولًا.',
+  },
+  {
+    en: 'Proven models do the maths, AI drafts the explanation, and an analyst checks every number before it reaches you.',
+    ar: 'النماذج المثبتة تقوم بالحسابات، والذكاء الاصطناعي يكتب الشرح، ومحلل يراجع كل رقم قبل أن يصلك.',
+  },
+  {
+    en: 'Findings, actions and a confidence level on the first page. The detail follows for whoever wants it.',
+    ar: 'النتائج والإجراءات ومستوى الثقة في الصفحة الأولى. والتفاصيل بعدها لمن يريدها.',
+  },
+]
+
 export const stepNotes = {
   transfer: { en: 'Encrypted link · expires after download · AES-256 at rest', ar: 'رابط مشفّر · تنتهي صلاحيته بعد التنزيل · تخزين AES-256' },
   days: { en: 'Usually 5 to 10 working days', ar: 'عادة من 5 إلى 10 أيام عمل' },

@@ -26,6 +26,63 @@ export const serviceCharts: Record<string, ReactNode> = {
     />
   ),
 
+  'Data cleaning and merging': (
+    <Stacked
+      label="Rows after cleaning"
+      headline="61,240 rows"
+      sub="from 7 files"
+      segments={[
+        { label: 'Clean', value: 86, tone: 'main' },
+        { label: 'Fixed', value: 11, tone: 'soft' },
+        { label: 'Duplicates removed', value: 3, tone: 'bad' },
+      ]}
+    />
+  ),
+  'KPI dashboard': (
+    <HBars
+      label="Key numbers against target this month"
+      max={120}
+      items={[
+        { label: 'Sales', value: 104, text: '104%' },
+        { label: 'Gross margin', value: 97, text: '97%', tone: 'soft' },
+        { label: 'New customers', value: 112, text: '112%' },
+        { label: 'Stock days', value: 81, text: '81%', tone: 'bad' },
+      ]}
+    />
+  ),
+  'Trends and seasonality': (
+    <Bars
+      label="Seasonal effect by month, average year"
+      values={[92, 88, 118, 104, 97, 95, 99, 101, 112, 103, 96, 121]}
+      highlight={[2, 8, 11]}
+      labels={['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D']}
+      threshold={{ value: 100, text: 'Average' }}
+    />
+  ),
+  'Driver analysis': (
+    <HBars
+      label="Share of the change in sales explained by each factor"
+      max={40}
+      items={[
+        { label: 'Promotions', value: 34, text: '34%' },
+        { label: 'Price', value: 27, text: '27%' },
+        { label: 'Season', value: 21, text: '21%', tone: 'soft' },
+        { label: 'Branch', value: 11, text: '11%', tone: 'soft' },
+        { label: 'Other', value: 7, text: '7%', tone: 'soft' },
+      ]}
+    />
+  ),
+  'Branch and product benchmarking': (
+    <Bars
+      label="Sales per square metre by branch, against the average"
+      values={[148, 131, 117, 102, 86, 64]}
+      highlight={[0]}
+      bad={[5]}
+      labels={['Nasr', 'Giza', 'Alex', 'Maadi', 'Tanta', 'Zayed']}
+      threshold={{ value: 108, text: 'Average' }}
+    />
+  ),
+
   // Sales
   'Sales forecast, 3 to 12 months': (
     <Line

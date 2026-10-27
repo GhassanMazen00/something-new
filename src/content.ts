@@ -28,15 +28,50 @@ export const nav = {
 }
 
 export const hero = {
-  title: { en: ['Your numbers', 'explained'], ar: ['أرقامك', 'بوضوح'] },
+  title: { en: ['Clarity for every', 'business decision'], ar: ['وضوح في كل', 'قرار تجاري'] },
   standfirst: {
-    en: 'We find the errors in your books, forecast what comes next and show what each decision will do. Privacy comes before anything else.',
-    ar: 'نكتشف الأخطاء في حساباتك، ونتوقع ما هو قادم، ونوضح أثر كل قرار قبل أن تتخذه. والخصوصية تأتي قبل أي شيء.',
+    en: 'Clearline Analytics is a business analysis firm in Cairo. We find the errors in your books, forecast what comes next and show what each decision will do, using proven statistical models and AI, with your files encrypted from start to finish.',
+    ar: 'كليرلاين للتحليلات شركة تحليل أعمال في القاهرة. نكتشف الأخطاء في حساباتك، ونتوقع ما هو قادم، ونوضح أثر كل قرار، باستخدام نماذج إحصائية مثبتة والذكاء الاصطناعي، مع تشفير ملفاتك من البداية إلى النهاية.',
   },
-  nilometer: {
-    en: 'Roda Nilometer, Cairo, 861. Its river readings set the year’s taxes.',
-    ar: 'مقياس النيل بالروضة، القاهرة، 861. قراءاته للنهر كانت تحدد ضرائب العام.',
+}
+
+export const about = {
+  heading: { en: 'We are the data department you never had time to build.', ar: 'نحن قسم البيانات الذي لم يتسع وقتك لبنائه.' },
+  text: {
+    en: 'Most small and medium companies hold years of sales, accounting and staff data that nobody has time to read. We read it for you with the methods banks, auditors and large retailers rely on, and hand you one clear page of findings and actions.',
+    ar: 'معظم الشركات الصغيرة والمتوسطة لديها سنوات من بيانات المبيعات والحسابات والموظفين لا يجد أحد وقتًا لقراءتها. نقرؤها لك بالطرق التي تعتمد عليها البنوك والمراجعون وكبار تجار التجزئة، ونسلّمك صفحة واحدة واضحة بالنتائج والإجراءات.',
   },
+  points: [
+    { en: 'Fixed price per report, agreed after a free call', ar: 'سعر ثابت لكل تقرير، نتفق عليه بعد مكالمة مجانية' },
+    { en: 'Reports in Arabic, English or both', ar: 'تقارير بالعربية أو الإنجليزية أو كلتيهما' },
+    { en: 'Every number checked by a person', ar: 'كل رقم يراجعه شخص' },
+  ],
+  pillars: [
+    {
+      title: { en: 'Find errors', ar: 'اكتشاف الأخطاء' },
+      text: { en: 'Duplicate payments, missing sales, unusual entries and payroll mistakes.', ar: 'المدفوعات المكررة، والمبيعات المفقودة، والقيود غير المعتادة، وأخطاء الرواتب.' },
+      stat: 'EGP 37,600',
+      note: { en: 'paid twice, found in one scan', ar: 'دُفعت مرتين، اكتُشفت في فحص واحد' },
+    },
+    {
+      title: { en: 'Forecast', ar: 'التوقع' },
+      text: { en: 'Sales, cash and profit, each with a likely, low and high case.', ar: 'المبيعات والسيولة والأرباح، لكل منها حالة مرجّحة ومنخفضة ومرتفعة.' },
+      stat: '4.2%',
+      note: { en: 'average error on hidden months', ar: 'متوسط الخطأ في الأشهر المخفية' },
+    },
+    {
+      title: { en: 'Decide', ar: 'اتخاذ القرار' },
+      text: { en: 'Prices, budgets, branches and hiring, tested before you commit.', ar: 'الأسعار والميزانيات والفروع والتوظيف، تُختبر قبل أن تلتزم.' },
+      stat: '26%',
+      note: { en: 'sales drop a price rise can survive', ar: 'انخفاض المبيعات الذي يتحمّله رفع السعر' },
+    },
+    {
+      title: { en: 'Protect', ar: 'الحماية' },
+      text: { en: 'Encrypted files, one named analyst, deleted 30 days after your report.', ar: 'ملفات مشفّرة، ومحلل واحد محدد، وحذف بعد 30 يومًا من التقرير.' },
+      stat: 'AES-256',
+      note: { en: 'encryption at rest', ar: 'تشفير أثناء التخزين' },
+    },
+  ],
 }
 
 export const privacy = {
@@ -166,6 +201,41 @@ export const departments: Department[] = [
         { en: 'Pareto (80/20) and ABC analysis', ar: 'تحليل باريتو (80/20) وتحليل ABC' },
         { en: 'A sales list: date, product, amount', ar: 'قائمة مبيعات: التاريخ والمنتج والمبلغ' },
         { en: 'E-invoices or till receipts work instead', ar: 'تكفي الفواتير الإلكترونية أو إيصالات نقاط البيع' },
+      ),
+      s(
+        { en: 'Data cleaning and merging', ar: 'تنظيف البيانات ودمجها' },
+        { en: 'One clean, trusted table built from your scattered files', ar: 'جدول واحد نظيف وموثوق من ملفاتك المتفرقة' },
+        { en: 'Standard cleaning rules, duplicate removal and fuzzy matching of names and codes', ar: 'قواعد التنظيف المعتادة، وحذف التكرار، والمطابقة التقريبية للأسماء والرموز' },
+        { en: 'Any Excel, CSV or system exports you have', ar: 'أي ملفات Excel أو CSV أو تصديرات من أنظمتك' },
+        { en: 'Nothing extra: we work with what you send', ar: 'لا شيء إضافي: نعمل بما ترسله' },
+      ),
+      s(
+        { en: 'KPI dashboard', ar: 'لوحة مؤشرات الأداء' },
+        { en: 'Your key numbers on one screen, refreshed every month', ar: 'أرقامك الأساسية في شاشة واحدة، تتحدث كل شهر' },
+        { en: 'KPI design with Power BI or Looker Studio', ar: 'تصميم مؤشرات الأداء باستخدام Power BI أو Looker Studio' },
+        { en: 'Monthly sales, costs and any targets you track', ar: 'المبيعات والتكاليف الشهرية وأي أهداف تتابعها' },
+        { en: 'Missing targets: we suggest them from your own history', ar: 'إن لم تكن هناك أهداف: نقترحها من تاريخك' },
+      ),
+      s(
+        { en: 'Trends and seasonality', ar: 'الاتجاهات والموسمية' },
+        { en: 'What really changes by month, weekday and season, with the noise taken out', ar: 'ما الذي يتغير فعلًا حسب الشهر واليوم والموسم، بعد إزالة التذبذب' },
+        { en: 'Seasonal decomposition (STL) and moving averages', ar: 'التحليل الموسمي (STL) والمتوسطات المتحركة' },
+        { en: 'At least 12 months of daily or weekly sales', ar: 'مبيعات يومية أو أسبوعية لمدة 12 شهرًا على الأقل' },
+        { en: 'Under 12 months: weekday and monthly patterns only', ar: 'أقل من 12 شهرًا: أنماط الأيام والأشهر فقط' },
+      ),
+      s(
+        { en: 'Driver analysis', ar: 'تحليل المحرّكات' },
+        { en: 'Which factors move your sales or costs the most, and by how much', ar: 'أي العوامل تحرّك مبيعاتك أو تكاليفك أكثر، وبأي قدر' },
+        { en: 'Multiple regression with SHAP values', ar: 'الانحدار المتعدد مع قيم SHAP' },
+        { en: 'Sales plus the factors you think matter: price, promotions, branch, season', ar: 'المبيعات مع العوامل التي تراها مؤثرة: السعر والعروض والفرع والموسم' },
+        { en: 'Missing factors: we add public ones such as holidays and inflation', ar: 'عوامل ناقصة: نضيف عوامل عامة مثل الإجازات والتضخم' },
+      ),
+      s(
+        { en: 'Branch and product benchmarking', ar: 'مقارنة الفروع والمنتجات' },
+        { en: 'Which branches and products under- or over-perform, compared fairly', ar: 'أي الفروع والمنتجات أداؤها أقل أو أعلى من المتوقع، بمقارنة عادلة' },
+        { en: 'Indexed comparison per square metre, per staff member and per customer', ar: 'مقارنة نسبية لكل متر مربع ولكل موظف ولكل عميل' },
+        { en: 'Sales by branch or product, plus size and staff numbers', ar: 'المبيعات حسب الفرع أو المنتج، مع المساحة وعدد الموظفين' },
+        { en: 'Without size or staff data: sales and growth only', ar: 'بدون بيانات المساحة أو الموظفين: المبيعات والنمو فقط' },
       ),
     ],
   },
@@ -564,7 +634,7 @@ export const heroExtra = {
   try: { en: 'Try the live demo', ar: 'جرّب العرض الحي' },
   stats: [
     { value: 6, suffix: '', label: { en: 'departments', ar: 'أقسام' } },
-    { value: 27, suffix: '', label: { en: 'services', ar: 'خدمة' } },
+    { value: 32, suffix: '', label: { en: 'services', ar: 'خدمة' } },
     { value: 256, suffix: '', label: { en: 'bit encryption', ar: 'بت تشفير' } },
     { value: 30, suffix: '', label: { en: 'days, then deleted', ar: 'يومًا ثم الحذف' } },
   ],

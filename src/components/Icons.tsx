@@ -163,3 +163,24 @@ export const Close = () => (
     <path d="M6 6l12 12M18 6L6 18" />
   </SmallIcon>
 )
+
+// About section pillars: find errors, forecast, decide, protect.
+export const pillarIcons = [
+  <Icon key="find">
+    <circle cx="10.5" cy="10.5" r="6.5" />
+    <path d="M15.5 15.5L20.5 20.5M8 10.5h5" />
+  </Icon>,
+  <Icon key="forecast">
+    <path d="M3.5 19.5h17" />
+    <path d="M4.5 15l4.5-4.5 3.5 3 7-7" />
+    <path d="M15 6.5h4.5V11" />
+  </Icon>,
+  <Icon key="decide">
+    <path d="M12 3.5v17M7 20.5h10M4.5 7.5h15M7 7.5l-3 7a3 3 0 0 0 6 0zM17 7.5l-3 7a3 3 0 0 0 6 0z" />
+  </Icon>,
+  <Icon key="protect">
+    <path d="M12 3l7.5 3v5.5c0 4.5-3.2 8-7.5 9.5-4.3-1.5-7.5-5-7.5-9.5V6z" />
+    <rect x="9" y="11" width="6" height="5" rx="1" />
+    <path d="M10.2 11V9.6a1.8 1.8 0 0 1 3.6 0V11" />
+  </Icon>,
+]

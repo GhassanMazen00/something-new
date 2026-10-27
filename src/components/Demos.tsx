@@ -198,12 +198,9 @@ export function Demos() {
   }
 
   return (
-    <section id="demos" className="section demos night" aria-labelledby="demos-h">
+    <section id="demos" className="section demos" aria-labelledby="demos-h">
       <div className="wrap">
-        <header className="sec-head center">
-          <span className="kicker" data-reveal>
-            {t(samplesSection.kicker)}
-          </span>
+        <header className="sec-head wide">
           <h2 id="demos-h" data-reveal style={order(1)}>
             {a} <span className="accent">{b}</span>
           </h2>

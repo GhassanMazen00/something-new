@@ -38,10 +38,7 @@ export function Services() {
   return (
     <section id="services" className="section services" aria-labelledby="services-h">
       <div className="wrap">
-        <header className="sec-head center">
-          <span className="kicker" data-reveal>
-            {t(nav.services)}
-          </span>
+        <header className="sec-head wide">
           <h2 id="services-h" data-reveal style={order(1)}>
             {soft} <span className="accent">{strong}</span>
           </h2>

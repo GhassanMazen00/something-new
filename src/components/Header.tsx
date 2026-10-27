@@ -47,22 +47,27 @@ export function useScrollState() {
   return { active, progress, scrolled }
 }
 
-// A "C" with a clear line running through it, ending in a data point.
+// Three peaks drawn as one blue line, with a point on the summit: a mountain and a chart at once.
 export function LogoMark() {
   const id = useId()
   return (
-    <svg className="logo-mark" viewBox="0 0 32 32" aria-hidden="true">
+    <svg className="logo-mark" viewBox="0 0 40 32" aria-hidden="true">
       <defs>
-        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#3b82f6" />
-          <stop offset="1" stopColor="#1e3a8a" />
+        <linearGradient id={id} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#2563eb" />
+          <stop offset="0.5" stopColor="#7dd3fc" />
+          <stop offset="1" stopColor="#2563eb" />
         </linearGradient>
       </defs>
-      <rect width="32" height="32" rx="9" fill={`url(#${id})`} />
-      <rect x="0.5" y="0.5" width="31" height="31" rx="8.5" fill="none" stroke="#fff" strokeOpacity="0.25" />
-      <path d="M21.3 10.7A7.5 7.5 0 1 0 21.3 21.3" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" />
-      <path d="M12.5 16H22" stroke="#fff" strokeOpacity="0.7" strokeWidth="2.2" strokeLinecap="round" />
-      <circle cx="24.2" cy="16" r="2.3" fill="#fff" />
+      <path
+        d="M2 26 L11 15 L15.5 20 L20 6 L25 17 L29 12.5 L38 26"
+        fill="none"
+        stroke={`url(#${id})`}
+        strokeWidth="2.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="20" cy="6" r="2.4" fill="#fff" />
     </svg>
   )
 }

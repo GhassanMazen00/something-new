@@ -95,14 +95,74 @@ function Dashboard() {
   )
 }
 
+// The mountain line from the logo, drawn wide: three peaks that read as a chart.
+// Points are in a 1600 x 420 box; labels and the summit dot are placed by percentage.
+const RIDGE = [
+  [0, 352], [120, 322], [230, 296], [330, 238], [430, 172], [500, 214], [560, 200], [620, 262], [700, 182], [760, 112],
+  [800, 72], [845, 118], [900, 166], [990, 252], [1060, 216], [1120, 186], [1180, 158], [1260, 214], [1340, 240],
+  [1440, 284], [1530, 304], [1600, 322],
+]
+const BACK = [
+  [0, 300], [200, 244], [360, 206], [520, 252], [680, 156], [800, 196], [940, 142], [1100, 212], [1300, 172], [1460, 232], [1600, 214],
+]
+const line = (pts: number[][]) => pts.map(([x, y], n) => `${n ? 'L' : 'M'}${x},${y}`).join(' ')
+const pct = (x: number, y: number) => ({ left: `${(x / 1600) * 100}%`, top: `${(y / 420) * 100}%` })
+
+function Ridge() {
+  const { t } = useLang()
+  const tags = [
+    { at: [430, 172], label: t({ en: 'Sales, next 6 months', ar: 'المبيعات، 6 أشهر قادمة' }), value: '+8.4%', tone: 'up' },
+    { at: [800, 72], label: t({ en: 'Peak month', ar: 'شهر الذروة' }), value: t({ en: 'March', ar: 'مارس' }), tone: '' },
+    { at: [1180, 158], label: t({ en: 'Paid twice, recovered', ar: 'دُفع مرتين، تم استرداده' }), value: 'EGP 37,600', tone: 'up' },
+  ]
+  return (
+    <div className="ridge" aria-hidden="true">
+      <svg className="ridge-glow" viewBox="0 0 1600 420" preserveAspectRatio="none">
+        <path d={line(RIDGE)} />
+      </svg>
+      <svg className="ridge-art" viewBox="0 0 1600 420" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="ridgeStroke" x1="0" x2="1">
+            <stop offset="0" stopColor="#1d4ed8" stopOpacity="0.2" />
+            <stop offset="0.25" stopColor="#3b82f6" />
+            <stop offset="0.5" stopColor="#bae6fd" />
+            <stop offset="0.75" stopColor="#3b82f6" />
+            <stop offset="1" stopColor="#1d4ed8" stopOpacity="0.2" />
+          </linearGradient>
+          <linearGradient id="ridgeFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#1e40af" stopOpacity="0.45" />
+            <stop offset="0.55" stopColor="#0b1530" stopOpacity="0.9" />
+            <stop offset="1" stopColor="#070c18" />
+          </linearGradient>
+          <linearGradient id="backFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#1e3a8a" stopOpacity="0.18" />
+            <stop offset="1" stopColor="#070c18" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path className="back-fill" d={`${line(BACK)} L1600,420 L0,420 Z`} fill="url(#backFill)" />
+        <path className="back-line" d={line(BACK)} />
+        <path className="ridge-fill" d={`${line(RIDGE)} L1600,420 L0,420 Z`} fill="url(#ridgeFill)" />
+        <path className="ridge-line" d={line(RIDGE)} stroke="url(#ridgeStroke)" pathLength={1} />
+      </svg>
+      <span className="summit" style={pct(800, 72)} />
+      {tags.map((tag, n) => (
+        <span key={n} className={`peak-tag n${n}`} style={pct(tag.at[0], tag.at[1])}>
+          <small>{tag.label}</small>
+          <b className={tag.tone} dir="auto">
+            {tag.value}
+          </b>
+        </span>
+      ))}
+    </div>
+  )
+}
+
 export function Hero() {
   const { t, lang } = useLang()
   const [a, b] = hero.title[lang]
   return (
     <section className="hero" id="top">
-      <div className="hero-glow" aria-hidden="true">
-        <span className="horizon" />
-      </div>
+      <div className="hero-sky" aria-hidden="true" />
       <div className="wrap hero-inner">
         <a className="pill" href="#privacy" data-reveal>
           <span className="pulse" aria-hidden="true" />
@@ -127,8 +187,22 @@ export function Hero() {
             {t({ en: 'See sample reports', ar: 'شاهد نماذج التقارير' })}
           </a>
         </div>
-        <Dashboard />
+        <ul className="hero-facts" data-reveal style={order(4)}>
+          <li>
+            <b>6</b> {t({ en: 'departments', ar: 'أقسام' })}
+          </li>
+          <li>
+            <b>32</b> {t({ en: 'services', ar: 'خدمة' })}
+          </li>
+          <li>
+            <b>AES-256</b> {t({ en: 'encryption', ar: 'تشفير' })}
+          </li>
+          <li>
+            <b>{t({ en: 'Arabic', ar: 'العربية' })}</b> {t({ en: 'and English', ar: 'والإنجليزية' })}
+          </li>
+        </ul>
       </div>
+      <Ridge />
     </section>
   )
 }
@@ -138,35 +212,30 @@ export function About() {
   const { t } = useLang()
   return (
     <section id="about" className="section about" aria-labelledby="about-h">
-      <div className="wrap about-grid">
-        <div className="about-copy">
+      <div className="wrap">
+        <header className="sec-head wide">
           <h2 id="about-h" data-reveal>
             {t(about.heading)}
           </h2>
-          <p className="sec-lead" data-reveal style={order(1)}>
-            {t(about.text)}
-          </p>
-          <ul className="about-points" data-reveal style={order(2)}>
-            {about.points.map((p) => (
-              <li key={p.en}>
-                <span className="tick">
-                  <Check />
-                </span>
-                {t(p)}
-              </li>
-            ))}
-          </ul>
-          <dl className="stats" data-reveal style={order(3)}>
-            {heroExtra.stats.map((s) => (
-              <div key={s.label.en}>
-                <dt>
-                  <CountUp to={s.value} duration={1100} />
-                </dt>
-                <dd>{t(s.label)}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
+          <div>
+            <p className="sec-lead" data-reveal style={order(1)}>
+              {t(about.text)}
+            </p>
+            <ul className="about-points" data-reveal style={order(2)}>
+              {about.points.map((p) => (
+                <li key={p.en}>
+                  <span className="tick">
+                    <Check />
+                  </span>
+                  {t(p)}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </header>
+
+        <Dashboard />
+
         <ul className="pillars">
           {about.pillars.map((p, n) => (
             <li key={p.title.en} className="pillar glass" data-reveal style={order(n)}>

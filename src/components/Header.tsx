@@ -55,13 +55,13 @@ export function LogoMark() {
     <svg className="logo-mark" viewBox="0 0 36 24" aria-hidden="true">
       <defs>
         <linearGradient id={id} x1="0" x2="1">
-          <stop offset="0" stopColor="#3b82f6" stopOpacity="0.55" />
-          <stop offset="0.5" stopColor="#bfdbfe" />
-          <stop offset="1" stopColor="#3b82f6" stopOpacity="0.55" />
+          <stop offset="0" className="lg-edge" stopOpacity="0.6" />
+          <stop offset="0.5" className="lg-peak" />
+          <stop offset="1" className="lg-edge" stopOpacity="0.6" />
         </linearGradient>
       </defs>
       <path d="M1.5 21 L9 11.5 L12.5 15 L18 3.5 L23.5 13.5 L26.5 10.5 L34.5 21" fill="none" stroke={`url(#${id})`} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="18" cy="3.5" r="1.6" fill="#fff" />
+      <circle className="lg-dot" cx="18" cy="3.5" r="1.6" />
     </svg>
   )
 }

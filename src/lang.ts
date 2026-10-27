@@ -20,7 +20,7 @@ export function initialLang(): Lang {
   const param = new URLSearchParams(window.location.search).get('lang')
   if (param === 'ar' || param === 'en') return param
   try {
-    if (sessionStorage.getItem('basira:lang') === 'ar') return 'ar'
+    if (sessionStorage.getItem('clearline:lang') === 'ar') return 'ar'
   } catch {
     // Storage blocked: fall through.
   }

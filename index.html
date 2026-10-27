@@ -4,10 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#f5f7fa" />
-    <meta name="description" content="Basira finds errors in your books, forecasts what comes next and shows what each decision will do, across sales, marketing, accounting, people and market research. Privacy first." />
+    <meta name="description" content="Clearline Analytics finds errors in your books, forecasts what comes next and shows what each decision will do, across sales, marketing, accounting, people and market research. Privacy first." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>Basira · Your numbers, explained</title>
-    <script>document.documentElement.classList.add('js')</script>
+    <title>Clearline Analytics · Your numbers, explained</title>
+    <script>
+      document.documentElement.classList.add('js')
+      try {
+        if (localStorage.getItem('clearline:theme') === 'dark') document.documentElement.dataset.theme = 'dark'
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

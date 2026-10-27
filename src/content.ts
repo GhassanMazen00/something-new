@@ -5,12 +5,13 @@ export type T = { en: string; ar: string }
 
 // ⚠️ Replace before launch.
 export const CONTACT = {
-  email: 'hello@basira.example',
+  email: 'hello@clearline.example',
   // International format without "+" or spaces, e.g. "201001234567". Leave empty to hide the WhatsApp link.
   whatsapp: '',
 }
 
-export const brand: T = { en: 'Basira', ar: 'بصيرة' }
+export const brand: T = { en: 'Clearline', ar: 'كليرلاين' }
+export const brandFull: T = { en: 'Clearline Analytics', ar: 'كليرلاين للتحليلات' }
 
 export const nav = {
   privacy: { en: 'Privacy', ar: 'الخصوصية' },
@@ -572,8 +573,8 @@ export const contact = {
   place: { en: 'Cairo, Egypt · We reply within one working day', ar: 'القاهرة، مصر · نرد خلال يوم عمل واحد' },
   mailSubject: { en: 'Free first call', ar: 'مكالمة أولى مجانية' },
   mailBody: {
-    en: 'Hello Basira,\n\nOur company: \nWhat we’d like help with: \nA good time to call: \n',
-    ar: 'مرحبًا بصيرة،\n\nشركتنا: \nما نحتاج المساعدة فيه: \nوقت مناسب للاتصال: \n',
+    en: 'Hello Clearline,\n\nOur company: \nWhat we’d like help with: \nA good time to call: \n',
+    ar: 'مرحبًا كليرلاين،\n\nشركتنا: \nما نحتاج المساعدة فيه: \nوقت مناسب للاتصال: \n',
   },
   gauge: { en: 'Nilometer gauge', ar: 'مقياس النيل' },
 }
@@ -589,16 +590,16 @@ export const footer = {
     ar: 'لا ملفات تعريف ارتباط ولا تتبّع. تُحذف ملفاتك خلال 30 يومًا من تسليم التقرير.',
   },
   legal: {
-    en: '© 2026 Basira. Business analysis, not investment advice. Examples on this page use made-up data.',
-    ar: '© 2026 بصيرة. تحليل أعمال وليس استشارات استثمارية. الأمثلة في هذه الصفحة ببيانات افتراضية.',
+    en: '© 2026 Clearline Analytics. Business analysis, not investment advice. Examples on this page use made-up data.',
+    ar: '© 2026 كليرلاين للتحليلات. تحليل أعمال وليس استشارات استثمارية. الأمثلة في هذه الصفحة ببيانات افتراضية.',
   },
 }
 
 export const meta = {
-  title: { en: 'Basira · Your numbers, explained', ar: 'بصيرة · أرقامك بوضوح' },
+  title: { en: 'Clearline Analytics · Your numbers, explained', ar: 'كليرلاين للتحليلات · أرقامك بوضوح' },
   description: {
-    en: 'Basira finds errors in your books, forecasts what comes next and shows what each decision will do, across sales, marketing, accounting, people and market research. Privacy first.',
-    ar: 'بصيرة تكتشف الأخطاء في حساباتك، وتتوقع ما هو قادم، وتوضح أثر كل قرار، في المبيعات والتسويق والمحاسبة والموارد البشرية وأبحاث السوق. الخصوصية أولًا.',
+    en: 'Clearline Analytics finds errors in your books, forecasts what comes next and shows what each decision will do, across sales, marketing, accounting, people and market research. Privacy first.',
+    ar: 'كليرلاين للتحليلات تكتشف الأخطاء في حساباتك، وتتوقع ما هو قادم، وتوضح أثر كل قرار، في المبيعات والتسويق والمحاسبة والموارد البشرية وأبحاث السوق. الخصوصية أولًا.',
   },
 }
 

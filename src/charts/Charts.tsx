@@ -15,7 +15,7 @@ const i = (n: number) => ({ '--i': n }) as CSSProperties
 function Frame({ children, label, width = W, height = H, legend }: { children: ReactNode; label: string; width?: number; height?: number; legend?: [string, string][] }) {
   const [ref, seen] = useInView<HTMLDivElement>()
   return (
-    <figure ref={ref} className={`chart${seen ? ' is-drawn' : ''}`}>
+    <figure ref={ref} dir="ltr" className={`chart${seen ? ' is-drawn' : ''}`}>
       <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={label}>
         {children}
       </svg>
@@ -305,7 +305,7 @@ export function Donut({ label, segments, center, sub }: { label: string; segment
   const total = segments.reduce((a, s) => a + s.value, 0)
   const starts = segments.map((_, k) => segments.slice(0, k).reduce((a, s) => a + (s.value / total) * 100, 0))
   return (
-    <figure ref={ref} className={`chart donut${seen ? ' is-drawn' : ''}`}>
+    <figure ref={ref} dir="ltr" className={`chart donut${seen ? ' is-drawn' : ''}`}>
       <svg viewBox="0 0 120 120" role="img" aria-label={label}>
         <circle className="donut-track" cx={60} cy={60} r={46} />
         {segments.map((s, k) => {
@@ -347,7 +347,7 @@ export function Donut({ label, segments, center, sub }: { label: string; segment
 export function Gauge({ label, value, text }: { label: string; value: number; text: string }) {
   const [ref, seen] = useInView<HTMLDivElement>()
   return (
-    <figure ref={ref} className={`chart gauge-chart${seen ? ' is-drawn' : ''}`}>
+    <figure ref={ref} dir="ltr" className={`chart gauge-chart${seen ? ' is-drawn' : ''}`}>
       <svg viewBox="0 0 200 118" role="img" aria-label={label}>
         <path className="gauge-track" d="M20,105 A80,80 0 0 1 180,105" pathLength={100} />
         <path className="gauge-val" d="M20,105 A80,80 0 0 1 180,105" pathLength={100} style={{ strokeDasharray: `${seen ? value : 0} 100` }} />
@@ -392,7 +392,7 @@ export function Nested({ label, rings }: { label: string; rings: { name: string;
   const [ref, seen] = useInView<HTMLDivElement>()
   const r = [64, 42, 20]
   return (
-    <figure ref={ref} className={`chart nested${seen ? ' is-drawn' : ''}`}>
+    <figure ref={ref} dir="ltr" className={`chart nested${seen ? ' is-drawn' : ''}`}>
       <svg viewBox="0 0 320 150" role="img" aria-label={label}>
         {rings.map((ring, k) => (
           <g key={ring.name} className="ring-g" style={i(k)}>
@@ -416,7 +416,7 @@ export function Stacked({ label, segments, headline, sub }: { label: string; seg
   const [ref, seen] = useInView<HTMLDivElement>()
   const total = segments.reduce((a, s) => a + s.value, 0)
   return (
-    <figure ref={ref} className={`chart stacked${seen ? ' is-drawn' : ''}`} aria-label={label}>
+    <figure ref={ref} dir="ltr" className={`chart stacked${seen ? ' is-drawn' : ''}`} aria-label={label}>
       <div className="stacked-head">
         <strong>{headline}</strong>
         <span>{sub}</span>

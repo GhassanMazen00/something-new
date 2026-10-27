@@ -1,6 +1,6 @@
-# Basira website
+# Clearline Analytics website
 
-The website for Basira (بصيرة): business analysis for small and medium companies. It explains our services by department, the data each one needs, how we protect that data, and how we work. English and Arabic.
+The website for Clearline Analytics: business analysis for small and medium companies. It explains our services by department, the data each one needs, how we protect that data, and how we work. English and Arabic.
 
 ## Run it
 

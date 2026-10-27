@@ -16,7 +16,7 @@ export function LangProvider({ children }: { children: ReactNode }) {
   const setLang = (next: Lang) => {
     setLangState(next)
     try {
-      sessionStorage.setItem('basira:lang', next)
+      sessionStorage.setItem('clearline:lang', next)
     } catch {
       // Storage blocked: the choice lasts for this visit only.
     }

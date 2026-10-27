@@ -1,73 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
 import { Bars, Line } from '../charts/Charts'
 import { CASH, SALES, SALES_FC } from '../charts/serviceCharts'
-import { brand, hero, heroExtra, methods, nav } from '../content'
+import { hero, heroExtra, methods, nav } from '../content'
 import { CountUp, order } from '../fx'
 import { useLang } from '../lang'
 import { Arrow } from './Icons'
-
-const LINKS = ['privacy', 'services', 'checker', 'demos', 'process', 'faq'] as const
-
-export function Nav() {
-  const { t, lang, setLang } = useLang()
-  const [open, setOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
-  const barRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const on = () => {
-      setScrolled(window.scrollY > 24)
-      const max = document.documentElement.scrollHeight - window.innerHeight
-      barRef.current?.style.setProperty('--p', String(max > 0 ? window.scrollY / max : 0))
-    }
-    on()
-    window.addEventListener('scroll', on, { passive: true })
-    return () => window.removeEventListener('scroll', on)
-  }, [])
-
-  const label = (id: (typeof LINKS)[number]) => t(id === 'demos' ? nav.demo : id === 'checker' ? nav.checker : nav[id])
-
-  return (
-    <header className={`nav${scrolled ? ' is-scrolled' : ''}${open ? ' is-open' : ''}`}>
-      <div className="wrap nav-inner">
-        <a className="logo" href="#top" aria-label={t(brand)}>
-          <span className="logo-mark" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-          </span>
-          <span>{t(brand)}</span>
-        </a>
-        <nav className="nav-links" aria-label={t(nav.menu)}>
-          {LINKS.map((id) => (
-            <a key={id} href={`#${id}`} onClick={() => setOpen(false)}>
-              {label(id)}
-            </a>
-          ))}
-        </nav>
-        <div className="nav-actions">
-          <button
-            type="button"
-            className="lang-btn"
-            onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
-            aria-label={t(nav.switchLabel)}
-            lang={lang === 'ar' ? 'en' : 'ar'}
-          >
-            {t(nav.switchTo)}
-          </button>
-          <a className="btn btn-primary btn-sm" href="#contact">
-            {t(nav.book)}
-          </a>
-          <button type="button" className="menu-btn" aria-expanded={open} aria-label={open ? t(nav.close) : t(nav.menu)} onClick={() => setOpen(!open)}>
-            <span />
-            <span />
-          </button>
-        </div>
-      </div>
-      <div className="progress" ref={barRef} aria-hidden="true" />
-    </header>
-  )
-}
 
 function Dashboard() {
   const { t } = useLang()
@@ -89,7 +25,7 @@ function Dashboard() {
           <strong>
             <CountUp to={390} prefix="EGP " />k
           </strong>
-          <span className="delta up">+8.4%</span>
+          <span className="delta up" dir="ltr">+8.4%</span>
         </div>
         <div>
           <span className="k">{t(c.found)}</span>

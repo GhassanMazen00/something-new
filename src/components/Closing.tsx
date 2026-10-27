@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Line } from '../charts/Charts'
-import { brand, CONTACT, contact, faq, footer, nav } from '../content'
+import { CONTACT, contact, faq, footer, nav } from '../content'
 import { order } from '../fx'
 import { useLang } from '../lang'
 import { Arrow, Plus } from './Icons'
+import { Logo } from './Sidebar'
 
 export function Faq() {
   const { t } = useLang()
@@ -104,36 +105,26 @@ export function Footer() {
   return (
     <footer className="footer">
       <div className="wrap footer-grid">
-        <div>
-          <a className="logo" href="#top">
-            <span className="logo-mark" aria-hidden="true" />
-            <span>{t(brand)}</span>
-          </a>
-          <p>{t(footer.about)}</p>
-          <p className="muted">{t(footer.place)}</p>
+        <div className="footer-brand">
+          <Logo />
+          <p>
+            {t(footer.about)} · {t(footer.place)}
+          </p>
         </div>
-        <div>
-          <h3>{t(footer.navTitle)}</h3>
+        <nav className="footer-links" aria-label={t(footer.navTitle)}>
           <a href="#privacy">{t(nav.privacy)}</a>
           <a href="#services">{t(nav.services)}</a>
-          <a href="#checker">{t(nav.checker)}</a>
-          <a href="#demos">{t(nav.demo)}</a>
           <a href="#process">{t(nav.process)}</a>
           <a href="#faq">{t(nav.faq)}</a>
-        </div>
-        <div>
-          <h3>{t(footer.privacyTitle)}</h3>
-          <p>{t(footer.privacyText)}</p>
-          <h3>{t(footer.contactTitle)}</h3>
           <a href={`mailto:${CONTACT.email}`} dir="ltr" className="break">
             {CONTACT.email}
           </a>
-        </div>
+        </nav>
       </div>
-      <div className="wrap footer-word" aria-hidden="true">
-        {t(brand)}
+      <div className="wrap legal">
+        <span>{t(footer.legal)}</span>
+        <span>{t(footer.privacyText)}</span>
       </div>
-      <p className="wrap legal">{t(footer.legal)}</p>
     </footer>
   )
 }

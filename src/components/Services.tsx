@@ -1,35 +1,25 @@
-import { useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { serviceCharts } from '../charts/serviceCharts'
-import { departments, nav, servicesSection } from '../content'
+import { nav, servicesSection } from '../content'
+import { DEPT_EVENT, depts } from '../depts'
 import { order } from '../fx'
 import { useLang } from '../lang'
 
-const ORDER = ['data', 'marketing', 'sales', 'accounting', 'people', 'market']
-const depts = ORDER.map((id) => departments.find((d) => d.id === id)!)
 
 export function Services() {
   const { t, lang } = useLang()
   const [active, setActive] = useState('accounting')
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
-  const pillRef = useRef<HTMLSpanElement>(null)
   const { labels } = servicesSection
   const [soft, strong] = servicesSection.heading[lang]
   const dept = depts.find((d) => d.id === active)!
 
-  // Slide the highlight under the active tab.
-  useLayoutEffect(() => {
-    const place = () => {
-      const btn = tabRefs.current[depts.findIndex((d) => d.id === active)]
-      const pill = pillRef.current
-      if (!btn || !pill) return
-      pill.style.width = `${btn.offsetWidth}px`
-      pill.style.height = `${btn.offsetHeight}px`
-      pill.style.transform = `translate(${btn.offsetLeft}px, ${btn.offsetTop}px)`
-    }
-    place()
-    window.addEventListener('resize', place)
-    return () => window.removeEventListener('resize', place)
-  }, [active, lang])
+  // The side menu's department links open the matching tab.
+  useEffect(() => {
+    const on = (e: Event) => setActive((e as CustomEvent<string>).detail)
+    window.addEventListener(DEPT_EVENT, on)
+    return () => window.removeEventListener(DEPT_EVENT, on)
+  }, [])
 
   const onKey = (e: KeyboardEvent, n: number) => {
     const back = lang === 'ar' ? 'ArrowRight' : 'ArrowLeft'
@@ -62,7 +52,6 @@ export function Services() {
 
         <div className="tabs-wrap" data-reveal>
           <div className="tabs" role="tablist" aria-label={t(nav.services)}>
-            <span className="tab-pill" ref={pillRef} aria-hidden="true" />
             {depts.map((d, n) => (
               <button
                 key={d.id}

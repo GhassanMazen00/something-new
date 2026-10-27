@@ -20,7 +20,7 @@ npm run build    # the finished site, in dist/
 
 Every push builds the site automatically (`.github/workflows/deploy.yml`) and publishes it to the `gh-pages` branch.
 
-One-time setting: **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: `gh-pages`, folder `/ (root)` → Save.**
+One-time setting: **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: `gh-pages` → Save.** Folder `/ (root)` or `/docs` both work.
 
 Don't point Pages at `main` or this branch directly: that serves the raw source code, which shows a white screen.
 

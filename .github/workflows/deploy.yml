@@ -1,6 +1,6 @@
 # Builds the site and publishes it to the gh-pages branch.
 # In GitHub: Settings → Pages → Build and deployment → Source: "Deploy from a branch",
-# Branch: gh-pages, folder: / (root).
+# Branch: gh-pages, folder: / (root) or /docs. Both hold the same site.
 name: Deploy site
 
 on:
@@ -30,6 +30,8 @@ jobs:
         run: |
           cd dist
           touch .nojekyll
+          mkdir docs
+          cp -r $(ls -A | grep -v '^docs$') docs/
           git init -q -b gh-pages
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

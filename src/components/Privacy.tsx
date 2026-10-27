@@ -59,18 +59,6 @@ export function Privacy() {
           ))}
         </ol>
 
-        <h3 className="sub-head" data-reveal>
-          {t(privacy.rulesHeading)}
-        </h3>
-        <ul className="rules">
-          {privacy.rules.map((rule, n) => (
-            <li key={rule.title.en} className="rule glass" data-reveal style={order(n % 4)}>
-              <span className="rule-ico">{ruleIcons[n]}</span>
-              <h4>{t(rule.title)}</h4>
-              <p>{t(rule.text)}</p>
-            </li>
-          ))}
-        </ul>
       </div>
     </section>
   )

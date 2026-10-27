@@ -22,9 +22,10 @@ export const samplesSection = {
   kicker: { en: 'Sample reports', ar: 'نماذج تقارير' },
   heading: { en: ['See a real report,', 'before you send a file.'], ar: ['شاهد تقريرًا حقيقيًا', 'قبل أن ترسل أي ملف.'] },
   lead: {
-    en: 'Five example reports, each for a made-up company. The same structure you would receive: the question, the data, the method, the numbers and what to do next.',
-    ar: 'خمسة تقارير نموذجية، لكل منها شركة افتراضية. بنفس الشكل الذي ستستلمه: السؤال، والبيانات، والطريقة، والأرقام، وما يجب فعله بعد ذلك.',
+    en: 'Five example reports for made-up companies: the question, the key numbers and what to do next.',
+    ar: 'خمسة تقارير نموذجية لشركات افتراضية: السؤال، والأرقام الأساسية، وما يجب فعله بعد ذلك.',
   },
+
   labels: {
     question: { en: 'The question', ar: 'السؤال' },
     data: { en: 'Data used', ar: 'البيانات المستخدمة' },

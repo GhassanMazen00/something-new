@@ -179,8 +179,8 @@ export interface Department {
 export const servicesSection = {
   heading: { en: ['Six departments,', 'one clear report'], ar: ['ستة أقسام،', 'وتقرير واحد واضح'] },
   intro: {
-    en: 'Pick the departments you need. Each service names the trusted method behind it, the data it needs, and what we do when you don’t have that data.',
-    ar: 'اختر الأقسام التي تحتاجها. كل خدمة تذكر الطريقة الموثوقة التي تقوم عليها، والبيانات التي تحتاجها، وما نفعله إن لم تكن هذه البيانات لديك.',
+    en: 'Pick a department. Each service shows what you get and the proven method behind it.',
+    ar: 'اختر قسمًا. كل خدمة توضح ما ستحصل عليه والطريقة المثبتة التي تقوم عليها.',
   },
   count: { en: '{n} services', ar: '{n} خدمات' },
   labels: {

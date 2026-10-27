@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Line } from '../charts/Charts'
 import { CONTACT, contact, contactDialog, faq, footer, nav } from '../content'
 import { order } from '../fx'
 import { useLang } from '../lang'
@@ -16,23 +15,6 @@ export function Faq() {
           <h2 id="faq-h" data-reveal style={order(1)}>
             {t({ en: 'Good questions.', ar: 'أسئلة في محلها.' })} <span className="accent">{t({ en: 'Straight answers.', ar: 'وإجابات واضحة.' })}</span>
           </h2>
-          <div className="mini card" data-reveal style={order(2)}>
-            <span className="chart-title">{t({ en: 'How we prove accuracy: last year, forecast blind', ar: 'كيف نثبت الدقة: العام الماضي، بتوقع أعمى' })}</span>
-            <Line
-              label="Actual sales against a forecast made without seeing them"
-              series={[
-                { values: [40, 43, 41, 46, 49, 47, 51, 54, 52, 56, 59, 58] },
-                { values: [41, 42, 43, 45, 47, 48, 50, 52, 53, 55, 57, 59], tone: 'ink', dashed: true },
-              ]}
-              min={30}
-              max={65}
-              xLabels={['Jan', 'Dec']}
-              legend={[
-                ['main', 'Actual'],
-                ['ink', 'Our forecast · 3.1% average error'],
-              ]}
-            />
-          </div>
         </header>
         <div className="faq-list">
           {faq.items.map((item, n) => {

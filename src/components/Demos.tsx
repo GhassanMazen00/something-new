@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react'
+import { useRef, useState, type CSSProperties, type KeyboardEvent } from 'react'
 import { Bars, Donut, Line } from '../charts/Charts'
 import { CASH } from '../charts/serviceCharts'
-import { order, reducedMotion } from '../fx'
+import { order } from '../fx'
 import { useLang } from '../lang'
-import { samples, samplesSection, type Cell, type Sample } from '../samples'
+import { samples, samplesSection, type Sample } from '../samples'
 import { Level } from './Level'
 
 // Made-up monthly sales for the forecast case, EGP millions: 24 months of history, then the forecast.
@@ -120,65 +120,6 @@ function CaseChart({ id }: { id: Sample['id'] }) {
   )
 }
 
-// The scan case runs its checks row by row; the other tables show their results straight away.
-function CaseTable({ sample }: { sample: Sample }) {
-  const { t } = useLang()
-  const cell = (c: Cell) => (typeof c === 'string' ? c : t(c))
-  const scan = sample.id === 'scan'
-  const rows = sample.table.rows
-  const [done, setDone] = useState(scan ? -1 : rows.length)
-  const timer = useRef(0)
-  useEffect(() => () => window.clearInterval(timer.current), [])
-  const run = () => {
-    window.clearInterval(timer.current)
-    if (reducedMotion()) return setDone(rows.length)
-    setDone(0)
-    let i = 0
-    timer.current = window.setInterval(() => {
-      i++
-      setDone(i)
-      if (i >= rows.length) window.clearInterval(timer.current)
-    }, 420)
-  }
-  const running = scan && done >= 0 && done < rows.length
-  return (
-    <div className="panel-box">
-      <div className="panel-head">
-        <span className="chart-title">{t(sample.table.title)}</span>
-        {scan && (
-          <button type="button" className="btn btn-primary btn-sm" onClick={run} disabled={running}>
-            {running ? t({ en: 'Scanning…', ar: 'جارٍ الفحص…' }) : done >= rows.length ? t({ en: 'Run again', ar: 'شغّل مرة أخرى' }) : t({ en: 'Run the scan', ar: 'شغّل الفحص' })}
-          </button>
-        )}
-      </div>
-      <div className="table-wrap">
-        <table className="data-table">
-          <thead>
-            <tr>
-              {sample.table.cols.map((c, k) => (
-                <th key={c.en} className={sample.table.num.includes(k) ? 'n' : undefined}>
-                  {t(c)}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={i} className={scan && i < done ? 'flagged' : scan && i === done ? 'scanning' : undefined}>
-                {r.map((c, k) => (
-                  <td key={k} className={sample.table.num.includes(k) ? 'n' : undefined} dir={typeof c === 'string' ? 'ltr' : undefined}>
-                    {scan && k === r.length - 1 ? (i < done ? cell(c) : <span className="pending">{t({ en: 'not checked', ar: 'لم يُفحص' })}</span>) : cell(c)}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )
-}
-
 export function Demos() {
   const { t, lang } = useLang()
   const [active, setActive] = useState(0)
@@ -244,24 +185,7 @@ export function Demos() {
               <span className="tag">{t(l.example)}</span>
             </header>
 
-            <div className="doc-brief">
-              <div>
-                <span className="col-title">{t(l.question)}</span>
-                <p className="q">“{t(s.question)}”</p>
-              </div>
-              <div>
-                <span className="col-title">{t(l.data)}</span>
-                <ul>
-                  {s.data.map((d) => (
-                    <li key={d.en}>{t(d)}</li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <span className="col-title">{t(l.method)}</span>
-                <p>{t(s.method)}</p>
-              </div>
-            </div>
+            <p className="doc-q">“{t(s.question)}”</p>
 
             <div className="doc-kpis">
               {s.kpis.map((k, n) => (
@@ -275,28 +199,26 @@ export function Demos() {
               ))}
             </div>
 
-            <div className={`doc-body${s.id === 'scan' || s.id === 'customers' ? ' stacked-body' : ''}`}>
+            <div className="doc-body">
               <div className="panel-box">
                 <span className="chart-title">{t(s.chartTitle)}</span>
                 <CaseChart id={s.id} />
               </div>
-              <CaseTable sample={s} />
-            </div>
-
-            <div className="doc-findings">
-              <span className="col-title">{t(l.findings)}</span>
-              <ol>
-                {s.findings.map((f, n) => (
-                  <li key={f.text.en} style={order(n)}>
-                    <span className="f-n">{n + 1}</span>
-                    <div>
-                      <p>{t(f.text)}</p>
-                      <strong>{t(f.action)}</strong>
-                    </div>
-                    <Level level={f.level} />
-                  </li>
-                ))}
-              </ol>
+              <div className="doc-findings">
+                <span className="col-title">{t(l.findings)}</span>
+                <ol>
+                  {s.findings.map((f, n) => (
+                    <li key={f.text.en} style={order(n)}>
+                      <span className="f-n">{n + 1}</span>
+                      <div>
+                        <p>{t(f.text)}</p>
+                        <strong>{t(f.action)}</strong>
+                        <Level level={f.level} />
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </div>
             </div>
           </article>
         </div>

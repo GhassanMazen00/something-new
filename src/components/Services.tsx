@@ -85,14 +85,6 @@ export function Services() {
                   <dt>{t(labels.method)}</dt>
                   <dd>{t(s.method)}</dd>
                 </div>
-                <div>
-                  <dt>{t(labels.data)}</dt>
-                  <dd>{t(s.data)}</dd>
-                </div>
-                <div className="alt">
-                  <dt>{t(labels.missing)}</dt>
-                  <dd>{t(s.missing)}</dd>
-                </div>
               </dl>
             </article>
           ))}

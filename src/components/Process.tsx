@@ -1,12 +1,10 @@
 import { useState } from 'react'
 import { serviceCharts } from '../charts/serviceCharts'
-import { process } from '../content'
 import { depts } from '../depts'
 import { order, useScrollProgress } from '../fx'
 import { journeys, stepNotes, stepTexts, stepTitles } from '../journeys'
 import { useLang } from '../lang'
 import { Check, Lock } from './Icons'
-import { Level } from './Level'
 
 export function Process() {
   const { t } = useLang()
@@ -97,17 +95,6 @@ export function Process() {
           ))}
         </ol>
 
-        <div className="legend glass" data-reveal>
-          <h3>{t(process.legend.title)}</h3>
-          <ul>
-            {process.legend.rows.map((row) => (
-              <li key={row.level}>
-                <Level level={row.level} />
-                <span>{t(row.text)}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
       </div>
     </section>
   )

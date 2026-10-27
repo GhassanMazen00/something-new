@@ -1,5 +1,6 @@
 import { Checker } from './components/Checker'
 import { Contact, Faq, Footer } from './components/Closing'
+import { ContactDialog } from './components/ContactDialog'
 import { Demos } from './components/Demos'
 import { Header } from './components/Header'
 import { About, Hero } from './components/Hero'
@@ -32,6 +33,7 @@ export default function App() {
         <Contact />
       </main>
       <Footer />
+      <ContactDialog />
     </>
   )
 }

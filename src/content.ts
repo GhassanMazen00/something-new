@@ -3,15 +3,20 @@
 export type Lang = 'en' | 'ar'
 export type T = { en: string; ar: string }
 
-// ⚠️ Replace before launch.
+// Replace all three before launch: these are placeholders.
 export const CONTACT = {
   email: 'hello@clearline.example',
-  // International format without "+" or spaces, e.g. "201001234567". Leave empty to hide the WhatsApp link.
-  whatsapp: '',
+  // WhatsApp in international format without "+" or spaces.
+  whatsapp: '201000000000',
+  whatsappShown: '+20 100 000 0000',
+  // Phone as it should be shown, and as it should be dialled.
+  phone: '+20 100 000 0000',
+  phoneDial: '+201000000000',
 }
 
-export const brand: T = { en: 'Clearline', ar: 'كليرلاين' }
-export const brandFull: T = { en: 'Clearline Analytics', ar: 'كليرلاين للتحليلات' }
+// The name is never translated.
+export const BRAND = 'Clearline'
+export const BRAND_FULL = 'Clearline Analytics'
 
 export const nav = {
   privacy: { en: 'Privacy', ar: 'الخصوصية' },
@@ -20,7 +25,7 @@ export const nav = {
   demo: { en: 'Try it', ar: 'جرّب' },
   checker: { en: 'Your data', ar: 'بياناتك' },
   faq: { en: 'Questions', ar: 'أسئلة' },
-  book: { en: 'Book a free call', ar: 'احجز مكالمة مجانية' },
+  book: { en: 'Contact us', ar: 'تواصل معنا' },
   switchTo: { en: 'عربي', ar: 'English' },
   switchLabel: { en: 'اقرأ الموقع بالعربية', ar: 'Read this site in English' },
   menu: { en: 'Menu', ar: 'القائمة' },
@@ -29,9 +34,13 @@ export const nav = {
 
 export const hero = {
   title: { en: ['Clarity for every', 'business decision'], ar: ['وضوح في كل', 'قرار تجاري'] },
+  short: {
+    en: 'Business analysis and forecasting, built on proven models.',
+    ar: 'تحليل الأعمال والتوقعات، مبني على نماذج مثبتة.',
+  },
   standfirst: {
     en: 'Clearline Analytics is a business analysis firm in Cairo. We find the errors in your books, forecast what comes next and show what each decision will do, using proven statistical models and AI, with your files encrypted from start to finish.',
-    ar: 'كليرلاين للتحليلات شركة تحليل أعمال في القاهرة. نكتشف الأخطاء في حساباتك، ونتوقع ما هو قادم، ونوضح أثر كل قرار، باستخدام نماذج إحصائية مثبتة والذكاء الاصطناعي، مع تشفير ملفاتك من البداية إلى النهاية.',
+    ar: 'Clearline Analytics شركة تحليل أعمال في القاهرة. نكتشف الأخطاء في حساباتك، ونتوقع ما هو قادم، ونوضح أثر كل قرار، باستخدام نماذج إحصائية مثبتة والذكاء الاصطناعي، مع تشفير ملفاتك من البداية إلى النهاية.',
   },
 }
 
@@ -598,7 +607,7 @@ export const contact = {
   mailSubject: { en: 'Free first call', ar: 'مكالمة أولى مجانية' },
   mailBody: {
     en: 'Hello Clearline,\n\nOur company: \nWhat we’d like help with: \nA good time to call: \n',
-    ar: 'مرحبًا كليرلاين،\n\nشركتنا: \nما نحتاج المساعدة فيه: \nوقت مناسب للاتصال: \n',
+    ar: 'مرحبًا Clearline،\n\nشركتنا: \nما نحتاج المساعدة فيه: \nوقت مناسب للاتصال: \n',
   },
   gauge: { en: 'Nilometer gauge', ar: 'مقياس النيل' },
 }
@@ -615,15 +624,15 @@ export const footer = {
   },
   legal: {
     en: '© 2026 Clearline Analytics. Business analysis, not investment advice. Examples on this page use made-up data.',
-    ar: '© 2026 كليرلاين للتحليلات. تحليل أعمال وليس استشارات استثمارية. الأمثلة في هذه الصفحة ببيانات افتراضية.',
+    ar: '© 2026 Clearline Analytics. تحليل أعمال وليس استشارات استثمارية. الأمثلة في هذه الصفحة ببيانات افتراضية.',
   },
 }
 
 export const meta = {
-  title: { en: 'Clearline Analytics · Your numbers, explained', ar: 'كليرلاين للتحليلات · أرقامك بوضوح' },
+  title: { en: 'Clearline Analytics · Clarity for every business decision', ar: 'Clearline Analytics · وضوح في كل قرار تجاري' },
   description: {
     en: 'Clearline Analytics finds errors in your books, forecasts what comes next and shows what each decision will do, across sales, marketing, accounting, people and market research. Privacy first.',
-    ar: 'كليرلاين للتحليلات تكتشف الأخطاء في حساباتك، وتتوقع ما هو قادم، وتوضح أثر كل قرار، في المبيعات والتسويق والمحاسبة والموارد البشرية وأبحاث السوق. الخصوصية أولًا.',
+    ar: 'Clearline Analytics تكتشف الأخطاء في حساباتك، وتتوقع ما هو قادم، وتوضح أثر كل قرار، في المبيعات والتسويق والمحاسبة والموارد البشرية وأبحاث السوق. الخصوصية أولًا.',
   },
 }
 
@@ -707,4 +716,22 @@ export const checker = {
     { name: { en: 'Staff turnover', ar: 'تحليل دوران الموظفين' }, dept: 'people', high: [['staff']], medium: [['payroll']] },
     { name: { en: 'Market size & demand trends', ar: 'حجم السوق واتجاهات الطلب' }, dept: 'market', high: [], medium: [], publicData: true },
   ] as CheckerService[],
+}
+
+export const contactDialog = {
+  title: { en: 'Contact us', ar: 'تواصل معنا' },
+  lead: { en: 'Pick whatever suits you. We reply within one working day.', ar: 'اختر ما يناسبك. نرد خلال يوم عمل واحد.' },
+  email: { en: 'Email', ar: 'البريد الإلكتروني' },
+  whatsapp: { en: 'WhatsApp', ar: 'واتساب' },
+  phone: { en: 'Phone', ar: 'الهاتف' },
+  hours: { en: 'Sunday to Thursday, 9:00 to 18:00, Cairo time', ar: 'من الأحد إلى الخميس، 9:00 إلى 18:00 بتوقيت القاهرة' },
+  close: { en: 'Close', ar: 'إغلاق' },
+}
+
+export const settings = {
+  title: { en: 'Settings', ar: 'الإعدادات' },
+  language: { en: 'Language', ar: 'اللغة' },
+  appearance: { en: 'Appearance', ar: 'المظهر' },
+  dark: { en: 'Dark', ar: 'داكن' },
+  light: { en: 'Light', ar: 'فاتح' },
 }

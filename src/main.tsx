@@ -1,5 +1,6 @@
 import '@fontsource-variable/plus-jakarta-sans'
 import '@fontsource-variable/geist-mono'
+import '@fontsource/ibm-plex-sans-arabic/300.css'
 import '@fontsource/ibm-plex-sans-arabic/400.css'
 import '@fontsource/ibm-plex-sans-arabic/500.css'
 import '@fontsource/ibm-plex-sans-arabic/600.css'

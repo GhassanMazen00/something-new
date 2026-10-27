@@ -2,6 +2,7 @@ import { Bars, HBars, Line } from '../charts/Charts'
 import { CASH, SALES, SALES_FC } from '../charts/serviceCharts'
 import { about, hero, heroExtra, methods, nav } from '../content'
 import { CountUp, order } from '../fx'
+import { openContact } from '../contactEvent'
 import { useLang } from '../lang'
 import { Arrow, Check, pillarIcons } from './Icons'
 
@@ -95,65 +96,60 @@ function Dashboard() {
   )
 }
 
-// The mountain line from the logo, drawn wide: three peaks that read as a chart.
-// Points are in a 1600 x 420 box; labels and the summit dot are placed by percentage.
-const RIDGE = [
-  [0, 352], [120, 322], [230, 296], [330, 238], [430, 172], [500, 214], [560, 200], [620, 262], [700, 182], [760, 112],
-  [800, 72], [845, 118], [900, 166], [990, 252], [1060, 216], [1120, 186], [1180, 158], [1260, 214], [1340, 240],
-  [1440, 284], [1530, 304], [1600, 322],
-]
-const BACK = [
-  [0, 300], [200, 244], [360, 206], [520, 252], [680, 156], [800, 196], [940, 142], [1100, 212], [1300, 172], [1460, 232], [1600, 214],
-]
-const line = (pts: number[][]) => pts.map(([x, y], n) => `${n ? 'L' : 'M'}${x},${y}`).join(' ')
-const pct = (x: number, y: number) => ({ left: `${(x / 1600) * 100}%`, top: `${(y / 420) * 100}%` })
+// The ridge from the logo, drawn wide. Coordinates are in a 1600 x 520 box anchored to the bottom.
+const RIDGE =
+  'M-40 470 L120 432 L250 398 L360 330 L452 262 L520 302 L572 288 L640 352 L716 262 L770 186 L800 150 L832 186 L888 246 L972 330 L1046 292 L1110 262 L1170 236 L1248 290 L1330 318 L1430 368 L1530 404 L1640 440'
+const RIDGE_BACK =
+  'M-40 420 L180 356 L340 312 L500 352 L668 270 L800 300 L940 252 L1100 316 L1290 276 L1450 330 L1640 312'
 
 function Ridge() {
-  const { t } = useLang()
-  const tags = [
-    { at: [430, 172], label: t({ en: 'Sales, next 6 months', ar: 'المبيعات، 6 أشهر قادمة' }), value: '+8.4%', tone: 'up' },
-    { at: [800, 72], label: t({ en: 'Peak month', ar: 'شهر الذروة' }), value: t({ en: 'March', ar: 'مارس' }), tone: '' },
-    { at: [1180, 158], label: t({ en: 'Paid twice, recovered', ar: 'دُفع مرتين، تم استرداده' }), value: 'EGP 37,600', tone: 'up' },
-  ]
   return (
-    <div className="ridge" aria-hidden="true">
-      <svg className="ridge-glow" viewBox="0 0 1600 420" preserveAspectRatio="none">
-        <path d={line(RIDGE)} />
-      </svg>
-      <svg className="ridge-art" viewBox="0 0 1600 420" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="ridgeStroke" x1="0" x2="1">
-            <stop offset="0" stopColor="#1d4ed8" stopOpacity="0.2" />
-            <stop offset="0.25" stopColor="#3b82f6" />
-            <stop offset="0.5" stopColor="#bae6fd" />
-            <stop offset="0.75" stopColor="#3b82f6" />
-            <stop offset="1" stopColor="#1d4ed8" stopOpacity="0.2" />
-          </linearGradient>
-          <linearGradient id="ridgeFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#1e40af" stopOpacity="0.45" />
-            <stop offset="0.55" stopColor="#0b1530" stopOpacity="0.9" />
-            <stop offset="1" stopColor="#070c18" />
-          </linearGradient>
-          <linearGradient id="backFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#1e3a8a" stopOpacity="0.18" />
-            <stop offset="1" stopColor="#070c18" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <path className="back-fill" d={`${line(BACK)} L1600,420 L0,420 Z`} fill="url(#backFill)" />
-        <path className="back-line" d={line(BACK)} />
-        <path className="ridge-fill" d={`${line(RIDGE)} L1600,420 L0,420 Z`} fill="url(#ridgeFill)" />
-        <path className="ridge-line" d={line(RIDGE)} stroke="url(#ridgeStroke)" pathLength={1} />
-      </svg>
-      <span className="summit" style={pct(800, 72)} />
-      {tags.map((tag, n) => (
-        <span key={n} className={`peak-tag n${n}`} style={pct(tag.at[0], tag.at[1])}>
-          <small>{tag.label}</small>
-          <b className={tag.tone} dir="auto">
-            {tag.value}
-          </b>
-        </span>
-      ))}
-    </div>
+    <svg className="ridge" viewBox="0 0 1600 520" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="r-core" x1="0" x2="1">
+          <stop offset="0" stopColor="#3b82f6" stopOpacity="0" />
+          <stop offset="0.22" stopColor="#3b82f6" />
+          <stop offset="0.5" stopColor="#e0f2fe" />
+          <stop offset="0.78" stopColor="#3b82f6" />
+          <stop offset="1" stopColor="#3b82f6" stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id="r-halo" x1="0" x2="1">
+          <stop offset="0" stopColor="#1d4ed8" stopOpacity="0" />
+          <stop offset="0.3" stopColor="#2563eb" />
+          <stop offset="0.5" stopColor="#60a5fa" />
+          <stop offset="0.7" stopColor="#2563eb" />
+          <stop offset="1" stopColor="#1d4ed8" stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id="r-fill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#1d4ed8" stopOpacity="0.16" />
+          <stop offset="0.6" stopColor="#000" stopOpacity="0" />
+        </linearGradient>
+        <radialGradient id="r-bloom" cx="0.5" cy="1" r="0.55">
+          <stop offset="0" stopColor="#2563eb" stopOpacity="0.75" />
+          <stop offset="0.45" stopColor="#1e40af" stopOpacity="0.26" />
+          <stop offset="1" stopColor="#000" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="r-star" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stopColor="#e0f2fe" stopOpacity="0.9" />
+          <stop offset="0.35" stopColor="#60a5fa" stopOpacity="0.35" />
+          <stop offset="1" stopColor="#60a5fa" stopOpacity="0" />
+        </radialGradient>
+        <filter id="r-wide" x="-10%" y="-50%" width="120%" height="200%">
+          <feGaussianBlur stdDeviation="16" />
+        </filter>
+        <filter id="r-near" x="-10%" y="-50%" width="120%" height="200%">
+          <feGaussianBlur stdDeviation="3" />
+        </filter>
+      </defs>
+      <ellipse className="r-bloom" cx="800" cy="560" rx="760" ry="330" fill="url(#r-bloom)" />
+      <path className="r-back" d={RIDGE_BACK} />
+      <path className="r-fill" d={`${RIDGE} L1640 560 L-40 560 Z`} fill="url(#r-fill)" />
+      <path className="r-glow-wide" d={RIDGE} stroke="url(#r-halo)" filter="url(#r-wide)" />
+      <path className="r-glow-near" d={RIDGE} stroke="url(#r-halo)" filter="url(#r-near)" />
+      <path className="r-core" d={RIDGE} stroke="url(#r-core)" pathLength={1} />
+      <circle className="r-star" cx="800" cy="150" r="26" fill="url(#r-star)" />
+      <circle className="r-dot" cx="800" cy="150" r="3.2" fill="#fff" />
+    </svg>
   )
 }
 
@@ -162,12 +158,7 @@ export function Hero() {
   const [a, b] = hero.title[lang]
   return (
     <section className="hero" id="top">
-      <div className="hero-sky" aria-hidden="true" />
       <div className="wrap hero-inner">
-        <a className="pill" href="#privacy" data-reveal>
-          <span className="pulse" aria-hidden="true" />
-          {t(heroExtra.badge)}
-        </a>
         <h1 className="hero-title">
           <span className="line" style={order(0)}>
             <span>{a}</span>
@@ -177,30 +168,16 @@ export function Hero() {
           </span>
         </h1>
         <p className="hero-lead" data-reveal style={order(2)}>
-          {t(hero.standfirst)}
+          {t(hero.short)}
         </p>
         <div className="hero-cta" data-reveal style={order(3)}>
-          <a className="btn btn-primary" href="#contact">
-            {t(nav.book)} <Arrow />
-          </a>
-          <a className="btn btn-ghost" href="#demos">
-            {t({ en: 'See sample reports', ar: 'شاهد نماذج التقارير' })}
+          <button type="button" className="btn btn-primary" onClick={openContact}>
+            {t(nav.book)}
+          </button>
+          <a className="btn btn-quiet" href="#services">
+            {t({ en: 'Explore services', ar: 'استكشف خدماتنا' })} <Arrow />
           </a>
         </div>
-        <ul className="hero-facts" data-reveal style={order(4)}>
-          <li>
-            <b>6</b> {t({ en: 'departments', ar: 'أقسام' })}
-          </li>
-          <li>
-            <b>32</b> {t({ en: 'services', ar: 'خدمة' })}
-          </li>
-          <li>
-            <b>AES-256</b> {t({ en: 'encryption', ar: 'تشفير' })}
-          </li>
-          <li>
-            <b>{t({ en: 'Arabic', ar: 'العربية' })}</b> {t({ en: 'and English', ar: 'والإنجليزية' })}
-          </li>
-        </ul>
       </div>
       <Ridge />
     </section>

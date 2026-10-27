@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Line } from '../charts/Charts'
-import { CONTACT, contact, faq, footer, nav } from '../content'
+import { CONTACT, contact, contactDialog, faq, footer, nav } from '../content'
 import { order } from '../fx'
 import { useLang } from '../lang'
-import { Arrow, Plus } from './Icons'
+import { contactIcons, Plus } from './Icons'
 import { Logo } from './Header'
 
 export function Faq() {
@@ -64,32 +64,32 @@ export function Faq() {
 export function Contact() {
   const { t } = useLang()
   const mail = `mailto:${CONTACT.email}?subject=${encodeURIComponent(t(contact.mailSubject))}&body=${encodeURIComponent(t(contact.mailBody))}`
+  const channels = [
+    { key: 'email', label: t(contactDialog.email), value: CONTACT.email, href: mail },
+    { key: 'whatsapp', label: t(contactDialog.whatsapp), value: CONTACT.whatsappShown, href: `https://wa.me/${CONTACT.whatsapp}` },
+    { key: 'phone', label: t(contactDialog.phone), value: CONTACT.phone, href: `tel:${CONTACT.phoneDial}` },
+  ] as const
   return (
     <section id="contact" className="section contact" aria-labelledby="contact-h">
       <div className="wrap">
         <div className="cta-card" data-reveal>
           <div className="cta-inner">
-            <h2 id="contact-h">
-              <span className="accent">{t(contact.question)}</span>
-            </h2>
+            <h2 id="contact-h">{t(contactDialog.title)}</h2>
             <p>{t(contact.sentence)}</p>
-            <div className="hero-cta center">
-              <a className="btn btn-primary" href={mail}>
-                {t(nav.book)} <Arrow />
-              </a>
-              {CONTACT.whatsapp && (
-                <a className="btn btn-ghost-light" href={`https://wa.me/${CONTACT.whatsapp}`} rel="noopener">
-                  {t(contact.whatsapp)}
-                </a>
-              )}
-              <a className="btn btn-ghost-light" href="#privacy">
-                {t(contact.rules)}
-              </a>
-            </div>
-            <a className="cta-mail" href={mail} dir="ltr">
-              {CONTACT.email}
-            </a>
-            <span className="muted">{t(contact.place)}</span>
+            <ul className="channels wide">
+              {channels.map((c) => (
+                <li key={c.key}>
+                  <a href={c.href} target={c.key === 'whatsapp' ? '_blank' : undefined} rel={c.key === 'whatsapp' ? 'noopener' : undefined}>
+                    <span className="ch-ico">{contactIcons[c.key]}</span>
+                    <span className="ch-text">
+                      <small>{c.label}</small>
+                      <b dir="ltr">{c.value}</b>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <span className="muted">{t(contactDialog.hours)}</span>
           </div>
         </div>
       </div>

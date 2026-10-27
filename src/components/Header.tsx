@@ -1,8 +1,9 @@
-import { useEffect, useId, useState } from 'react'
-import { brand, brandFull, nav, type T } from '../content'
+import { useEffect, useId, useRef, useState } from 'react'
+import { BRAND, BRAND_FULL, nav, settings, type T } from '../content'
+import { openContact } from '../contactEvent'
 import { useLang } from '../lang'
 import type { Theme } from '../theme'
-import { Close, Menu, Moon, Sun } from './Icons'
+import { Check, Close, Gear, Menu, Moon, Sun } from './Icons'
 
 const LINKS: [string, T][] = [
   ['about', { en: 'About', ar: 'من نحن' }],
@@ -47,50 +48,83 @@ export function useScrollState() {
   return { active, progress, scrolled }
 }
 
-// Three peaks drawn as one blue line, with a point on the summit: a mountain and a chart at once.
+// Three peaks drawn as one fine blue line: the same ridge as the introduction.
 export function LogoMark() {
   const id = useId()
   return (
-    <svg className="logo-mark" viewBox="0 0 40 32" aria-hidden="true">
+    <svg className="logo-mark" viewBox="0 0 36 24" aria-hidden="true">
       <defs>
-        <linearGradient id={id} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#2563eb" />
-          <stop offset="0.5" stopColor="#7dd3fc" />
-          <stop offset="1" stopColor="#2563eb" />
+        <linearGradient id={id} x1="0" x2="1">
+          <stop offset="0" stopColor="#3b82f6" stopOpacity="0.55" />
+          <stop offset="0.5" stopColor="#bfdbfe" />
+          <stop offset="1" stopColor="#3b82f6" stopOpacity="0.55" />
         </linearGradient>
       </defs>
-      <path
-        d="M2 26 L11 15 L15.5 20 L20 6 L25 17 L29 12.5 L38 26"
-        fill="none"
-        stroke={`url(#${id})`}
-        strokeWidth="2.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="20" cy="6" r="2.4" fill="#fff" />
+      <path d="M1.5 21 L9 11.5 L12.5 15 L18 3.5 L23.5 13.5 L26.5 10.5 L34.5 21" fill="none" stroke={`url(#${id})`} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="18" cy="3.5" r="1.6" fill="#fff" />
     </svg>
   )
 }
 
 export function Logo() {
-  const { t } = useLang()
   return (
-    <a className="logo" href="#top" aria-label={t(brandFull)}>
+    <a className="logo" href="#top" aria-label={BRAND_FULL} dir="ltr">
       <LogoMark />
-      <span className="logo-text">
-        {t(brand)}
-        <small>{t({ en: 'Analytics', ar: 'للتحليلات' })}</small>
-      </span>
+      <span className="logo-text">{BRAND}</span>
     </a>
   )
 }
 
-function LangSwitch() {
+const LANGS = [
+  { id: 'en', name: 'English' },
+  { id: 'ar', name: 'العربية' },
+] as const
+
+function Settings({ theme, setTheme }: Props) {
   const { t, lang, setLang } = useLang()
+  const [open, setOpen] = useState(false)
+  const box = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: PointerEvent) => !box.current?.contains(e.target as Node) && setOpen(false)
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
+    window.addEventListener('pointerdown', onDown)
+    window.addEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('pointerdown', onDown)
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
   return (
-    <button type="button" className="lang-btn" onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} aria-label={t(nav.switchLabel)} lang={lang === 'ar' ? 'en' : 'ar'}>
-      {t(nav.switchTo)}
-    </button>
+    <div className="settings" ref={box}>
+      <button type="button" className="icon-btn" aria-expanded={open} aria-controls="settings-panel" aria-label={t(settings.title)} onClick={() => setOpen(!open)}>
+        <Gear />
+      </button>
+      {open && (
+        <div id="settings-panel" className="settings-panel glass" role="group" aria-label={t(settings.title)}>
+          <span className="set-label">{t(settings.language)}</span>
+          <div className="set-list">
+            {LANGS.map((l) => (
+              <button key={l.id} type="button" lang={l.id} aria-pressed={lang === l.id} onClick={() => setLang(l.id)}>
+                {l.name}
+                {lang === l.id && <Check />}
+              </button>
+            ))}
+          </div>
+          <span className="set-label">{t(settings.appearance)}</span>
+          <div className="seg">
+            <button type="button" aria-pressed={theme === 'dark'} onClick={() => setTheme('dark')}>
+              <Moon /> {t(settings.dark)}
+            </button>
+            <button type="button" aria-pressed={theme === 'light'} onClick={() => setTheme('light')}>
+              <Sun /> {t(settings.light)}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -123,18 +157,10 @@ export function Header({ theme, setTheme }: Props) {
           ))}
         </nav>
         <div className="header-actions">
-          <button
-            type="button"
-            className="icon-btn"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            aria-label={theme === 'dark' ? t({ en: 'Switch to light mode', ar: 'الوضع الفاتح' }) : t({ en: 'Switch to dark mode', ar: 'الوضع الداكن' })}
-          >
-            {theme === 'dark' ? <Sun /> : <Moon />}
-          </button>
-          <LangSwitch />
-          <a className="btn btn-primary btn-sm header-cta" href="#contact">
+          <Settings theme={theme} setTheme={setTheme} />
+          <button type="button" className="btn btn-primary btn-sm header-cta" onClick={openContact}>
             {t(nav.book)}
-          </a>
+          </button>
           <button type="button" className="icon-btn menu-btn" aria-expanded={open} aria-controls="site-nav" aria-label={open ? t(nav.close) : t(nav.menu)} onClick={() => setOpen(!open)}>
             {open ? <Close /> : <Menu />}
           </button>

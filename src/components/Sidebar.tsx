@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { brand, brandFull, contact, nav, type T } from '../content'
 import { DEPT_EVENT, depts } from '../depts'
 import { useLang } from '../lang'
@@ -17,8 +17,8 @@ const SECTIONS: [string, T][] = [
 ]
 
 const PROMISES: T[] = [
-  { en: 'No customer or staff names', ar: 'لا أسماء عملاء أو موظفين' },
   { en: 'Confidentiality agreement first', ar: 'اتفاقية سرية أولًا' },
+  { en: 'Encrypted on arrival, never shared', ar: 'مشفّرة عند الوصول ولا تُشارك' },
   { en: 'Files deleted within 30 days', ar: 'حذف الملفات خلال 30 يومًا' },
 ]
 
@@ -54,15 +54,31 @@ export function useScrollState() {
   return { active, progress }
 }
 
+// A "C" with a clear line running through it, ending in a data point.
+export function LogoMark() {
+  const id = useId()
+  return (
+    <svg className="logo-mark" viewBox="0 0 32 32" aria-hidden="true">
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#3b82f6" />
+          <stop offset="1" stopColor="#1e3a8a" />
+        </linearGradient>
+      </defs>
+      <rect width="32" height="32" rx="9" fill={`url(#${id})`} />
+      <rect x="0.5" y="0.5" width="31" height="31" rx="8.5" fill="none" stroke="#fff" strokeOpacity="0.25" />
+      <path d="M21.3 10.7A7.5 7.5 0 1 0 21.3 21.3" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" />
+      <path d="M12.5 16H22" stroke="#fff" strokeOpacity="0.7" strokeWidth="2.2" strokeLinecap="round" />
+      <circle cx="24.2" cy="16" r="2.3" fill="#fff" />
+    </svg>
+  )
+}
+
 export function Logo() {
   const { t } = useLang()
   return (
     <a className="logo" href="#top" aria-label={t(brandFull)}>
-      <span className="logo-mark" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-      </span>
+      <LogoMark />
       <span className="logo-text">
         {t(brand)}
         <small>{t({ en: 'Analytics', ar: 'للتحليلات' })}</small>

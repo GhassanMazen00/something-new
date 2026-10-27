@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { checker, departments, process, type CheckerService } from '../content'
+import { checker, departments, type CheckerService } from '../content'
 import { order } from '../fx'
 import { useLang } from '../lang'
+import type { Level as L } from '../samples'
 import { Check } from './Icons'
+import { Level } from './Level'
 
-type Level = 'high' | 'medium' | 'low' | 'none'
-
-function levelOf(s: CheckerService, have: Set<string>): Level {
+function levelOf(s: CheckerService, have: Set<string>): L {
   if (s.publicData) return 'high'
   const any = (ways: string[][] = []) => ways.some((w) => w.every((id) => have.has(id)))
   if (any(s.high)) return 'high'
@@ -15,7 +15,13 @@ function levelOf(s: CheckerService, have: Set<string>): Level {
   return 'none'
 }
 
-const WIDTH: Record<Level, number> = { high: 100, medium: 64, low: 32, none: 0 }
+// The files still missing for full confidence, using the way that needs the fewest extra files.
+function missing(s: CheckerService, have: Set<string>) {
+  if (s.publicData || !s.high.length) return []
+  return s.high.map((w) => w.filter((id) => !have.has(id))).sort((a, b) => a.length - b.length)[0]
+}
+
+const LEVELS: L[] = ['high', 'medium', 'low', 'none']
 
 export function Checker() {
   const { t } = useLang()
@@ -26,11 +32,12 @@ export function Checker() {
     else next.add(id)
     setHave(next)
   }
+  const label = (id: string) => t(checker.items.find((i) => i.id === id)!.label)
 
-  const results = checker.services.map((s) => ({ s, level: levelOf(s, have) }))
-  const ready = results.filter((r) => r.level !== 'none').length
+  const results = checker.services.map((s) => ({ s, level: levelOf(s, have), need: missing(s, have) }))
+  const count = (l: L) => results.filter((r) => r.level === l).length
   const total = results.length
-  const ring = 2 * Math.PI * 52
+  const ready = total - count('none')
 
   return (
     <section id="checker" className="section checker" aria-labelledby="checker-h">
@@ -47,8 +54,8 @@ export function Checker() {
           </p>
         </header>
 
-        <div className="checker-grid">
-          <div className="have card" data-reveal>
+        <div className="checker-panel glass" data-reveal>
+          <div className="checker-files">
             <span className="col-title">{t(checker.have)}</span>
             <div className="have-chips">
               {checker.items.map((item) => {
@@ -61,51 +68,48 @@ export function Checker() {
                 )
               })}
             </div>
-            <div className="gauge">
-              <svg viewBox="0 0 120 120" aria-hidden="true">
-                <defs>
-                  <linearGradient id="ringGrad" x1="0" x2="1" y1="0" y2="1">
-                    <stop offset="0" stopColor="#1d4ed8" />
-                    <stop offset="1" stopColor="#3b82f6" />
-                  </linearGradient>
-                </defs>
-                <circle cx="60" cy="60" r="52" className="ring-bg" />
-                <circle
-                  cx="60"
-                  cy="60"
-                  r="52"
-                  className="ring"
-                  stroke="url(#ringGrad)"
-                  strokeDasharray={ring}
-                  strokeDashoffset={ring * (1 - ready / total)}
-                />
-              </svg>
-              <div className="gauge-text">
-                <strong>{ready}</strong>
-                <span>/ {total}</span>
-              </div>
-              <p>{t(checker.ready).replace('{n}', String(ready)).replace('{total}', String(total))}</p>
-            </div>
           </div>
 
-          <ul className="results card" data-reveal style={order(1)} aria-live="polite">
-            {results.map(({ s, level }) => (
-              <li key={s.name.en} className={`res lv-${level}`}>
-                <div className="res-name">
-                  <strong>{t(s.name)}</strong>
-                  <span>
-                    {t(departments.find((d) => d.id === s.dept)!.name)}
-                    {s.publicData ? ` · ${t(checker.publicNote)}` : ''}
-                  </span>
-                </div>
-                <div className="meter" aria-hidden="true">
-                  <span style={{ width: `${WIDTH[level]}%` }} />
-                </div>
-                <span className={`chip ${level}`}>{t(process.levels[level])}</span>
-              </li>
-            ))}
-          </ul>
+          <div className="checker-summary" aria-live="polite">
+            <div className="summary-num">
+              <strong>{ready}</strong>
+              <span>{t(checker.outOf).replace('{total}', String(total))}</span>
+              <p>{t(checker.ready)}</p>
+            </div>
+            <div className="summary-bar">
+              <div className="stack" aria-hidden="true">
+                {LEVELS.map((l) => (
+                  <span key={l} className={`seg-${l}`} style={{ flexGrow: count(l), flexBasis: 0 }} />
+                ))}
+              </div>
+              <ul className="summary-legend">
+                {LEVELS.map((l) => (
+                  <li key={l}>
+                    <Level level={l} text={t(checker.levels[l])} />
+                    <b>{count(l)}</b>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
+
+        <ul className="svc-tiles">
+          {results.map(({ s, level, need }, n) => (
+            <li key={s.name.en} className={`tile glass tl-${level}`} data-reveal style={order(n % 4)}>
+              <span className="tile-dept">{t(departments.find((d) => d.id === s.dept)!.name)}</span>
+              <strong className="tile-name">{t(s.name)}</strong>
+              <Level level={level} text={t(checker.levels[level])} />
+              <span className="tile-need">
+                {s.publicData
+                  ? t(checker.publicNote)
+                  : need.length
+                    ? `${t(checker.add)} ${need.map(label).join(' + ')}`
+                    : t({ en: 'You have everything needed', ar: 'لديك كل ما يلزم' })}
+              </span>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   )

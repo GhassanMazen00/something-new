@@ -1,80 +1,10 @@
-import { useState } from 'react'
-import { HBars } from '../charts/Charts'
-import { anonymizer, privacy } from '../content'
-import { order, Scramble } from '../fx'
+import { privacy } from '../content'
+import { order } from '../fx'
 import { useLang } from '../lang'
-import { Lock, ruleIcons } from './Icons'
+import { ruleIcons } from './Icons'
 
-// Same name, same code: a small stable hash, like the template's lookup key.
-function code(name: string) {
-  const clean = name.trim().toLowerCase()
-  if (!clean) return 'C-0000'
-  let h = 5381
-  for (const ch of clean) h = ((h << 5) + h + ch.charCodeAt(0)) >>> 0
-  return `C-${String((h % 9000) + 1000)}`
-}
-
-function Anonymizer() {
-  const { t, lang } = useLang()
-  const d = anonymizer.defaults
-  const [name, setName] = useState(lang === 'ar' ? d.nameAr : d.name)
-  const [phone, setPhone] = useState(d.phone)
-  const [id, setId] = useState(d.id)
-  const [amount, setAmount] = useState(d.amount)
-  const f = anonymizer.fields
-
-  const rows = [
-    { key: 'name', label: f.name, value: name, set: setName, out: code(name), kind: 'coded' },
-    { key: 'phone', label: f.phone, value: phone, set: setPhone, out: t(anonymizer.removed), kind: 'gone' },
-    { key: 'id', label: f.id, value: id, set: setId, out: t(anonymizer.removed), kind: 'gone' },
-    { key: 'amount', label: f.amount, value: amount, set: setAmount, out: amount || '0', kind: 'kept' },
-  ] as const
-
-  return (
-    <div className="anon card" data-reveal style={order(1)}>
-      <div className="anon-head">
-        <span className="badge-ico">
-          <Lock />
-        </span>
-        <div>
-          <h3>{t(anonymizer.title)}</h3>
-          <p>{t(anonymizer.lead)}</p>
-        </div>
-      </div>
-      <div className="anon-cols">
-        <span className="col-title">{t(anonymizer.yourFile)}</span>
-        <span />
-        <span className="col-title">{t(anonymizer.weGet)}</span>
-        {rows.map((r) => (
-          <div key={r.key} className="anon-row">
-            <label className="field">
-              <span>{t(r.label)}</span>
-              <input value={r.value} onChange={(e) => r.set(e.target.value)} dir="auto" spellCheck={false} />
-            </label>
-            <span className="anon-arrow" aria-hidden="true">
-              <span />
-            </span>
-            <div className={`out ${r.kind}`} aria-live="polite">
-              {r.kind === 'coded' && <Scramble text={r.out} />}
-              {r.kind === 'gone' && (
-                <>
-                  <s dir="ltr">{r.value}</s>
-                  <em>{r.out}</em>
-                </>
-              )}
-              {r.kind === 'kept' && (
-                <>
-                  <span dir="ltr">{r.out}</span>
-                  <em>{t(anonymizer.kept)}</em>
-                </>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
+// Icons for the five journey stages, reusing the rule icons.
+const JOURNEY_ICONS = [ruleIcons[0], ruleIcons[3], ruleIcons[2], ruleIcons[4], ruleIcons[5]]
 
 export function Privacy() {
   const { t, lang } = useLang()
@@ -93,32 +23,51 @@ export function Privacy() {
             <p className="sec-lead" data-reveal style={order(2)}>
               {t(privacy.lead)}
             </p>
-            <div className="mini card" data-reveal style={order(3)}>
-              <span className="chart-title">{t({ en: 'What leaves your computer, in a typical job', ar: 'ما يخرج من جهازك في مهمة معتادة' })}</span>
-              <HBars
-                label="Columns in a typical file, columns we ask for, and personal columns we receive"
-                max={24}
-                items={[
-                  { label: 'In your file', value: 24, text: '24 columns', tone: 'soft' },
-                  { label: 'We ask for', value: 7, text: '7 columns' },
-                  { label: 'Personal data', value: 0, text: '0 columns', tone: 'ink' },
-                ]}
-              />
-            </div>
-            <p className="proof" data-reveal style={order(4)}>
+            <p className="proof" data-reveal style={order(3)}>
               <span className="pulse" aria-hidden="true" />
               {t(privacy.siteProof)}
             </p>
           </header>
-          <Anonymizer />
+
+          <div className="spec glass" data-reveal style={order(1)}>
+            <div className="spec-head">
+              <span className="spec-ico">{ruleIcons[2]}</span>
+              <h3>{t(privacy.specTitle)}</h3>
+            </div>
+            <dl>
+              {privacy.specs.map((row) => (
+                <div key={row.k.en}>
+                  <dt>{t(row.k)}</dt>
+                  <dd>{t(row.v)}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
         </div>
+
+        <h3 className="sub-head" data-reveal>
+          {t(privacy.journeyTitle)}
+        </h3>
+        <ol className="journey">
+          <span className="journey-line" aria-hidden="true">
+            <span />
+          </span>
+          {privacy.journey.map((stage, n) => (
+            <li key={stage.title.en} className="stage glass" data-reveal style={order(n)}>
+              <span className="stage-ico">{JOURNEY_ICONS[n]}</span>
+              <span className="stage-n">0{n + 1}</span>
+              <h4>{t(stage.title)}</h4>
+              <p>{t(stage.text)}</p>
+            </li>
+          ))}
+        </ol>
 
         <h3 className="sub-head" data-reveal>
           {t(privacy.rulesHeading)}
         </h3>
         <ul className="rules">
           {privacy.rules.map((rule, n) => (
-            <li key={rule.title.en} className="rule" data-reveal style={order(n % 4)}>
+            <li key={rule.title.en} className="rule glass" data-reveal style={order(n % 4)}>
               <span className="rule-ico">{ruleIcons[n]}</span>
               <h4>{t(rule.title)}</h4>
               <p>{t(rule.text)}</p>

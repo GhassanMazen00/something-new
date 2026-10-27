@@ -40,72 +40,76 @@ export const hero = {
 }
 
 export const privacy = {
-  heading: { en: ['Your data', 'stays yours'], ar: ['بياناتك', 'تبقى ملكك'] },
+  heading: { en: ['Your files are', 'safe with us'], ar: ['ملفاتك', 'في أمان معنا'] },
   lead: {
-    en: 'Privacy comes before analysis. We ask only for what each service needs, take names out before we look, and delete everything when we’re done.',
-    ar: 'الخصوصية تأتي قبل التحليل. نطلب ما تحتاجه كل خدمة فقط، ونحذف الأسماء قبل أن ننظر في أي ملف، ونمسح كل شيء عند الانتهاء.',
+    en: 'You send your files as they are. We encrypt them the moment they arrive, only the analyst on your project can open them, and they are never shared with anyone. When your report is done, they are deleted.',
+    ar: 'ترسل ملفاتك كما هي. نشفّرها لحظة وصولها، ولا يفتحها إلا المحلل المسؤول عن مشروعك، ولا نشاركها مع أي جهة. وعند تسليم التقرير تُحذف.',
   },
-  lattice: {
-    en: 'Mashrabiya: the Cairo window that lets you see out without being seen.',
-    ar: 'المشربية: نافذة القاهرة التي ترى منها دون أن يراك أحد.',
-  },
+  journeyTitle: { en: 'How your files travel', ar: 'رحلة ملفاتك' },
+  journey: [
+    {
+      title: { en: 'Agreement signed', ar: 'توقيع الاتفاقية' },
+      text: { en: 'A confidentiality agreement is signed before you send anything.', ar: 'نوقّع اتفاقية سرية قبل أن ترسل أي شيء.' },
+    },
+    {
+      title: { en: 'Encrypted upload', ar: 'رفع مشفّر' },
+      text: { en: 'A private link that expires. Never WhatsApp or email.', ar: 'رابط خاص تنتهي صلاحيته. لا واتساب ولا بريد إلكتروني.' },
+    },
+    {
+      title: { en: 'Encrypted storage', ar: 'تخزين مشفّر' },
+      text: { en: 'Locked with AES-256. One named analyst holds the key.', ar: 'مقفلة بتشفير AES-256. مفتاحها مع محلل واحد محدد.' },
+    },
+    {
+      title: { en: 'Analysis', ar: 'التحليل' },
+      text: { en: 'On our secured machines. Business AI that never trains on your data.', ar: 'على أجهزتنا المؤمّنة. ذكاء اصطناعي للأعمال لا يتدرّب على بياناتك.' },
+    },
+    {
+      title: { en: 'Deleted', ar: 'الحذف' },
+      text: { en: 'Within 30 days of your report, confirmed in writing.', ar: 'خلال 30 يومًا من التقرير، مع تأكيد مكتوب.' },
+    },
+  ],
+  specTitle: { en: 'Security at a glance', ar: 'الأمان باختصار' },
+  specs: [
+    { k: { en: 'In transit', ar: 'أثناء النقل' }, v: { en: 'TLS 1.3 encrypted link, expires after download', ar: 'رابط مشفّر TLS 1.3، تنتهي صلاحيته بعد التنزيل' } },
+    { k: { en: 'At rest', ar: 'أثناء التخزين' }, v: { en: 'AES-256 encryption', ar: 'تشفير AES-256' } },
+    { k: { en: 'Who can open it', ar: 'من يستطيع فتحها' }, v: { en: 'One named analyst', ar: 'محلل واحد محدد بالاسم' } },
+    { k: { en: 'Shared with', ar: 'تُشارك مع' }, v: { en: 'No one. Never sold', ar: 'لا أحد. ولا تُباع أبدًا' } },
+    { k: { en: 'Kept for', ar: 'مدة الاحتفاظ' }, v: { en: '30 days after your report', ar: '30 يومًا بعد التقرير' } },
+    { k: { en: 'Law', ar: 'القانون' }, v: { en: 'Egypt PDPL No. 151 of 2020', ar: 'قانون حماية البيانات رقم 151 لسنة 2020' } },
+  ],
   rulesHeading: { en: 'Our privacy rules', ar: 'قواعد الخصوصية لدينا' },
   rules: [
     {
       title: { en: 'Confidentiality first', ar: 'السرية أولًا' },
-      text: {
-        en: 'We sign a confidentiality agreement before you send a single file.',
-        ar: 'نوقّع معك اتفاقية سرية قبل أن ترسل أي ملف.',
-      },
+      text: { en: 'We sign a confidentiality agreement before you send a single file.', ar: 'نوقّع معك اتفاقية سرية قبل أن ترسل أي ملف.' },
     },
     {
       title: { en: 'Only what’s needed', ar: 'ما يلزم فقط' },
-      text: {
-        en: 'Every service lists the exact data it needs. We never ask for more.',
-        ar: 'كل خدمة تحدد البيانات التي تحتاجها بالضبط، ولا نطلب أكثر من ذلك.',
-      },
+      text: { en: 'Every service lists the exact data it needs. We never ask for more.', ar: 'كل خدمة تحدد البيانات التي تحتاجها بالضبط، ولا نطلب أكثر من ذلك.' },
     },
     {
-      title: { en: 'Names out before we look', ar: 'الأسماء تُحذف قبل أن نرى' },
-      text: {
-        en: 'Our template swaps customer and staff names, phone numbers and IDs for codes on your own computer, before anything is sent.',
-        ar: 'قالبنا يستبدل أسماء العملاء والموظفين وأرقام الهواتف والهويات برموز على جهازك أنت، قبل إرسال أي شيء.',
-      },
+      title: { en: 'Encrypted, always', ar: 'مشفّرة دائمًا' },
+      text: { en: 'Your files are encrypted on the way to us and while we hold them.', ar: 'ملفاتك مشفّرة أثناء وصولها إلينا وطوال فترة احتفاظنا بها.' },
     },
     {
       title: { en: 'Private transfer', ar: 'نقل آمن' },
-      text: {
-        en: 'Files travel through an encrypted link that expires. Never by WhatsApp or email.',
-        ar: 'تنتقل الملفات عبر رابط مشفّر تنتهي صلاحيته، وليس عبر واتساب أو البريد الإلكتروني.',
-      },
+      text: { en: 'Files travel through an encrypted link that expires. Never by WhatsApp or email.', ar: 'تنتقل الملفات عبر رابط مشفّر تنتهي صلاحيته، وليس عبر واتساب أو البريد الإلكتروني.' },
     },
     {
       title: { en: 'AI that doesn’t learn from you', ar: 'ذكاء اصطناعي لا يتعلّم من بياناتك' },
-      text: {
-        en: 'We use only paid business AI services that don’t train on your data. Never free chatbots.',
-        ar: 'نستخدم فقط خدمات ذكاء اصطناعي مدفوعة للأعمال لا تتدرّب على بياناتك، ولا نستخدم روبوتات المحادثة المجانية أبدًا.',
-      },
+      text: { en: 'We use only paid business AI services that don’t train on your data. Never free chatbots.', ar: 'نستخدم فقط خدمات ذكاء اصطناعي مدفوعة للأعمال لا تتدرّب على بياناتك، ولا نستخدم روبوتات المحادثة المجانية أبدًا.' },
     },
     {
       title: { en: 'Deleted when done', ar: 'الحذف بعد الانتهاء' },
-      text: {
-        en: 'Your files are deleted within 30 days of your report, or sooner if you ask, and we confirm it in writing.',
-        ar: 'تُحذف ملفاتك خلال 30 يومًا من تسليم التقرير، أو قبل ذلك إن طلبت، ونؤكد لك ذلك كتابيًا.',
-      },
+      text: { en: 'Your files are deleted within 30 days of your report, or sooner if you ask, and we confirm it in writing.', ar: 'تُحذف ملفاتك خلال 30 يومًا من تسليم التقرير، أو قبل ذلك إن طلبت، ونؤكد لك ذلك كتابيًا.' },
     },
     {
       title: { en: 'Never shared, never sold', ar: 'لا مشاركة ولا بيع' },
-      text: {
-        en: 'Your data is used for your report and nothing else.',
-        ar: 'تُستخدم بياناتك لتقريرك فقط، ولا شيء غيره.',
-      },
+      text: { en: 'Your data is used for your report and nothing else.', ar: 'تُستخدم بياناتك لتقريرك فقط، ولا شيء غيره.' },
     },
     {
       title: { en: 'Egypt’s data law', ar: 'قانون حماية البيانات' },
-      text: {
-        en: 'We follow Egypt’s Personal Data Protection Law, No. 151 of 2020.',
-        ar: 'نلتزم بقانون حماية البيانات الشخصية المصري رقم 151 لسنة 2020.',
-      },
+      text: { en: 'We follow Egypt’s Personal Data Protection Law, No. 151 of 2020.', ar: 'نلتزم بقانون حماية البيانات الشخصية المصري رقم 151 لسنة 2020.' },
     },
   ],
   siteProof: {
@@ -372,33 +376,6 @@ export const departments: Department[] = [
   },
 ]
 
-export const showcase = {
-  heading: { en: 'What we actually see', ar: 'ما الذي نراه فعلًا' },
-  states: {
-    file: { en: 'In your file', ar: 'في ملفك' },
-    sent: { en: 'Sent to us', ar: 'ما يصلنا' },
-    checked: { en: 'Checked', ar: 'بعد الفحص' },
-  },
-  cols: {
-    invoice: { en: 'Invoice', ar: 'الفاتورة' },
-    date: { en: 'Date', ar: 'التاريخ' },
-    customer: { en: 'Customer', ar: 'العميل' },
-    amount: { en: 'Amount', ar: 'المبلغ' },
-  },
-  name: { en: 'Hany Adel', ar: 'هاني عادل' },
-  date: { en: '14 Mar 2026', ar: '14 مارس 2026' },
-  coded: { en: 'Name replaced by our template, on your computer', ar: 'استبدل قالبُنا الاسم برمز، على جهازك' },
-  run: { en: 'Run checks', ar: 'شغّل الفحص' },
-  again: { en: 'Show again', ar: 'اعرض مرة أخرى' },
-  finding: {
-    en: 'Possible duplicate of INV-2287: same customer, same amount, two days earlier.',
-    ar: 'تكرار محتمل للفاتورة INV-2287: نفس العميل ونفس المبلغ قبل يومين.',
-  },
-  confidence: { en: 'Confidence: High', ar: 'درجة الثقة: عالية' },
-  review: { en: 'Goes to a person for review', ar: 'يراجعه شخص قبل التقرير' },
-  example: { en: 'Example with made-up data', ar: 'مثال ببيانات افتراضية' },
-}
-
 export const process = {
   heading: { en: 'How we work', ar: 'كيف نعمل' },
   steps: [
@@ -410,7 +387,7 @@ export const process = {
       },
     },
     {
-      say: { en: 'Then send only that, with names taken out.', ar: 'ثم أرسل ما يلزم فقط، بعد حذف الأسماء.' },
+      say: { en: 'Then send only that, through an encrypted link.', ar: 'ثم أرسل ما يلزم فقط، عبر رابط مشفّر.' },
       call: { en: 'Confidentiality agreement: signed', ar: 'اتفاقية السرية: موقّعة' },
     },
     {
@@ -437,8 +414,8 @@ export const process = {
     title: { en: 'Received', ar: 'تم الاستلام' },
     lines: [
       { k: { en: 'Files', ar: 'الملفات' }, v: { en: '3', ar: '3' } },
-      { k: { en: 'Customer or staff names', ar: 'أسماء عملاء أو موظفين' }, v: { en: '0', ar: '0' } },
-      { k: { en: 'Phone numbers', ar: 'أرقام هواتف' }, v: { en: '0', ar: '0' } },
+      { k: { en: 'Storage', ar: 'التخزين' }, v: { en: 'Encrypted, AES-256', ar: 'مشفّر، AES-256' } },
+      { k: { en: 'Access', ar: 'الوصول' }, v: { en: 'One named analyst', ar: 'محلل واحد محدد' } },
       { k: { en: 'Transfer link', ar: 'رابط النقل' }, v: { en: 'Encrypted, expired after download', ar: 'مشفّر، وانتهت صلاحيته بعد التنزيل' } },
       { k: { en: 'Deletion date', ar: 'موعد الحذف' }, v: { en: '30 days after your report', ar: 'بعد 30 يومًا من تسليم التقرير' } },
     ],
@@ -482,29 +459,6 @@ export const report = {
     },
   ],
   footer: { en: 'Example with made-up data · Checked by a person', ar: 'مثال ببيانات افتراضية · راجعه شخص' },
-}
-
-export const charts = {
-  benford: {
-    title: { en: 'First digit of 4,812 payments', ar: 'الرقم الأول في 4,812 دفعة' },
-    expected: { en: 'Expected (Benford’s law)', ar: 'المتوقع (قانون بنفورد)' },
-    found: { en: 'Found', ar: 'الفعلي' },
-    note: { en: '77 more amounts start with 9 than expected', ar: '77 مبلغًا إضافيًا تبدأ بالرقم 9' },
-  },
-  cash: {
-    title: { en: 'Cash, next 13 weeks (EGP thousands)', ar: 'السيولة خلال 13 أسبوعًا (بالألف جنيه)' },
-    payroll: { en: 'Payroll', ar: 'الرواتب' },
-    short: { en: 'Week 9: short', ar: 'الأسبوع 9: عجز' },
-  },
-  anon: {
-    title: { en: 'Invoices, names coded', ar: 'الفواتير بعد ترميز الأسماء' },
-    duplicate: { en: 'Duplicate?', ar: 'تكرار؟' },
-  },
-  page: {
-    title: { en: 'Page 1 · three findings', ar: 'الصفحة 1 · ثلاث نتائج' },
-  },
-  before: { en: 'Before', ar: 'قبل' },
-  after: { en: 'After', ar: 'بعد' },
 }
 
 export const faq = {
@@ -606,12 +560,12 @@ export const meta = {
 // ---- Interactive parts ----
 
 export const heroExtra = {
-  badge: { en: 'Privacy first · we never need names', ar: 'الخصوصية أولًا · لا نحتاج أي أسماء' },
+  badge: { en: 'Encrypted · never shared · deleted after 30 days', ar: 'مشفّرة · لا تُشارك · تُحذف بعد 30 يومًا' },
   try: { en: 'Try the live demo', ar: 'جرّب العرض الحي' },
   stats: [
     { value: 6, suffix: '', label: { en: 'departments', ar: 'أقسام' } },
     { value: 27, suffix: '', label: { en: 'services', ar: 'خدمة' } },
-    { value: 0, suffix: '', label: { en: 'names we need', ar: 'أسماء نحتاجها' } },
+    { value: 256, suffix: '', label: { en: 'bit encryption', ar: 'بت تشفير' } },
     { value: 30, suffix: '', label: { en: 'days, then deleted', ar: 'يومًا ثم الحذف' } },
   ],
   card: {
@@ -627,25 +581,6 @@ export const methods = [
   'ETS', 'ARIMA', 'Prophet', 'Chronos', 'Benford’s law', 'Isolation Forest', 'RFM', 'BG/NBD',
   'Monte Carlo', 'Pareto 80/20', 'Van Westendorp', 'PESTEL', 'Google Meridian', 'Meta Robyn', 'eNPS', 'Survival analysis',
 ]
-
-export const anonymizer = {
-  title: { en: 'Try our name remover', ar: 'جرّب أداة حذف الأسماء' },
-  lead: {
-    en: 'Type anything. This runs only in your browser, like our template runs only on your computer. Nothing is sent.',
-    ar: 'اكتب أي شيء. هذا يعمل في متصفحك فقط، كما يعمل قالبنا على جهازك فقط. لا يُرسل أي شيء.',
-  },
-  fields: {
-    name: { en: 'Customer name', ar: 'اسم العميل' },
-    phone: { en: 'Phone', ar: 'الهاتف' },
-    id: { en: 'National ID', ar: 'الرقم القومي' },
-    amount: { en: 'Amount (EGP)', ar: 'المبلغ (جنيه)' },
-  },
-  yourFile: { en: 'Your file', ar: 'ملفك' },
-  weGet: { en: 'What we receive', ar: 'ما يصلنا' },
-  kept: { en: 'kept: we need it', ar: 'يبقى: نحتاجه' },
-  removed: { en: 'removed', ar: 'محذوف' },
-  defaults: { name: 'Hany Adel', nameAr: 'هاني عادل', phone: '+20 100 123 4547', id: '29801011234021', amount: '18,400' },
-}
 
 export interface CheckerService {
   name: T
@@ -664,7 +599,15 @@ export const checker = {
     ar: 'اختر الملفات الموجودة لديك، وشاهد الخدمات المتاحة ومدى دقة كل منها. البيانات الناقصة غالبًا لها بديل.',
   },
   have: { en: 'I have…', ar: 'لديّ…' },
-  ready: { en: '{n} of {total} services ready', ar: '{n} من {total} خدمة جاهزة' },
+  ready: { en: 'services you can get now', ar: 'خدمات متاحة لك الآن' },
+  outOf: { en: 'of {total}', ar: 'من {total}' },
+  add: { en: 'Add for full confidence:', ar: 'أضف لثقة كاملة:' },
+  levels: {
+    high: { en: 'Full confidence', ar: 'ثقة كاملة' },
+    medium: { en: 'Partial · we substitute', ar: 'جزئية · نستخدم بديلًا' },
+    low: { en: 'Estimates only', ar: 'تقديرات فقط' },
+    none: { en: 'Needs data', ar: 'تحتاج بيانات' },
+  },
   none: { en: 'Pick a file to start', ar: 'اختر ملفًا للبدء' },
   publicNote: { en: 'Uses public data', ar: 'تعتمد على بيانات عامة' },
   items: [
@@ -681,7 +624,6 @@ export const checker = {
     { id: 'staff', label: { en: 'Staff list', ar: 'قائمة الموظفين' } },
   ],
   services: [
-    { name: { en: 'Data health check', ar: 'فحص جودة البيانات' }, dept: 'data', high: [['sales'], ['einv'], ['bank'], ['ledger'], ['payroll'], ['staff']], medium: [] },
     { name: { en: 'Sales forecast', ar: 'توقع المبيعات' }, dept: 'sales', high: [['sales'], ['einv']], medium: [['bank']] },
     { name: { en: 'Price change what-if', ar: 'ماذا لو غيّرنا السعر؟' }, dept: 'sales', high: [['cost', 'sales'], ['cost', 'einv']], medium: [['cost']] },
     { name: { en: 'Stock reorder plan', ar: 'خطة إعادة طلب المخزون' }, dept: 'sales', high: [['stock', 'sales'], ['stock', 'einv']], medium: [['sales'], ['einv']] },
@@ -695,29 +637,4 @@ export const checker = {
     { name: { en: 'Staff turnover', ar: 'تحليل دوران الموظفين' }, dept: 'people', high: [['staff']], medium: [['payroll']] },
     { name: { en: 'Market size & demand trends', ar: 'حجم السوق واتجاهات الطلب' }, dept: 'market', high: [], medium: [], publicData: true },
   ] as CheckerService[],
-}
-
-export const demos = {
-  heading: { en: ['Don’t take our word for it.', 'Try it.'], ar: ['لا تكتفِ بكلامنا.', 'جرّب بنفسك.'] },
-  lead: { en: 'Two small versions of what we run on your files. Made-up data.', ar: 'نسختان صغيرتان مما نشغّله على ملفاتك. ببيانات افتراضية.' },
-  scan: {
-    title: { en: 'Error scan', ar: 'فحص الأخطاء' },
-    run: { en: 'Run the scan', ar: 'شغّل الفحص' },
-    running: { en: 'Scanning…', ar: 'جارٍ الفحص…' },
-    reset: { en: 'Reset', ar: 'إعادة' },
-    done: { en: '3 entries need a look · EGP 37,600 at risk', ar: '3 قيود تحتاج مراجعة · 37,600 جنيه معرّضة للخطر' },
-    flags: {
-      dup: { en: 'Paid twice', ar: 'مدفوعة مرتين' },
-      gap: { en: 'Number skipped', ar: 'رقم مفقود' },
-      odd: { en: 'Unusual amount', ar: 'مبلغ غير معتاد' },
-      ok: { en: 'OK', ar: 'سليم' },
-    },
-  },
-  price: {
-    title: { en: 'Price change what-if', ar: 'ماذا لو غيّرت السعر؟' },
-    rise: { en: 'Price rise', ar: 'نسبة رفع السعر' },
-    margin: { en: 'Your profit margin now', ar: 'هامش ربحك الحالي' },
-    result: { en: 'Still worth it unless sales fall more than', ar: 'يظل مربحًا ما لم تنخفض المبيعات أكثر من' },
-    note: { en: 'Break-even formula: rise ÷ (margin + rise)', ar: 'معادلة التعادل: نسبة الرفع ÷ (الهامش + نسبة الرفع)' },
-  },
 }

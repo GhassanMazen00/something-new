@@ -15,7 +15,7 @@ const i = (n: number) => ({ '--i': n }) as CSSProperties
 function Frame({ children, label, width = W, height = H, legend }: { children: ReactNode; label: string; width?: number; height?: number; legend?: [string, string][] }) {
   const [ref, seen] = useInView<HTMLDivElement>()
   return (
-    <figure ref={ref} dir="ltr" className={`chart${seen ? ' is-drawn' : ''}`}>
+    <figure ref={ref} dir="ltr" className={`chart${width > 400 ? ' wide' : ''}${seen ? ' is-drawn' : ''}`}>
       <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={label}>
         {children}
       </svg>

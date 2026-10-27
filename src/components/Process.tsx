@@ -1,93 +1,60 @@
-import { Line } from '../charts/Charts'
-import { CASH } from '../charts/serviceCharts'
-import { process, report } from '../content'
+import { useState } from 'react'
+import { serviceCharts } from '../charts/serviceCharts'
+import { process } from '../content'
+import { depts } from '../depts'
 import { order, useScrollProgress } from '../fx'
+import { journeys, stepNotes, stepTitles } from '../journeys'
 import { useLang } from '../lang'
-
-const FILES = ['einvoices_2025-2026.xlsx', 'bank_statements_2026.pdf', 'salaries_coded.xlsx']
-
-function Chip({ level }: { level: string }) {
-  const { t } = useLang()
-  return <span className={`chip ${level}`}>{t(process.levels[level as 'high' | 'medium' | 'low' | 'none'])}</span>
-}
-
-function DataPlan() {
-  const { t } = useLang()
-  const p = process.plan
-  return (
-    <div className="panel">
-      <span className="col-title">{t(p.title)}</span>
-      {p.rows.map((r) => (
-        <div key={r.service.en} className="plan-row">
-          <div>
-            <strong>{t(r.service)}</strong>
-            <span>{t(r.from)}</span>
-          </div>
-          <Chip level={r.level} />
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function Received() {
-  const { t } = useLang()
-  const r = process.received
-  return (
-    <div className="panel">
-      <div className="files">
-        {FILES.map((f) => (
-          <span key={f} className="file" dir="ltr">
-            {f}
-          </span>
-        ))}
-      </div>
-      <span className="col-title">
-        {t(r.title)} <Chip level="high" />
-      </span>
-      <dl className="recv">
-        {r.lines.map((l) => (
-          <div key={l.k.en}>
-            <dt>{t(l.k)}</dt>
-            <dd>{t(l.v)}</dd>
-          </div>
-        ))}
-      </dl>
-    </div>
-  )
-}
-
-function ReportPage() {
-  const { t } = useLang()
-  return (
-    <div className="panel report">
-      <div className="report-head">
-        <span className="col-title">{t(report.title)}</span>
-        <span className="muted">{t(report.period)}</span>
-      </div>
-      {report.items.map((item, i) => (
-        <div key={i} className="report-item">
-          <span className="ri-n">{i + 1}</span>
-          <div>
-            <p>{t(item.finding)}</p>
-            <strong>{t(item.action)}</strong>
-          </div>
-          <Chip level={item.level} />
-        </div>
-      ))}
-      <div className="report-chart">
-        <Line label="Cash for 13 weeks against payroll" series={[{ values: CASH, area: true }]} threshold={{ value: 180, text: 'Payroll', tone: 'bad' }} marks={[{ series: 0, at: 8, text: 'Week 9', tone: 'bad' }]} />
-      </div>
-      <span className="muted small">{t(report.footer)}</span>
-    </div>
-  )
-}
-
-const VISUALS = [DataPlan, Received, ReportPage]
+import { Check, Lock } from './Icons'
+import { Level } from './Level'
 
 export function Process() {
   const { t } = useLang()
   const lineRef = useScrollProgress<HTMLOListElement>()
+  const [dept, setDept] = useState('accounting')
+  const j = journeys.find((x) => x.dept === dept)!
+
+  const visuals = [
+    <figure key="q" className="quote">
+      <blockquote>“{t(j.quote)}”</blockquote>
+      <figcaption>{t(j.who)}</figcaption>
+    </figure>,
+    <div key="f" className="send">
+      <ul className="files">
+        {j.files.map((f, n) => (
+          <li key={f} className="file" dir="ltr" style={order(n)}>
+            {f}
+          </li>
+        ))}
+      </ul>
+      <p className="secure-note">
+        <Lock /> {t(stepNotes.transfer)}
+      </p>
+    </div>,
+    <ul key="a" className="checklist">
+      {j.analyse.map((a, n) => (
+        <li key={a.en} style={order(n)}>
+          <span className="tick">
+            <Check />
+          </span>
+          {t(a)}
+        </li>
+      ))}
+      <li className="days">{t(stepNotes.days)}</li>
+    </ul>,
+    <div key="r" className="results-box">
+      <ol>
+        {j.results.map((r, n) => (
+          <li key={r.en} style={order(n)}>
+            <span className="f-n">{n + 1}</span>
+            {t(r)}
+          </li>
+        ))}
+      </ol>
+      <div className="results-chart">{serviceCharts[j.chart]}</div>
+    </div>,
+  ]
+
   return (
     <section id="process" className="section process" aria-labelledby="process-h">
       <div className="wrap">
@@ -96,39 +63,48 @@ export function Process() {
             {t(process.heading)}
           </span>
           <h2 id="process-h" data-reveal style={order(1)}>
-            {t({ en: 'Three steps.', ar: 'ثلاث خطوات.' })} <span className="accent">{t({ en: 'One page.', ar: 'صفحة واحدة.' })}</span>
+            {t({ en: 'Four steps.', ar: 'أربع خطوات.' })} <span className="accent">{t({ en: 'One clear page.', ar: 'صفحة واحدة واضحة.' })}</span>
           </h2>
+          <p className="sec-lead" data-reveal style={order(2)}>
+            {t(stepNotes.pick)}
+          </p>
         </header>
+
+        <div className="tabs-wrap" data-reveal>
+          <div className="tabs glass" role="radiogroup" aria-label={t(stepNotes.pick)}>
+            {depts.map((d) => (
+              <button key={d.id} type="button" role="radio" aria-checked={dept === d.id} onClick={() => setDept(d.id)}>
+                {t(d.name)}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <ol className="timeline" ref={lineRef}>
           <span className="tl-line" aria-hidden="true">
             <span />
           </span>
-          {process.steps.map((step, n) => {
-            const Visual = VISUALS[n]
-            return (
-              <li key={step.say.en} className="step">
-                <span className="step-n" aria-hidden="true">
-                  0{n + 1}
-                </span>
-                <div className="step-copy" data-reveal>
-                  <h3>{t(step.say)}</h3>
-                  <p className="bubble">{n === 1 ? t(step.call) : `“${t(step.call)}”`}</p>
-                </div>
-                <div className="step-visual card" data-reveal style={order(1)}>
-                  <Visual />
-                </div>
-              </li>
-            )
-          })}
+          {stepTitles.map((title, n) => (
+            <li key={title.en} className="step">
+              <span className="step-n" aria-hidden="true">
+                0{n + 1}
+              </span>
+              <div className="step-copy" data-reveal>
+                <h3>{t(title)}</h3>
+              </div>
+              <div className="step-visual glass" key={`${dept}-${n}`}>
+                {visuals[n]}
+              </div>
+            </li>
+          ))}
         </ol>
 
-        <div className="legend card" data-reveal>
+        <div className="legend glass" data-reveal>
           <h3>{t(process.legend.title)}</h3>
           <ul>
             {process.legend.rows.map((row) => (
               <li key={row.level}>
-                <Chip level={row.level} />
+                <Level level={row.level} />
                 <span>{t(row.text)}</span>
               </li>
             ))}

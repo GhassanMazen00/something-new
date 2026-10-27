@@ -16,7 +16,7 @@ export default function App() {
   const [theme, setTheme] = useTheme()
   const [open, setOpen] = useState(false)
   const { active, progress } = useScrollState()
-  useReveal([lang])
+  useReveal()
   return (
     <>
       <a className="skip" href="#privacy">

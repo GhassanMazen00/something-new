@@ -51,10 +51,11 @@ export const ruleIcons = [
   <Icon key="1">
     <path d="M4 5h16l-6 7.5V19l-4 1.5v-8z" />
   </Icon>,
-  // Names out
+  // Encrypted, always
   <Icon key="2">
-    <path d="M3 3l18 18M10.6 6.1A9.8 9.8 0 0 1 12 6c5 0 8.5 4.3 9.5 6a14 14 0 0 1-2.6 3.3M6.4 7.6A14 14 0 0 0 2.5 12c1 1.7 4.5 6 9.5 6 1.5 0 2.8-.4 4-1" />
-    <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+    <path d="M12 3l7.5 3v5.5c0 4.5-3.2 8-7.5 9.5-4.3-1.5-7.5-5-7.5-9.5V6z" />
+    <rect x="9" y="11" width="6" height="5" rx="1" />
+    <path d="M10.2 11V9.6a1.8 1.8 0 0 1 3.6 0V11" />
   </Icon>,
   // Private transfer
   <Icon key="3">

@@ -47,8 +47,7 @@
   --low-t: #fff1e8;
   --side-w: 272px;
 
-  --sans: 'Geist Variable', 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
-  --serif: 'Instrument Serif', Georgia, serif;
+  --sans: 'Plus Jakarta Sans Variable', 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
   --mono: 'Geist Mono Variable', ui-monospace, monospace;
 
   --radius: 22px;
@@ -113,7 +112,7 @@
 }
 
 :root:lang(ar) {
-  --sans: 'IBM Plex Sans Arabic', 'Geist Variable', system-ui, sans-serif;
+  --sans: 'IBM Plex Sans Arabic', 'Plus Jakarta Sans Variable', system-ui, sans-serif;
 }
 
 /* Black sections: same components, inverted tokens. */
@@ -184,6 +183,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  font-feature-settings: 'ss01', 'cv11';
   overflow-x: clip;
 }
 h1,
@@ -270,24 +270,6 @@ dd {
   transform: scaleX(-1);
   transform-origin: center;
   transform-box: fill-box;
-}
-/* Headings: light sans with the key words in a serif italic. */
-h1 .accent,
-h2 .accent {
-  font-family: var(--serif);
-  font-style: italic;
-  font-weight: 400;
-  font-size: 1.1em;
-  letter-spacing: -0.01em;
-  line-height: 0.9;
-}
-:lang(ar) h1 .accent,
-:lang(ar) h2 .accent {
-  font-family: inherit;
-  font-style: normal;
-  font-weight: inherit;
-  font-size: 1em;
-  line-height: inherit;
 }
 
 /* ---------- Ground: soft blue light behind the glass ---------- */

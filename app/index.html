@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#05070c" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <title>Clearline Workspace</title>
+    <script>
+      try {
+        document.documentElement.dataset.theme = localStorage.getItem('clearline:theme') === 'light' ? 'light' : 'dark'
+      } catch (e) {
+        document.documentElement.dataset.theme = 'dark'
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/app/main.tsx"></script>
+  </body>
+</html>

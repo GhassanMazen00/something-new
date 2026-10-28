@@ -9,12 +9,14 @@ import { Process } from './components/Process'
 import { Services } from './components/Services'
 import { useLang } from './lang'
 import { useTheme } from './theme'
+import { useGlassLight } from './useGlassLight'
 import { useReveal } from './useReveal'
 
 export default function App() {
   const { lang } = useLang()
   const [theme, setTheme] = useTheme()
   useReveal()
+  useGlassLight()
   return (
     <>
       <a className="skip" href="#about">

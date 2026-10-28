@@ -45,41 +45,41 @@ export const hero = {
 }
 
 export const about = {
-  heading: { en: 'We are the data department you never had time to build.', ar: 'نحن قسم البيانات الذي لم يتسع وقتك لبنائه.' },
+  heading: { en: ['We turn your business files into', 'clear decisions.'], ar: ['نحوّل ملفات شركتك إلى', 'قرارات واضحة.'] },
   text: {
-    en: 'Most small and medium companies hold years of sales, accounting and staff data that nobody has time to read. We read it for you with the methods banks, auditors and large retailers rely on, and hand you one clear page of findings and actions.',
-    ar: 'معظم الشركات الصغيرة والمتوسطة لديها سنوات من بيانات المبيعات والحسابات والموظفين لا يجد أحد وقتًا لقراءتها. نقرؤها لك بالطرق التي تعتمد عليها البنوك والمراجعون وكبار تجار التجزئة، ونسلّمك صفحة واحدة واضحة بالنتائج والإجراءات.',
+    en: 'Clearline is an analysis firm for small and medium companies. You send the files you already keep. We study them with proven models and tell you, in plain words, what is happening and what to do next.',
+    ar: 'Clearline شركة تحليل للشركات الصغيرة والمتوسطة. ترسل الملفات الموجودة لديك بالفعل، فندرسها بنماذج مثبتة ونخبرك بكلمات واضحة بما يحدث وما يجب أن تفعله بعد ذلك.',
   },
-  points: [
-    { en: 'Fixed price per report, agreed after a free call', ar: 'سعر ثابت لكل تقرير، نتفق عليه بعد مكالمة مجانية' },
-    { en: 'Reports in Arabic, English or both', ar: 'تقارير بالعربية أو الإنجليزية أو كلتيهما' },
-    { en: 'Every number checked by a person', ar: 'كل رقم يراجعه شخص' },
+  steps: [
+    {
+      title: { en: 'You send your files', ar: 'ترسل ملفاتك' },
+      text: { en: 'Sales, accounts, invoices or staff lists, as they are. Encrypted the moment they arrive.', ar: 'المبيعات أو الحسابات أو الفواتير أو قوائم الموظفين، كما هي. تُشفَّر لحظة وصولها.' },
+    },
+    {
+      title: { en: 'We analyse them', ar: 'نحللها' },
+      text: { en: 'Proven statistical models do the maths. Your analyst checks every number by hand.', ar: 'نماذج إحصائية مثبتة تجري الحسابات، ومحللك يراجع كل رقم بنفسه.' },
+    },
+    {
+      title: { en: 'You get clear answers', ar: 'تحصل على إجابات واضحة' },
+      text: { en: 'One short report in English or Arabic: what is happening, what comes next, what to do.', ar: 'تقرير قصير بالعربية أو الإنجليزية: ما الذي يحدث، وما القادم، وماذا تفعل.' },
+    },
   ],
-  pillars: [
-    {
-      title: { en: 'Find errors', ar: 'اكتشاف الأخطاء' },
-      text: { en: 'Duplicate payments, missing sales, unusual entries and payroll mistakes.', ar: 'المدفوعات المكررة، والمبيعات المفقودة، والقيود غير المعتادة، وأخطاء الرواتب.' },
-      stat: 'EGP 37,600',
-      note: { en: 'paid twice, found in one scan', ar: 'دُفعت مرتين، اكتُشفت في فحص واحد' },
-    },
-    {
-      title: { en: 'Forecast', ar: 'التوقع' },
-      text: { en: 'Sales, cash and profit, each with a likely, low and high case.', ar: 'المبيعات والسيولة والأرباح، لكل منها حالة مرجّحة ومنخفضة ومرتفعة.' },
-      stat: '4.2%',
-      note: { en: 'average error on hidden months', ar: 'متوسط الخطأ في الأشهر المخفية' },
-    },
-    {
-      title: { en: 'Decide', ar: 'اتخاذ القرار' },
-      text: { en: 'Prices, budgets, branches and hiring, tested before you commit.', ar: 'الأسعار والميزانيات والفروع والتوظيف، تُختبر قبل أن تلتزم.' },
-      stat: '26%',
-      note: { en: 'sales drop a price rise can survive', ar: 'انخفاض المبيعات الذي يتحمّله رفع السعر' },
-    },
-    {
-      title: { en: 'Protect', ar: 'الحماية' },
-      text: { en: 'Encrypted files, one named analyst, deleted 30 days after your report.', ar: 'ملفات مشفّرة، ومحلل واحد محدد، وحذف بعد 30 يومًا من التقرير.' },
-      stat: 'AES-256',
-      note: { en: 'encryption at rest', ar: 'تشفير أثناء التخزين' },
-    },
+  files: ['sales_2025.xlsx', 'bank_statements.pdf', 'payroll.csv'],
+  encrypted: { en: 'Encrypted on arrival', ar: 'مشفّرة عند الوصول' },
+  checked: { en: 'Checked by your analyst', ar: 'راجعها محللك' },
+  forecast: { en: 'Sales forecast', ar: 'توقع المبيعات' },
+  findings: [
+    { text: { en: 'Order 18% more stock for March', ar: 'اطلب مخزونًا أكثر بنسبة 18% لشهر مارس' }, level: 'high' },
+    { text: { en: 'Cash runs short in week 9', ar: 'تنقص السيولة في الأسبوع 9' }, level: 'medium' },
+  ],
+  asksTitle: { en: 'Questions we answer', ar: 'أسئلة نجيب عنها' },
+  asks: [
+    { dept: 'sales', q: { en: 'How much will we sell next quarter?', ar: 'كم سنبيع في الربع القادم؟' } },
+    { dept: 'accounting', q: { en: 'Is money leaking somewhere?', ar: 'هل تتسرب أموال في مكان ما؟' } },
+    { dept: 'marketing', q: { en: 'Which customers are we about to lose?', ar: 'أي العملاء على وشك أن نفقدهم؟' } },
+    { dept: 'data', q: { en: 'Which branch is really doing best?', ar: 'أي فرع يحقق فعلًا أفضل أداء؟' } },
+    { dept: 'people', q: { en: 'Why do our staff keep leaving?', ar: 'لماذا يترك موظفونا العمل؟' } },
+    { dept: 'market', q: { en: 'Is there room for us in this market?', ar: 'هل هناك مكان لنا في هذا السوق؟' } },
   ],
 }
 

@@ -3,7 +3,9 @@ import { about, hero, methods, nav } from '../content'
 import { order } from '../fx'
 import { openContact } from '../contactEvent'
 import { useLang } from '../lang'
-import { Arrow, pillarIcons } from './Icons'
+import { DEPT_EVENT, depts } from '../depts'
+import { Arrow, Check, Lock } from './Icons'
+import { Level } from './Level'
 
 // The ridge from the logo, drawn wide. Points are fractions of the drawing area (x across, y down),
 // turned into pixels for the real size of the screen, so the line is never cropped or stretched.
@@ -154,34 +156,114 @@ export function Hero() {
   )
 }
 
+// Mini visuals for the three steps in About.
+const HIST = [62, 58, 66, 61, 70, 68, 76, 72, 80]
+const FORE = [80, 84, 82, 90, 88]
+const px = (n: number) => 8 + n * 19
+const py = (v: number) => 100 - (v - 52) * 1.9
+
+function FilesVisual() {
+  const { t } = useLang()
+  return (
+    <div className="ab-vis ab-files" aria-hidden="true">
+      {about.files.map((f) => (
+        <span key={f} className="ab-file" dir="ltr">
+          <i className={`ext ext-${f.split('.')[1]}`}>{f.split('.')[1]}</i>
+          {f}
+          <Lock />
+        </span>
+      ))}
+      <span className="ab-note">{t(about.encrypted)}</span>
+    </div>
+  )
+}
+
+function ChartVisual() {
+  const { t } = useLang()
+  const hist = HIST.map((v, n) => `${n ? 'L' : 'M'}${px(n)} ${py(v)}`).join(' ')
+  const last = HIST.length - 1
+  const fore = [HIST[last], ...FORE].map((v, n) => `${n ? 'L' : 'M'}${px(last + n)} ${py(v)}`).join(' ')
+  const up = [HIST[last], ...FORE].map((v, n) => `${px(last + n)} ${py(v + n * 2.6)}`)
+  const lo = [HIST[last], ...FORE].map((v, n) => `${px(last + n)} ${py(v - n * 2.6)}`).reverse()
+  return (
+    <div className="ab-vis ab-chart" aria-hidden="true">
+      <span className="ab-cap">{t(about.forecast)}</span>
+      <svg viewBox="0 0 270 112" preserveAspectRatio="none">
+        <path className="ab-band" d={`M${up.join(' L')} L${lo.join(' L')} Z`} />
+        <path className="ab-hist" d={hist} />
+        <path className="ab-fore" d={fore} />
+        <circle className="ab-now" cx={px(last)} cy={py(HIST[last])} r={3.5} />
+      </svg>
+      <span className="ab-note ok">
+        <Check /> {t(about.checked)}
+      </span>
+    </div>
+  )
+}
+
+function ReportVisual() {
+  const { t } = useLang()
+  return (
+    <div className="ab-vis ab-report" aria-hidden="true">
+      {about.findings.map((f) => (
+        <div key={f.text.en} className="ab-find">
+          <strong>{t(f.text)}</strong>
+          <Level level={f.level} />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+const VISUALS = [FilesVisual, ChartVisual, ReportVisual]
+
 // Who we are: the first section under the introduction.
 export function About() {
-  const { t } = useLang()
+  const { t, lang } = useLang()
+  const [a, b] = about.heading[lang]
+  const openDept = (id: string) => window.dispatchEvent(new CustomEvent(DEPT_EVENT, { detail: id }))
   return (
     <section id="about" className="section about" aria-labelledby="about-h">
       <div className="wrap">
         <header className="sec-head wide">
           <h2 id="about-h" data-reveal>
-            {t(about.heading)}
+            {a} <span className="accent">{b}</span>
           </h2>
           <p className="sec-lead" data-reveal style={order(1)}>
             {t(about.text)}
           </p>
         </header>
 
-        <ul className="pillars">
-          {about.pillars.map((p, n) => (
-            <li key={p.title.en} className="pillar glass" data-reveal style={order(n)}>
-              <span className="pillar-ico">{pillarIcons[n]}</span>
-              <h3>{t(p.title)}</h3>
-              <p>{t(p.text)}</p>
-              <div className="pillar-stat">
-                <strong dir="ltr">{p.stat}</strong>
-                <span>{t(p.note)}</span>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <ol className="ab-steps">
+          {about.steps.map((s, n) => {
+            const Vis = VISUALS[n]
+            return (
+              <li key={s.title.en} className="ab-step glass" data-reveal style={order(n)}>
+                <Vis />
+                <div className="ab-copy">
+                  <span className="ab-n">{String(n + 1).padStart(2, '0')}</span>
+                  <h3>{t(s.title)}</h3>
+                  <p>{t(s.text)}</p>
+                </div>
+              </li>
+            )
+          })}
+        </ol>
+
+        <div className="asks" data-reveal>
+          <span className="asks-title">{t(about.asksTitle)}</span>
+          <ul>
+            {about.asks.map((q) => (
+              <li key={q.dept}>
+                <a href="#services" className="ask glass" onClick={() => openDept(q.dept)}>
+                  <small>{t(depts.find((d) => d.id === q.dept)!.name)}</small>
+                  <span>{t(q.q)}</span>
+                  <Arrow />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </section>
   )

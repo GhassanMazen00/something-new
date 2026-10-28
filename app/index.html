@@ -8,11 +8,11 @@
     <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
     <title>Clearline Workspace</title>
     <script>
+      // A saved choice wins; otherwise the system (or the host page) decides.
       try {
-        document.documentElement.dataset.theme = localStorage.getItem('clearline:theme') === 'light' ? 'light' : 'dark'
-      } catch (e) {
-        document.documentElement.dataset.theme = 'dark'
-      }
+        var t = localStorage.getItem('clearline:theme')
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t
+      } catch (e) {}
     </script>
   </head>
   <body>

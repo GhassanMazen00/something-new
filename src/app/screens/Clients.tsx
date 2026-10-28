@@ -523,16 +523,6 @@ function Report({ client }: { client: Client }) {
         <div className="spread">
           <span className="tag blue">Draft · {sections.length} sections</span>
           <div className="row">
-            <button
-              className="btn btn-sm"
-              type="button"
-              onClick={() => {
-                log(client.id, 'Exported the report draft as PDF')
-                window.print()
-              }}
-            >
-              Export PDF
-            </button>
             <button className="btn btn-sm btn-primary" type="button" disabled={sent} onClick={() => sendForReview(client.id)}>
               {sent ? 'Sent for review ✓' : 'Send for review'}
             </button>
@@ -549,7 +539,7 @@ function Report({ client }: { client: Client }) {
           {icons.spark}
           <span>
             <b>Write the summary with Claude</b>
-            Claude drafts the opening summary and the Arabic version from these findings and numbers only. The analyst edits and approves every word. Switches on with the secure server.
+            Claude drafts the opening summary and the Arabic version from these findings and numbers only. The analyst edits and approves every word. Switches on with the secure server, which also produces the PDF.
           </span>
           <button className="btn btn-sm" type="button" disabled>
             Draft with Claude

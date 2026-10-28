@@ -2,29 +2,16 @@
 
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { ANALYSTS, clientsFor } from './data/clients'
+import { navigate, useRoute } from './route'
 import { me, signIn, signOut, useStore } from './store'
 import { icons, LogoMark } from './ui/bits'
 import { Activity } from './screens/Activity'
 import { Catalog } from './screens/Catalog'
 import { ClientPage, ClientsList } from './screens/Clients'
 
-// Routes live in the hash: #/clients, #/client/nile/services, #/catalog …
-function useRoute() {
-  const read = () => location.hash.replace(/^#\/?/, '').split('/').filter(Boolean)
-  const [parts, setParts] = useState(read)
-  useEffect(() => {
-    const on = () => {
-      setParts(read())
-      window.scrollTo(0, 0)
-    }
-    window.addEventListener('hashchange', on)
-    return () => window.removeEventListener('hashchange', on)
-  }, [])
-  return parts
-}
-
+// Starts from the page's theme (a saved choice, the host's setting, or the system's) and lets the analyst flip it.
 function useTheme() {
-  const [theme, setTheme] = useState(() => document.documentElement.dataset.theme ?? 'dark')
+  const [theme, setTheme] = useState(() => document.documentElement.dataset.theme ?? (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'))
   useEffect(() => {
     document.documentElement.dataset.theme = theme
     try {
@@ -177,8 +164,8 @@ export default function App() {
   const route = useRoute()
   const user = me()
   useEffect(() => {
-    if (user && !location.hash) location.hash = '#/clients'
-  }, [user])
+    if (user && !route.length) navigate('/clients')
+  }, [user, route.length])
   if (!user) return <SignIn />
   const [section, id, tab, sub] = route
   if (section === 'client' && id) {

@@ -265,6 +265,12 @@ dd {
 .accent {
   color: var(--accent);
 }
+/* Arrows point the way the text reads. */
+[dir='rtl'] .flip {
+  transform: scaleX(-1);
+  transform-origin: center;
+  transform-box: fill-box;
+}
 /* Headings: light sans with the key words in a serif italic. */
 h1 .accent,
 h2 .accent {

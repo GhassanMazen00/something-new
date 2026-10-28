@@ -57,7 +57,7 @@ export function ContactDialog() {
                 <span className="ch-ico">{contactIcons[c.key]}</span>
                 <span className="ch-text">
                   <small>{c.label}</small>
-                  <b dir="ltr">{c.value}</b>
+                  <b dir="ltr">{c.key === 'email' ? <>{c.value.split('@')[0]}@<wbr />{c.value.split('@')[1]}</> : c.value}</b>
                 </span>
               </a>
             </li>

@@ -294,7 +294,6 @@ body::before {
   border-radius: var(--radius);
   box-shadow: var(--glass-shadow);
   backdrop-filter: blur(28px) saturate(170%);
-  -webkit-backdrop-filter: blur(28px) saturate(170%);
   isolation: isolate;
 }
 /* Frosted grain plus a soft light that follows the pointer (position set by useGlassLight). */
@@ -545,7 +544,6 @@ body::before {
 .header.is-open {
   background: var(--nav-bg);
   backdrop-filter: blur(20px) saturate(170%);
-  -webkit-backdrop-filter: blur(20px) saturate(170%);
   border-bottom-color: var(--line);
 }
 .header-inner {
@@ -871,7 +869,6 @@ html.js [data-reveal][data-in] {
   text-align: start;
   background: var(--nav-bg);
   backdrop-filter: blur(24px) saturate(170%);
-  -webkit-backdrop-filter: blur(24px) saturate(170%);
   color: var(--ink);
   animation: pop-in 0.25s var(--ease) both;
 }
@@ -948,7 +945,6 @@ html.js [data-reveal][data-in] {
   padding: 16px;
   background: rgba(0, 0, 0, 0.72);
   backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   animation: ridge-fade 0.2s ease both;
   opacity: 0;
 }
@@ -1021,7 +1017,7 @@ html.js [data-reveal][data-in] {
 }
 .ch-text b {
   font-weight: 600;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
   text-align: start;
 }
 .channels.wide {
@@ -1381,7 +1377,6 @@ html.js [data-reveal][data-in] {
   border-radius: 12px;
   background: var(--glass-bg);
   backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--line);
 }
 .tabs button {
@@ -2758,6 +2753,43 @@ svg.logo-mark {
 }
 .svc-facts {
   margin-top: 16px;
+}
+
+.header-cta svg {
+  display: none;
+}
+/* Small phones: the header contact button becomes an icon so the logo keeps its room. */
+@media (max-width: 400px) {
+  .header-inner {
+    gap: 8px;
+  }
+  .logo {
+    gap: 10px;
+  }
+  .logo-text {
+    font-size: 0.82rem;
+    letter-spacing: 0.2em;
+  }
+  .header-actions {
+    gap: 6px;
+    margin-inline-start: auto;
+  }
+  .header-actions .icon-btn,
+  .header-cta {
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0;
+  }
+  .header-cta span {
+    display: none;
+  }
+  .header-cta svg {
+    display: block;
+    width: 18px;
+    height: 18px;
+    flex: none;
+  }
 }
 
 /* ---------- About: what we do, in three steps ---------- */

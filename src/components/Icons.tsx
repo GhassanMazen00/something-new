@@ -82,66 +82,11 @@ export const ruleIcons = [
   </Icon>,
 ]
 
-// Side menu
 const SmallIcon = ({ children }: { children: ReactNode }) => (
   <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     {children}
   </svg>
 )
-export const sectionIcons: Record<string, ReactNode> = {
-  top: (
-    <SmallIcon>
-      <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" />
-      <rect x="13.5" y="3.5" width="7" height="7" rx="1.5" />
-      <rect x="3.5" y="13.5" width="7" height="7" rx="1.5" />
-      <rect x="13.5" y="13.5" width="7" height="7" rx="1.5" />
-    </SmallIcon>
-  ),
-  privacy: (
-    <SmallIcon>
-      <path d="M12 3l7.5 3v5.5c0 4.5-3.2 8-7.5 9.5-4.3-1.5-7.5-5-7.5-9.5V6z" />
-      <path d="M9 12l2 2 4-4" />
-    </SmallIcon>
-  ),
-  services: (
-    <SmallIcon>
-      <path d="M12 3l9 5-9 5-9-5z" />
-      <path d="M3 13l9 5 9-5" />
-    </SmallIcon>
-  ),
-  checker: (
-    <SmallIcon>
-      <ellipse cx="12" cy="5.5" rx="7.5" ry="2.5" />
-      <path d="M4.5 5.5v13c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5v-13M4.5 12c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5" />
-    </SmallIcon>
-  ),
-  demos: (
-    <SmallIcon>
-      <circle cx="12" cy="12" r="8.5" />
-      <path d="M10 8.8v6.4l5-3.2z" />
-    </SmallIcon>
-  ),
-  process: (
-    <SmallIcon>
-      <path d="M8 6h12M8 12h12M8 18h12" />
-      <circle cx="4" cy="6" r="1" />
-      <circle cx="4" cy="12" r="1" />
-      <circle cx="4" cy="18" r="1" />
-    </SmallIcon>
-  ),
-  faq: (
-    <SmallIcon>
-      <circle cx="12" cy="12" r="8.5" />
-      <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.4M12 17h.01" />
-    </SmallIcon>
-  ),
-  contact: (
-    <SmallIcon>
-      <rect x="3" y="5.5" width="18" height="13" rx="2" />
-      <path d="M3.5 7l8.5 6 8.5-6" />
-    </SmallIcon>
-  ),
-}
 export const Sun = () => (
   <SmallIcon>
     <circle cx="12" cy="12" r="4" />
@@ -156,6 +101,11 @@ export const Moon = () => (
 export const Menu = () => (
   <SmallIcon>
     <path d="M4 7h16M4 12h16M4 17h16" />
+  </SmallIcon>
+)
+export const Chat = () => (
+  <SmallIcon>
+    <path d="M4 5.5h16v10H9l-5 4z" />
   </SmallIcon>
 )
 export const Close = () => (

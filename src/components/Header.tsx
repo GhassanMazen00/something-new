@@ -3,7 +3,7 @@ import { BRAND, BRAND_FULL, nav, settings, type T } from '../content'
 import { openContact } from '../contactEvent'
 import { useLang } from '../lang'
 import type { Theme } from '../theme'
-import { Check, Close, Gear, Menu, Moon, Sun } from './Icons'
+import { Chat, Check, Close, Gear, Menu, Moon, Sun } from './Icons'
 
 const LINKS: [string, T][] = [
   ['about', { en: 'About', ar: 'من نحن' }],
@@ -158,8 +158,9 @@ export function Header({ theme, setTheme }: Props) {
         </nav>
         <div className="header-actions">
           <Settings theme={theme} setTheme={setTheme} />
-          <button type="button" className="btn btn-primary btn-sm header-cta" onClick={openContact}>
-            {t(nav.book)}
+          <button type="button" className="btn btn-primary btn-sm header-cta" aria-label={t(nav.book)} onClick={openContact}>
+            <Chat />
+            <span>{t(nav.book)}</span>
           </button>
           <button type="button" className="icon-btn menu-btn" aria-expanded={open} aria-controls="site-nav" aria-label={open ? t(nav.close) : t(nav.menu)} onClick={() => setOpen(!open)}>
             {open ? <Close /> : <Menu />}

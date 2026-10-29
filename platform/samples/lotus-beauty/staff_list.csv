@@ -1,0 +1,59 @@
+Employee ID,Name,Job Title,Gender,Hire Date,Termination Date,Monthly Salary,Branch,Overtime hours
+E-1001,Habiba Samir,Customer service,Female,2024-11-05,2026-01-28,9950,Online,9
+E-1002,Farida Saeed,Customer service,Female,2020-02-04,,11750,Online,18
+E-1003,Heba Saeed,Customer service,Female,2023-08-29,2025-11-06,11250,Online,22
+E-1004,Dina Fouad,Customer service,Female,2023-02-14,,10450,Online,19
+E-1005,Sara Helmy,Customer service,Female,2021-07-03,2025-05-06,7750,Online,9
+E-1006,Nour Fathy,Customer service,Female,2020-05-03,,9400,Online,2
+E-1007,Aya Saeed,Customer service,Female,2023-03-24,2026-02-17,9750,Online,14
+E-1008,Reem Ragab,Customer service,Female,2023-10-25,,10100,Online,15
+E-1009,Hana Mansour,Customer service,Female,2023-12-14,2025-05-04,10150,Online,12
+E-1010,Yasmin Saeed,Customer service,Female,2023-06-13,2026-03-10,9700,Online,21
+E-1011,Mariam Saeed,Content creator,Female,2018-12-23,,13800,Online,14
+E-1012,Youssef Mansour,Content creator,Male,2023-01-29,,19400,Online,11
+E-1013,Islam Helmy,Content creator,Male,2021-12-22,,18000,Online,3
+E-1014,Mona Hassan,Content creator,Female,2022-12-08,2026-02-19,16350,Online,6
+E-1015,Heba Adel,Content creator,Female,2021-07-24,,13300,Online,11
+E-1016,Mariam Fathy,Content creator,Female,2022-12-20,,12100,Online,10
+E-1017,Habiba Samir,Packer,Female,2024-12-21,2026-03-30,7800,Online,20
+E-1018,Habiba Sobhy,Packer,Female,2018-12-24,,8150,Online,23
+E-1019,Ahmed Adel,Packer,Male,2019-11-03,,8350,Online,8
+E-1020,Tarek Nabil,Packer,Male,2018-06-22,,8900,Online,39
+E-1021,Mostafa Fathy,Packer,Male,2023-12-01,,8300,Online,0
+E-1022,Ahmed Gamal,Packer,Male,2022-04-14,,10450,Online,7
+E-1023,Nour Hassan,Packer,Female,2024-01-06,2025-09-17,7800,Online,28
+E-1024,Tarek Saeed,Packer,Male,2018-09-18,,9450,Online,18
+E-1025,Aya Ezzat,Packer,Female,2024-09-25,2025-06-02,7550,Online,14
+E-1026,Laila Samir,Packer,Female,2024-01-03,2025-05-01,7550,Online,37
+E-1027,Reem Ezzat,Packer,Female,2023-03-24,,7250,Online,42
+E-1028,Salma Lotfy,Packer,Female,2020-10-27,2025-06-30,8550,Online,24
+E-1029,Farida Fathy,Marketing,Female,2020-03-03,,15900,Online,10
+E-1030,Karim Ezzat,Marketing,Male,2018-03-24,2026-02-06,20050,Online,5
+E-1031,Mona Adel,Marketing,Female,2021-12-31,2025-08-27,17000,Online,5
+E-1032,Amr Shawky,Marketing,Male,2024-03-16,,18150,Online,3
+E-1033,Farida Sobhy,Marketing,Female,2022-03-07,,14900,Online,11
+E-1034,Mahmoud Fathy,Developer,Male,2018-04-15,,26950,Online,4
+E-1035,Ahmed Lotfy,Developer,Male,2020-07-05,,27850,Online,9
+E-1036,Mariam Fouad,Developer,Female,2021-03-23,2025-06-10,24300,Online,0
+E-1037,Reem Helmy,Customer service,Female,2025-06-08,2026-01-11,9150,Online,5
+E-1038,Hana Hassan,Customer service,Female,2025-05-26,,11350,Online,7
+E-1039,Laila Mansour,Packer,Female,2025-05-29,,9700,Online,20
+E-1040,Dina Adel,Packer,Female,2025-07-01,,7300,Online,0
+E-1041,Salma Nabil,Packer,Female,2025-07-20,2026-06-02,8600,Online,11
+E-1042,Ahmed Saeed,Developer,Male,2025-06-23,,24700,Online,6
+E-1043,Laila Ragab,Marketing,Female,2025-09-05,,15200,Online,0
+E-1044,Hassan Mansour,Packer,Male,2025-09-26,2026-04-19,8350,Online,35
+E-1045,Hany Shawky,Customer service,Male,2025-11-30,2026-03-23,9050,Online,15
+E-1046,Mona Ibrahim,Customer service,Female,2026-02-27,,10000,Online,9
+E-1047,Heba Adel,Customer service,Female,2026-02-11,2026-09-12,9900,Online,13
+E-1048,Salma Mansour,Customer service,Female,2026-03-12,,10850,Online,18
+E-1049,Ziad Sobhy,Content creator,Male,2026-03-07,,14950,Online,15
+E-1050,Mona Saeed,Marketing,Female,2026-03-09,,16150,Online,10
+E-1051,Ahmed Gamal,Customer service,Male,2026-04-03,2026-07-03,12750,Online,19
+E-1052,Rana Hassan,Packer,Female,2026-04-20,2026-08-31,8450,Online,46
+E-1053,Rana Gamal,Customer service,Female,2026-03-31,2026-09-09,9500,Online,7
+E-1054,Omar Samir,Packer,Male,2026-05-27,2026-08-08,7650,Online,27
+E-1055,Ziad Sobhy,Packer,Male,2026-07-09,,6950,Online,16
+E-1056,Malak Mansour,Customer service,Female,2026-07-11,,11150,Online,14
+E-1057,Mona Adel,Packer,Female,2026-08-29,,9200,Online,14
+E-1059,Nour Ragab,Packer,Female,2026-09-14,,6650,Online,28

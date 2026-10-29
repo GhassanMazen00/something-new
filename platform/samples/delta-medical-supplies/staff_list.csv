@@ -1,0 +1,79 @@
+Employee ID,Name,Job Title,Gender,Hire Date,Termination Date,Monthly Salary,Branch,Overtime hours
+E-1001,Mahmoud Shawky,Sales representative,Male,2022-09-09,,12550,Main,16
+E-1002,Habiba Ibrahim,Sales representative,Female,2021-08-29,2026-04-04,13700,Main,9
+E-1003,Amr Ragab,Sales representative,Male,2017-10-11,,15650,Main,1
+E-1004,Hassan Nabil,Sales representative,Male,2018-09-14,,13000,Main,6
+E-1005,Rana Hassan,Sales representative,Female,2024-02-05,2025-01-06,13300,Main,5
+E-1006,Ahmed Saeed,Sales representative,Male,2018-04-08,,14450,Main,0
+E-1007,Sara Samir,Sales representative,Female,2023-11-16,,11950,Main,15
+E-1008,Islam Ragab,Sales representative,Male,2022-10-30,,12600,Main,0
+E-1009,Tarek Ezzat,Sales representative,Male,2019-08-31,2025-10-04,16150,Main,8
+E-1010,Tarek Ezzat,Sales representative,Male,2024-01-25,2025-03-27,11950,Main,0
+E-1011,Karim Ragab,Sales representative,Male,2020-09-07,,15200,Main,19
+E-1012,Karim Saeed,Sales representative,Male,2023-06-16,,10750,Main,18
+E-1013,Tarek Samir,Sales representative,Male,2024-01-24,2025-12-04,12050,Main,13
+E-1014,Hassan Lotfy,Sales representative,Male,2019-04-30,2024-10-28,13350,Main,13
+E-1015,Ahmed Sobhy,Sales representative,Male,2023-02-26,2025-05-04,13000,Main,9
+E-1016,Hassan Ezzat,Sales representative,Male,2023-06-27,,13500,Main,17
+E-1017,Ahmed Helmy,Sales representative,Male,2019-08-27,,18250,Main,1
+E-1018,Mahmoud Fouad,Sales representative,Male,2019-04-08,2026-09-05,12200,Main,8
+E-1019,Islam Ibrahim,Pharmacist,Male,2024-01-04,,17550,Main,8
+E-1020,Mostafa Lotfy,Pharmacist,Male,2018-11-16,,17400,Main,9
+E-1021,Hassan Shawky,Pharmacist,Male,2019-11-08,,18450,Main,9
+E-1022,Sara Fathy,Pharmacist,Female,2018-04-16,2025-09-14,13850,Main,0
+E-1023,Islam Mansour,Warehouse,Male,2021-10-06,,10250,Main,5
+E-1024,Ahmed Fathy,Warehouse,Male,2020-01-20,,10450,Main,6
+E-1025,Hassan Sobhy,Warehouse,Male,2019-03-27,,9650,Main,14
+E-1026,Sherif Sobhy,Warehouse,Male,2023-03-08,,7950,Main,28
+E-1027,Karim Adel,Warehouse,Male,2019-04-22,2025-03-11,8800,Main,24
+E-1028,Islam Mansour,Warehouse,Male,2018-08-31,,10700,Main,35
+E-1029,Mostafa Fathy,Warehouse,Male,2021-09-22,2025-09-16,8600,Main,24
+E-1030,Karim Gamal,Warehouse,Male,2021-08-04,,7900,Main,17
+E-1031,Ali Hassan,Warehouse,Male,2018-03-15,,9900,Main,19
+E-1032,Karim Shawky,Warehouse,Male,2024-08-31,2025-03-27,7150,Main,36
+E-1033,Hassan Gamal,Warehouse,Male,2020-08-05,,8600,Main,29
+E-1034,Ziad Ibrahim,Warehouse,Male,2021-05-05,,10450,Main,25
+E-1035,Mohamed Samir,Warehouse,Male,2022-07-05,,10700,Main,20
+E-1036,Ziad Mansour,Warehouse,Male,2021-12-06,,7900,Main,11
+E-1037,Ziad Mansour,Warehouse,Male,2019-09-16,,10400,Main,14
+E-1038,Sherif Fathy,Warehouse,Male,2022-05-24,,9550,Main,21
+E-1039,Hassan Lotfy,Driver,Male,2023-01-15,,10050,Main,19
+E-1040,Mohamed Shawky,Driver,Male,2022-03-08,2025-07-25,7300,Main,24
+E-1041,Karim Nabil,Driver,Male,2023-06-04,,8500,Main,28
+E-1042,Mahmoud Lotfy,Driver,Male,2021-02-01,,10500,Main,43
+E-1043,Khaled Helmy,Driver,Male,2021-07-15,,7300,Main,25
+E-1044,Khaled Ragab,Driver,Male,2019-08-02,2026-03-27,9750,Main,31
+E-1045,Karim Helmy,Driver,Male,2022-01-23,,10800,Main,9
+E-1046,Hany Ragab,Driver,Male,2021-08-05,,9900,Main,38
+E-1047,Ali Gamal,Driver,Male,2021-06-08,,11450,Main,2
+E-1048,Mahmoud Nabil,Driver,Male,2018-02-02,,9650,Main,21
+E-1049,Sherif Helmy,Driver,Male,2021-10-10,,10650,Main,8
+E-1050,Mohamed Sobhy,Driver,Male,2020-07-24,,8900,Main,8
+E-1051,Aya Lotfy,Accountant,Female,2022-07-22,,19300,Main,5
+E-1052,Laila Nabil,Accountant,Female,2021-08-03,,13200,Main,10
+E-1053,Youssef Hassan,Accountant,Male,2022-11-04,,16600,Main,10
+E-1054,Aya Fathy,Accountant,Female,2024-07-11,,17250,Main,11
+E-1055,Sara Ragab,Accountant,Female,2021-11-04,,17400,Main,14
+E-1056,Sherif Lotfy,Manager,Male,2019-08-22,,45850,Main,14
+E-1057,Mostafa Lotfy,Manager,Male,2022-11-24,,35950,Main,14
+E-1058,Sara Helmy,Manager,Female,2021-01-05,,27400,Main,12
+E-1059,Khaled Ibrahim,Manager,Male,2019-10-30,,34950,Main,14
+E-1060,Khaled Sobhy,Sales representative,Male,2024-11-14,2026-07-21,13450,Main,11
+E-1061,Dina Ezzat,Sales representative,Female,2025-02-12,,13150,Main,8
+E-1062,Hany Lotfy,Sales representative,Male,2025-04-22,2025-06-20,12200,Main,0
+E-1063,Ali Sobhy,Warehouse,Male,2025-03-27,,9050,Main,39
+E-1064,Mohamed Mansour,Warehouse,Male,2025-04-22,,9000,Main,31
+E-1065,Habiba Sobhy,Sales representative,Female,2025-05-20,2025-09-05,11650,Main,15
+E-1066,Laila Samir,Sales representative,Female,2025-07-21,2026-03-10,12100,Main,7
+E-1067,Ziad Ragab,Driver,Male,2025-08-20,2026-06-14,9600,Main,0
+E-1068,Hany Shawky,Pharmacist,Male,2025-10-17,,17300,Main,10
+E-1069,Ali Shawky,Warehouse,Male,2025-10-01,,11300,Main,21
+E-1070,Ziad Samir,Sales representative,Male,2025-10-04,,12050,Main,10
+E-1071,Amr Shawky,Sales representative,Male,2025-10-12,,13850,Main,10
+E-1072,Islam Ezzat,Sales representative,Male,2025-12-29,,12750,Main,15
+E-1073,Amr Ezzat,Driver,Male,2026-04-08,,10150,Main,41
+E-1074,Salma Ragab,Sales representative,Female,2026-04-17,2026-05-31,11000,Main,6
+E-1075,Khaled Shawky,Sales representative,Male,2026-05-09,,13200,Main,8
+E-1076,Youssef Fathy,Sales representative,Male,2026-07-06,,11950,Main,11
+E-1077,Mahmoud Gamal,Driver,Male,2026-07-15,,8350,Main,57
+E-1078,Aya Helmy,Sales representative,Female,2026-08-21,,12550,Main,18

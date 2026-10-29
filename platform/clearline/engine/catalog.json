@@ -1,0 +1,294 @@
+[
+  {
+    "id": "data",
+    "name": "Data analysis",
+    "services": [
+      {
+        "id": "data-health-check",
+        "name": "Data health check",
+        "get": "A score out of 100 and a list of problems: duplicates, gaps, wrong codes",
+        "method": "Standard data-quality rules",
+        "data": "Whatever files you have",
+        "missing": "Nothing extra: it works on anything you send"
+      },
+      {
+        "id": "business-snapshot",
+        "name": "Business snapshot",
+        "get": "Trends, plus your best and worst products, customers and branches",
+        "method": "Pareto (80/20) and ABC analysis",
+        "data": "A sales list: date, product, amount",
+        "missing": "E-invoices or till receipts work instead"
+      },
+      {
+        "id": "data-cleaning-and-merging",
+        "name": "Data cleaning and merging",
+        "get": "One clean, trusted table built from your scattered files",
+        "method": "Standard cleaning rules, duplicate removal and fuzzy matching of names and codes",
+        "data": "Any Excel, CSV or system exports you have",
+        "missing": "Nothing extra: we work with what you send"
+      },
+      {
+        "id": "kpi-dashboard",
+        "name": "KPI dashboard",
+        "get": "Your key numbers on one screen, refreshed every month",
+        "method": "KPI design with Power BI or Looker Studio",
+        "data": "Monthly sales, costs and any targets you track",
+        "missing": "Missing targets: we suggest them from your own history"
+      },
+      {
+        "id": "trends-and-seasonality",
+        "name": "Trends and seasonality",
+        "get": "What really changes by month, weekday and season, with the noise taken out",
+        "method": "Seasonal decomposition (STL) and moving averages",
+        "data": "At least 12 months of daily or weekly sales",
+        "missing": "Under 12 months: weekday and monthly patterns only"
+      },
+      {
+        "id": "driver-analysis",
+        "name": "Driver analysis",
+        "get": "Which factors move your sales or costs the most, and by how much",
+        "method": "Multiple regression with SHAP values",
+        "data": "Sales plus the factors you think matter: price, promotions, branch, season",
+        "missing": "Missing factors: we add public ones such as holidays and inflation"
+      },
+      {
+        "id": "branch-and-product-benchmarking",
+        "name": "Branch and product benchmarking",
+        "get": "Which branches and products under- or over-perform, compared fairly",
+        "method": "Indexed comparison per square metre, per staff member and per customer",
+        "data": "Sales by branch or product, plus size and staff numbers",
+        "missing": "Without size or staff data: sales and growth only"
+      }
+    ]
+  },
+  {
+    "id": "sales",
+    "name": "Sales",
+    "services": [
+      {
+        "id": "sales-forecast-3-to-12-months",
+        "name": "Sales forecast, 3 to 12 months",
+        "get": "Expected sales per month, with a likely, low and high case",
+        "method": "ETS and ARIMA, Prophet (Meta), Chronos (Amazon)",
+        "data": "Two years or more of monthly sales",
+        "missing": "One year still works, with wider ranges. No history: we build it from customers × average order × visits"
+      },
+      {
+        "id": "price-change-what-if",
+        "name": "Price change what-if",
+        "get": "Whether a price change pays off, and the drop in sales it can survive",
+        "method": "Break-even formula and price-elasticity regression",
+        "data": "Price and cost per product",
+        "missing": "If prices never changed, we give break-even limits and design a two-week price test"
+      },
+      {
+        "id": "product-and-customer-ranking",
+        "name": "Product and customer ranking",
+        "get": "The 20% of products and customers that bring 80% of your profit",
+        "method": "ABC / Pareto analysis",
+        "data": "Sales by product and by customer",
+        "missing": "Invoices or till data"
+      },
+      {
+        "id": "stock-reorder-plan",
+        "name": "Stock reorder plan",
+        "get": "What to order, when, and how much",
+        "method": "Reorder point with safety stock; Croston for slow sellers",
+        "data": "Sales by product, stock on hand, supplier delivery times",
+        "missing": "Delivery times can be your estimate"
+      }
+    ]
+  },
+  {
+    "id": "marketing",
+    "name": "Marketing",
+    "services": [
+      {
+        "id": "customer-groups",
+        "name": "Customer groups",
+        "get": "Your best, loyal, at-risk and lost customers",
+        "method": "RFM analysis: recency, frequency, value",
+        "data": "Orders with customer, date and amount",
+        "missing": "A phone number or a code can stand in for a customer ID"
+      },
+      {
+        "id": "ad-channel-performance",
+        "name": "Ad channel performance",
+        "get": "The cost to win a customer, and the payback time, for each channel",
+        "method": "Acquisition cost, return on ad spend, payback",
+        "data": "Ad spend per channel and new customers",
+        "missing": "No tracking? Promo codes, or a “how did you hear about us?” question, for four weeks"
+      },
+      {
+        "id": "budget-split-across-channels",
+        "name": "Budget split across channels",
+        "get": "Where your next EGP 1,000 should go",
+        "method": "Marketing mix modelling (Google Meridian, Meta Robyn)",
+        "data": "Two to three years of weekly spend per channel",
+        "missing": "This one can’t be replaced, so we run a simple test: pause ads in one area and compare"
+      },
+      {
+        "id": "customer-value-and-churn",
+        "name": "Customer value and churn",
+        "get": "Who is likely to stop buying, and what each customer is worth",
+        "method": "Cohort analysis and the BG/NBD model",
+        "data": "Twelve months or more of orders per customer",
+        "missing": "With less history, cohort tables only"
+      },
+      {
+        "id": "a-b-test-check",
+        "name": "A/B test check",
+        "get": "Whether version B really won, or it was luck",
+        "method": "Standard significance test",
+        "data": "The results of both versions",
+        "missing": "We can help you design the test first"
+      }
+    ]
+  },
+  {
+    "id": "accounting",
+    "name": "Accounting & finance",
+    "services": [
+      {
+        "id": "error-and-fraud-scan",
+        "name": "Error and fraud scan",
+        "get": "A list of suspicious entries for you to review",
+        "method": "Benford’s law, duplicate checks, outlier detection (Isolation Forest), gaps in invoice numbers",
+        "data": "Ledger entries, invoices, bank statements",
+        "missing": "Invoices and bank statements alone still catch duplicates and mismatches. Benford’s law needs a few hundred entries"
+      },
+      {
+        "id": "books-e-invoices-and-bank-matched",
+        "name": "Books, e-invoices and bank, matched",
+        "get": "Sales that don’t match your tax records or bank deposits",
+        "method": "Reconciliation rules",
+        "data": "E-invoice export, your books, bank statement",
+        "missing": "Any two of the three still work"
+      },
+      {
+        "id": "13-week-cash-forecast",
+        "name": "13-week cash forecast",
+        "get": "The week cash runs short, and what to do before it",
+        "method": "Direct cash-flow method, the standard used by banks and finance managers",
+        "data": "Bank balance, unpaid invoices, bills, payroll dates",
+        "missing": "No list of unpaid invoices? We estimate from six months of bank statements"
+      },
+      {
+        "id": "profit-projection-with-what-ifs",
+        "name": "Profit projection with what-ifs",
+        "get": "Profit for the next 12 months under three scenarios",
+        "method": "Driver-based model with Monte Carlo simulation",
+        "data": "12 to 24 months of profit and loss",
+        "missing": "Missing costs become your estimates, clearly labelled"
+      },
+      {
+        "id": "break-even",
+        "name": "Break-even",
+        "get": "How much you must sell to cover your costs",
+        "method": "Break-even formula",
+        "data": "Fixed costs, cost per unit, price",
+        "missing": "Your estimates"
+      },
+      {
+        "id": "exchange-rate-and-inflation-impact",
+        "name": "Exchange rate and inflation impact",
+        "get": "What the pound at 45, 50 or 55 to the dollar does to your margin",
+        "method": "Scenario analysis",
+        "data": "The share of your costs that is imported",
+        "missing": "Your estimate, plus Central Bank data"
+      }
+    ]
+  },
+  {
+    "id": "people",
+    "name": "People",
+    "services": [
+      {
+        "id": "staff-turnover-analysis",
+        "name": "Staff turnover analysis",
+        "get": "Who is likely to leave, and what turnover costs you",
+        "method": "Survival analysis and logistic regression",
+        "data": "Staff list with hire date, leave date, role, salary",
+        "missing": "Under about 50 staff: turnover rate and cost only, no prediction"
+      },
+      {
+        "id": "staffing-plan",
+        "name": "Staffing plan",
+        "get": "Staff needed per hour or day, matched to your sales",
+        "method": "ETS sales forecast with a labour-cost ratio",
+        "data": "Sales by hour and work schedules",
+        "missing": "Daily sales work, with less detail"
+      },
+      {
+        "id": "payroll-error-scan",
+        "name": "Payroll error scan",
+        "get": "Duplicate payments, ghost employees, overtime spikes",
+        "method": "Rules plus outlier detection",
+        "data": "Payroll records",
+        "missing": "Bank transfers to staff can stand in"
+      },
+      {
+        "id": "pay-fairness-check",
+        "name": "Pay fairness check",
+        "get": "Pay gaps by role, tenure and gender",
+        "method": "Regression analysis",
+        "data": "Salaries, roles, tenure",
+        "missing": "Salary bands can replace exact salaries, with wider ranges"
+      },
+      {
+        "id": "employee-survey",
+        "name": "Employee survey",
+        "get": "A satisfaction score and the main complaints",
+        "method": "eNPS, with AI reading the written comments",
+        "data": "Survey answers",
+        "missing": "We can design and run the survey for you"
+      }
+    ]
+  },
+  {
+    "id": "market",
+    "name": "Market research",
+    "services": [
+      {
+        "id": "market-size",
+        "name": "Market size",
+        "get": "How big your market is, and your share of it",
+        "method": "TAM, SAM and SOM, top-down and bottom-up",
+        "data": "Mostly public data: CAPMAS, World Bank",
+        "missing": "Public data covers it fully"
+      },
+      {
+        "id": "demand-trends",
+        "name": "Demand trends",
+        "get": "Whether interest is rising or falling, and when it peaks",
+        "method": "Google Trends with time-series models",
+        "data": "Public data",
+        "missing": "Nothing needed from you"
+      },
+      {
+        "id": "competitor-check",
+        "name": "Competitor check",
+        "get": "Competitors’ prices, positioning, and what their customers complain about",
+        "method": "Price comparison, Porter’s five forces, SWOT, AI reading of public reviews",
+        "data": "Competitor prices and reviews, collected by hand",
+        "missing": "We collect what is public"
+      },
+      {
+        "id": "customer-survey",
+        "name": "Customer survey",
+        "get": "What customers want, and what they’ll pay",
+        "method": "Survey statistics and the Van Westendorp price test",
+        "data": "Survey answers",
+        "missing": "We design and run the survey"
+      },
+      {
+        "id": "market-conditions",
+        "name": "Market conditions",
+        "get": "How inflation, interest rates and the pound affect you",
+        "method": "PESTEL analysis with scenarios",
+        "data": "Central Bank of Egypt, CAPMAS, IMF",
+        "missing": "Public data covers it fully"
+      }
+    ]
+  }
+]

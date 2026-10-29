@@ -1,0 +1,13 @@
+SKU,Product name,Category,Selling price,Unit cost,Imported %
+M001,"Nitrile gloves, box of 100",Medical supplies,420,300,85
+M002,"Syringes 5 ml, box of 100",Medical supplies,380,275,80
+M003,"Gauze rolls, pack of 12",Medical supplies,260,185,40
+M004,Blood pressure monitor,Medical supplies,2150,1550,95
+M005,"Glucose test strips, 50",Medical supplies,640,460,95
+M006,"IV cannula, box of 50",Medical supplies,910,655,90
+M007,"Surgical masks, box of 50",Medical supplies,190,135,60
+M008,Disinfectant 5 L,Medical supplies,520,375,30
+M009,Digital thermometer,Medical supplies,310,225,90
+M010,Pulse oximeter,Medical supplies,980,705,95
+M011,Nebulizer,Medical supplies,2650,1910,95
+M012,Wheelchair,Medical supplies,9800,7055,85

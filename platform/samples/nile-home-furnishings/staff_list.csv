@@ -1,0 +1,235 @@
+Employee ID,Name,Job Title,Gender,Hire Date,Termination Date,Monthly Salary,Branch,Overtime hours
+E-1001,Amr Lotfy,Branch manager,Male,2024-08-04,,27350,HEL,18
+E-1002,Aya Gamal,Interior designer,Female,2020-12-27,,18350,HEL,6
+E-1003,Ahmed Helmy,Interior designer,Male,2020-01-04,2026-02-15,21300,HEL,15
+E-1004,Karim Saeed,Sales associate,Male,2019-04-04,,13550,HEL,38
+E-1005,Karim Shawky,Sales associate,Male,2018-07-13,,15700,HEL,0
+E-1006,Ziad Samir,Sales associate,Male,2022-04-27,,13550,HEL,22
+E-1007,Karim Helmy,Sales associate,Male,2022-06-16,,12950,HEL,17
+E-1008,Sara Saeed,Sales associate,Female,2017-12-01,2026-07-21,11650,HEL,23
+E-1009,Ziad Saeed,Sales associate,Male,2019-12-24,2025-08-06,13000,HEL,29
+E-1010,Omar Sobhy,Sales associate,Male,2019-10-18,,11600,HEL,18
+E-1011,Khaled Ibrahim,Sales associate,Male,2020-03-18,,14750,HEL,7
+E-1012,Hassan Fathy,Sales associate,Male,2021-12-13,,13450,HEL,37
+E-1013,Heba Ezzat,Sales associate,Female,2019-07-31,2025-04-27,11850,HEL,21
+E-1014,Dina Gamal,Sales associate,Female,2019-10-13,,12800,HEL,25
+E-1015,Omar Fouad,Sales associate,Male,2023-08-04,,11950,HEL,14
+E-1016,Mariam Fathy,Cashier,Female,2021-07-31,,10700,HEL,17
+E-1017,Malak Ezzat,Cashier,Female,2019-09-18,,8150,HEL,9
+E-1018,Ahmed Ragab,Warehouse,Male,2021-01-27,,10050,HEL,43
+E-1019,Ziad Samir,Warehouse,Male,2019-10-30,2025-06-16,8350,HEL,28
+E-1020,Amr Fathy,Warehouse,Male,2017-11-14,2025-03-29,8550,HEL,37
+E-1021,Omar Hassan,Warehouse,Male,2024-03-20,,9250,HEL,31
+E-1022,Sherif Nabil,Warehouse,Male,2022-09-02,,9400,HEL,13
+E-1023,Hany Ibrahim,Driver,Male,2020-09-01,,10450,HEL,41
+E-1024,Khaled Ragab,Driver,Male,2021-04-19,,10550,HEL,9
+E-1025,Islam Samir,Driver,Male,2017-10-16,,8900,HEL,25
+E-1026,Amr Shawky,Branch manager,Male,2019-06-23,,29250,MAA,14
+E-1027,Mona Ibrahim,Interior designer,Female,2020-04-09,2026-07-30,14150,MAA,0
+E-1028,Hana Saeed,Interior designer,Female,2022-07-10,2025-08-28,17750,MAA,13
+E-1029,Khaled Ragab,Sales associate,Male,2022-12-18,2025-09-14,10650,MAA,33
+E-1030,Sara Ibrahim,Sales associate,Female,2022-02-26,2025-10-14,10950,MAA,7
+E-1031,Salma Sobhy,Sales associate,Female,2018-01-01,2026-01-24,11400,MAA,15
+E-1032,Habiba Lotfy,Sales associate,Female,2018-04-08,,14450,MAA,11
+E-1033,Farida Shawky,Sales associate,Female,2023-08-10,2026-07-21,10650,MAA,3
+E-1034,Mostafa Sobhy,Sales associate,Male,2019-05-17,,11400,MAA,3
+E-1035,Hassan Ibrahim,Sales associate,Male,2022-04-23,,10450,MAA,17
+E-1036,Hany Adel,Sales associate,Male,2018-10-25,,11800,MAA,8
+E-1037,Karim Hassan,Sales associate,Male,2024-08-20,,11700,MAA,3
+E-1038,Omar Nabil,Sales associate,Male,2023-11-23,2024-10-30,11450,MAA,23
+E-1039,Mariam Mansour,Cashier,Female,2023-08-17,,8450,MAA,15
+E-1040,Sara Ezzat,Cashier,Female,2018-08-11,2026-01-28,10950,MAA,10
+E-1041,Amr Hassan,Warehouse,Male,2019-02-13,,8950,MAA,19
+E-1042,Ziad Helmy,Warehouse,Male,2023-05-19,2025-01-11,7150,MAA,15
+E-1043,Mahmoud Mansour,Warehouse,Male,2022-10-20,,8300,MAA,46
+E-1044,Ahmed Fathy,Warehouse,Male,2018-02-14,2025-10-14,9200,MAA,25
+E-1045,Ziad Ibrahim,Driver,Male,2024-02-01,2025-05-15,8550,MAA,26
+E-1046,Hassan Lotfy,Driver,Male,2023-04-25,2024-12-26,8650,MAA,30
+E-1047,Ziad Helmy,Branch manager,Male,2022-01-11,,29000,NCA,15
+E-1048,Mona Shawky,Interior designer,Female,2021-10-15,,18650,NCA,11
+E-1049,Hana Adel,Interior designer,Female,2019-08-31,,13950,NCA,9
+E-1050,Ahmed Sobhy,Sales associate,Male,2022-12-16,,12000,NCA,30
+E-1051,Ziad Lotfy,Sales associate,Male,2020-10-11,2025-04-30,11750,NCA,22
+E-1052,Mahmoud Hassan,Sales associate,Male,2018-06-16,2025-01-24,11500,NCA,12
+E-1053,Heba Adel,Sales associate,Female,2023-10-02,,13250,NCA,11
+E-1054,Reem Nabil,Sales associate,Female,2021-06-25,2024-12-17,10750,NCA,8
+E-1055,Omar Nabil,Sales associate,Male,2021-06-25,,13250,NCA,4
+E-1056,Amr Ibrahim,Sales associate,Male,2019-03-13,2025-06-20,12800,NCA,18
+E-1057,Sara Gamal,Sales associate,Female,2023-05-27,2026-02-02,9700,NCA,0
+E-1058,Habiba Adel,Sales associate,Female,2023-06-14,,13100,NCA,27
+E-1059,Islam Ibrahim,Sales associate,Male,2017-09-27,2024-10-09,12900,NCA,27
+E-1060,Tarek Fouad,Sales associate,Male,2018-05-03,,12500,NCA,5
+E-1061,Hany Fouad,Sales associate,Male,2019-03-20,,13000,NCA,15
+E-1062,Islam Gamal,Sales associate,Male,2019-07-07,,12350,NCA,8
+E-1063,Farida Adel,Sales associate,Female,2018-12-19,,12200,NCA,26
+E-1064,Amr Shawky,Sales associate,Male,2022-07-18,2026-06-26,14350,NCA,38
+E-1065,Ziad Ezzat,Cashier,Male,2023-12-29,,9850,NCA,4
+E-1066,Rana Saeed,Cashier,Female,2020-04-25,,9650,NCA,7
+E-1067,Hany Helmy,Warehouse,Male,2024-01-28,,9350,NCA,37
+E-1068,Youssef Shawky,Warehouse,Male,2018-11-11,2025-10-07,8950,NCA,12
+E-1069,Omar Fouad,Warehouse,Male,2018-02-16,,9400,NCA,0
+E-1070,Youssef Helmy,Warehouse,Male,2024-05-31,,9350,NCA,0
+E-1071,Hassan Shawky,Warehouse,Male,2020-02-29,,9650,NCA,17
+E-1072,Tarek Lotfy,Warehouse,Male,2020-05-31,2024-11-02,9000,NCA,4
+E-1073,Amr Ezzat,Driver,Male,2021-07-06,2025-04-29,8750,NCA,20
+E-1074,Ziad Fouad,Driver,Male,2023-08-19,,9300,NCA,0
+E-1075,Ahmed Saeed,Driver,Male,2018-03-19,,9750,NCA,43
+E-1076,Youssef Mansour,Driver,Male,2023-08-21,,7750,NCA,2
+E-1077,Hassan Saeed,Branch manager,Male,2017-12-22,,36050,ZAY,19
+E-1078,Hana Helmy,Interior designer,Female,2018-06-25,,13600,ZAY,12
+E-1079,Reem Lotfy,Interior designer,Female,2021-08-25,,17950,ZAY,11
+E-1080,Ahmed Ezzat,Sales associate,Male,2020-08-24,,12500,ZAY,26
+E-1081,Hassan Fathy,Sales associate,Male,2020-01-25,2025-02-10,11000,ZAY,37
+E-1082,Omar Hassan,Sales associate,Male,2017-08-24,2025-11-19,9900,ZAY,26
+E-1083,Yasmin Sobhy,Sales associate,Female,2021-06-03,2026-01-13,10100,ZAY,16
+E-1084,Ziad Sobhy,Sales associate,Male,2024-04-12,,12150,ZAY,16
+E-1085,Sherif Sobhy,Sales associate,Male,2024-05-31,,10650,ZAY,15
+E-1086,Rana Gamal,Sales associate,Female,2021-05-25,,11900,ZAY,6
+E-1087,Nour Sobhy,Sales associate,Female,2021-10-07,2025-07-25,9950,ZAY,26
+E-1088,Islam Ezzat,Sales associate,Male,2021-09-20,2025-02-06,10400,ZAY,10
+E-1089,Mona Fathy,Sales associate,Female,2023-12-23,,13400,ZAY,9
+E-1090,Sherif Saeed,Sales associate,Male,2023-01-20,2025-09-20,10600,ZAY,20
+E-1091,Aya Sobhy,Sales associate,Female,2019-09-28,2025-02-28,10100,ZAY,13
+E-1092,Omar Sobhy,Sales associate,Male,2019-04-12,,10950,ZAY,9
+E-1093,Mahmoud Lotfy,Cashier,Male,2021-09-12,2025-07-25,9600,ZAY,4
+E-1094,Omar Fouad,Cashier,Male,2018-10-31,,9050,ZAY,11
+E-1095,Sherif Shawky,Warehouse,Male,2022-08-07,,8800,ZAY,26
+E-1096,Hany Ezzat,Warehouse,Male,2017-10-18,2024-11-02,8900,ZAY,23
+E-1097,Islam Ragab,Warehouse,Male,2020-09-08,,8300,ZAY,34
+E-1098,Mahmoud Fouad,Warehouse,Male,2020-07-09,,8400,ZAY,18
+E-1099,Ahmed Hassan,Warehouse,Male,2024-02-16,2025-09-01,8750,ZAY,38
+E-1100,Karim Ibrahim,Driver,Male,2018-09-06,,9500,ZAY,20
+E-1101,Ahmed Ibrahim,Driver,Male,2021-05-06,,8600,ZAY,33
+E-1102,Omar Gamal,Driver,Male,2021-07-16,2026-07-21,8850,ZAY,29
+E-1103,Khaled Sobhy,Branch manager,Male,2021-12-21,2025-07-30,31600,NAS,12
+E-1104,Reem Helmy,Interior designer,Female,2022-10-11,,16100,NAS,7
+E-1105,Khaled Adel,Interior designer,Male,2020-07-29,,15550,NAS,6
+E-1106,Ziad Gamal,Sales associate,Male,2022-06-26,2025-03-06,10500,NAS,36
+E-1107,Mostafa Hassan,Sales associate,Male,2024-08-18,2025-08-09,12450,NAS,11
+E-1108,Habiba Sobhy,Sales associate,Female,2022-04-05,2026-07-06,10400,NAS,25
+E-1109,Ziad Lotfy,Sales associate,Male,2019-01-14,,11500,NAS,15
+E-1110,Hany Hassan,Sales associate,Male,2023-04-19,2025-11-19,9950,NAS,32
+E-1111,Mariam Samir,Sales associate,Female,2020-09-13,,13100,NAS,22
+E-1112,Heba Samir,Sales associate,Female,2019-03-31,2025-04-11,9500,NAS,6
+E-1113,Youssef Ibrahim,Sales associate,Male,2021-10-15,2025-10-09,9600,NAS,6
+E-1114,Aya Fouad,Sales associate,Female,2019-04-26,2026-07-13,11050,NAS,23
+E-1115,Malak Gamal,Sales associate,Female,2023-09-22,,12600,NAS,12
+E-1116,Aya Lotfy,Cashier,Female,2024-03-23,,6900,NAS,14
+E-1117,Heba Ibrahim,Cashier,Female,2019-06-23,2025-05-21,9000,NAS,5
+E-1118,Karim Lotfy,Warehouse,Male,2018-09-23,,10300,NAS,50
+E-1119,Mahmoud Gamal,Warehouse,Male,2024-04-03,2025-12-09,8500,NAS,14
+E-1120,Sherif Gamal,Warehouse,Male,2020-10-09,2026-04-22,8800,NAS,25
+E-1121,Mostafa Adel,Warehouse,Male,2022-08-17,,8200,NAS,35
+E-1122,Islam Gamal,Driver,Male,2021-05-04,2025-10-16,8250,NAS,1
+E-1123,Khaled Ezzat,Driver,Male,2022-09-17,,10350,NAS,25
+E-1124,Hany Ragab,Branch manager,Male,2019-06-01,,32650,GIZ,18
+E-1125,Heba Sobhy,Interior designer,Female,2017-08-19,,17900,GIZ,14
+E-1126,Sara Sobhy,Interior designer,Female,2022-04-18,,16000,GIZ,11
+E-1127,Mohamed Fathy,Sales associate,Male,2019-08-28,,10900,GIZ,21
+E-1128,Rana Saeed,Sales associate,Female,2024-01-29,2026-06-19,10800,GIZ,27
+E-1129,Salma Samir,Sales associate,Female,2018-11-15,,12650,GIZ,17
+E-1130,Mariam Samir,Sales associate,Female,2020-06-04,,11900,GIZ,12
+E-1131,Karim Sobhy,Sales associate,Male,2022-07-01,,11850,GIZ,18
+E-1132,Habiba Fouad,Sales associate,Female,2020-05-30,,11650,GIZ,20
+E-1133,Ziad Ragab,Sales associate,Male,2019-07-13,2025-11-06,11350,GIZ,20
+E-1134,Habiba Helmy,Sales associate,Female,2022-04-14,2024-11-24,9450,GIZ,30
+E-1135,Hana Mansour,Sales associate,Female,2017-09-30,,11450,GIZ,34
+E-1136,Omar Mansour,Cashier,Male,2020-05-05,2025-05-19,9100,GIZ,11
+E-1137,Nour Adel,Cashier,Female,2021-07-29,,10000,GIZ,2
+E-1138,Ziad Gamal,Warehouse,Male,2022-02-08,,8100,GIZ,16
+E-1139,Youssef Fathy,Warehouse,Male,2023-02-15,2026-07-11,7750,GIZ,24
+E-1140,Khaled Ibrahim,Warehouse,Male,2020-07-04,,9650,GIZ,27
+E-1141,Hany Mansour,Warehouse,Male,2023-10-14,,9550,GIZ,7
+E-1142,Khaled Lotfy,Driver,Male,2022-01-31,2024-12-19,8650,GIZ,44
+E-1143,Ali Adel,Driver,Male,2019-10-16,,8900,GIZ,42
+E-1144,Reem Shawky,Accountant,Female,2020-07-23,,17100,HQ,6
+E-1145,Mahmoud Shawky,Accountant,Male,2023-09-28,,16150,HQ,9
+E-1146,Yasmin Ragab,Accountant,Female,2019-01-02,2025-07-15,13200,HQ,5
+E-1147,Mona Sobhy,Marketing,Female,2018-10-27,,18950,HQ,7
+E-1148,Rana Adel,Marketing,Female,2021-07-20,,15100,HQ,4
+E-1149,Mariam Fathy,Sales associate,Female,2024-11-07,2024-12-12,9550,MAA,29
+E-1150,Omar Saeed,Sales associate,Male,2024-11-05,2025-02-13,9450,NCA,37
+E-1151,Ahmed Hassan,Warehouse,Male,2024-12-05,2025-05-27,7100,NCA,54
+E-1152,Ali Saeed,Warehouse,Male,2024-11-21,2025-08-10,8150,ZAY,33
+E-1153,Sherif Ezzat,Sales associate,Male,2024-12-13,,10200,GIZ,16
+E-1154,Islam Nabil,Driver,Male,2025-01-29,,8950,MAA,14
+E-1155,Youssef Fathy,Sales associate,Male,2024-12-29,,10800,NCA,22
+E-1156,Islam Mansour,Driver,Male,2025-01-07,,10000,GIZ,30
+E-1157,Hassan Saeed,Sales associate,Male,2025-01-07,2025-10-03,11300,MAA,22
+E-1158,Hany Sobhy,Warehouse,Male,2025-02-14,2026-07-02,7750,MAA,13
+E-1159,Sara Lotfy,Sales associate,Female,2025-03-01,2025-10-16,10650,NCA,17
+E-1160,Youssef Fathy,Sales associate,Male,2025-02-27,2025-10-01,11750,ZAY,14
+E-1161,Islam Ibrahim,Sales associate,Male,2025-03-08,2025-06-09,8500,ZAY,8
+E-1162,Reem Saeed,Sales associate,Female,2025-04-09,,11000,ZAY,6
+E-1163,Karim Lotfy,Sales associate,Male,2025-03-23,,10800,NCA,12
+E-1164,Mahmoud Fouad,Warehouse,Male,2025-05-01,2026-09-15,8400,HEL,5
+E-1165,Sara Fouad,Sales associate,Female,2025-04-07,,9550,NAS,16
+E-1166,Islam Fouad,Sales associate,Male,2025-05-30,,13850,HEL,14
+E-1167,Mohamed Fathy,Sales associate,Male,2025-05-16,,11700,NCA,13
+E-1168,Karim Ragab,Driver,Male,2025-05-24,2026-01-28,8650,NCA,23
+E-1169,Amr Helmy,Sales associate,Male,2025-04-22,2026-08-01,10750,NAS,7
+E-1170,Karim Ragab,Driver,Male,2025-06-10,2025-11-16,8350,MAA,20
+E-1171,Omar Hassan,Cashier,Male,2025-06-13,,9450,NAS,0
+E-1172,Aya Samir,Cashier,Female,2025-06-28,2026-02-11,8650,GIZ,4
+E-1173,Khaled Hassan,Warehouse,Male,2025-07-05,,9100,NCA,53
+E-1174,Mohamed Ezzat,Warehouse,Male,2025-07-13,,8000,HEL,34
+E-1175,Hana Fathy,Sales associate,Female,2025-06-27,2026-04-04,9750,NCA,26
+E-1176,Ahmed Gamal,Sales associate,Male,2025-06-25,,14300,ZAY,19
+E-1177,Mona Samir,Sales associate,Female,2025-08-03,,11050,ZAY,9
+E-1178,Nour Helmy,Cashier,Female,2025-08-19,,10350,ZAY,5
+E-1179,Hassan Sobhy,Branch manager,Male,2025-08-13,,30950,NAS,32
+E-1180,Mariam Saeed,Accountant,Female,2025-08-12,,15850,HQ,5
+E-1181,Mostafa Ragab,Sales associate,Male,2025-08-22,,11250,HEL,7
+E-1182,Salma Sobhy,Interior designer,Female,2025-10-06,,17700,MAA,9
+E-1183,Islam Nabil,Sales associate,Male,2025-08-16,2025-10-08,10450,NAS,4
+E-1184,Ali Hassan,Warehouse,Male,2025-09-12,2026-09-23,7350,ZAY,45
+E-1185,Heba Adel,Sales associate,Female,2025-09-24,,12450,MAA,13
+E-1186,Khaled Adel,Sales associate,Male,2025-10-16,,10500,ZAY,20
+E-1187,Mahmoud Lotfy,Warehouse,Male,2025-09-12,,6950,ZAY,5
+E-1188,Dina Gamal,Sales associate,Female,2025-11-20,2025-12-23,8800,MAA,36
+E-1189,Omar Samir,Warehouse,Male,2025-11-13,,8050,MAA,0
+E-1190,Mahmoud Ezzat,Warehouse,Male,2025-11-05,2026-07-13,7750,NCA,22
+E-1191,Sara Saeed,Sales associate,Female,2025-11-09,2026-01-01,7550,NAS,14
+E-1192,Ziad Saeed,Driver,Male,2025-10-23,,12000,NAS,17
+E-1193,Mohamed Fouad,Sales associate,Male,2025-10-15,2026-03-15,10000,MAA,9
+E-1194,Salma Nabil,Sales associate,Female,2025-11-24,2026-06-17,10700,NCA,20
+E-1195,Mahmoud Gamal,Sales associate,Male,2025-10-17,2026-01-21,11400,ZAY,42
+E-1196,Aya Ezzat,Sales associate,Female,2025-11-11,2026-03-13,10500,NAS,34
+E-1197,Hana Sobhy,Sales associate,Female,2025-12-22,,8600,ZAY,9
+E-1198,Laila Fouad,Sales associate,Female,2025-12-19,,10950,NAS,17
+E-1199,Ahmed Ibrahim,Sales associate,Male,2025-11-21,2026-05-13,9750,GIZ,6
+E-1200,Hassan Gamal,Driver,Male,2025-11-30,,7750,MAA,0
+E-1201,Mohamed Ragab,Warehouse,Male,2025-12-21,2026-01-26,7950,NAS,12
+E-1202,Karim Fathy,Sales associate,Male,2026-01-25,,10950,MAA,38
+E-1203,Mona Shawky,Sales associate,Female,2026-02-07,,8850,MAA,22
+E-1204,Islam Ezzat,Cashier,Male,2026-02-19,,8550,MAA,0
+E-1205,Hana Mansour,Sales associate,Female,2026-02-11,,9850,ZAY,27
+E-1206,Omar Helmy,Driver,Male,2026-03-07,,7450,NCA,13
+E-1207,Mariam Sobhy,Sales associate,Female,2026-02-01,2026-08-03,9350,NAS,21
+E-1208,Hassan Shawky,Sales associate,Male,2026-02-10,,10700,ZAY,5
+E-1209,Mohamed Ibrahim,Warehouse,Male,2026-03-05,,11100,NAS,32
+E-1210,Hany Ragab,Interior designer,Male,2026-03-04,,13400,HEL,17
+E-1211,Hassan Ragab,Sales associate,Male,2026-02-21,2026-05-08,10500,NCA,10
+E-1212,Nour Helmy,Cashier,Female,2026-03-06,,7800,GIZ,10
+E-1213,Karim Ibrahim,Sales associate,Male,2026-03-29,,15350,MAA,0
+E-1214,Sara Fathy,Sales associate,Female,2026-03-28,,10800,NAS,24
+E-1215,Islam Nabil,Warehouse,Male,2026-05-20,,8000,NAS,24
+E-1216,Yasmin Fouad,Sales associate,Female,2026-05-12,,7250,NCA,14
+E-1217,Islam Helmy,Sales associate,Male,2026-05-27,,10700,GIZ,16
+E-1218,Farida Saeed,Sales associate,Female,2026-06-06,,11250,NCA,13
+E-1219,Nour Ragab,Sales associate,Female,2026-07-12,2026-08-25,12700,NCA,17
+E-1220,Mahmoud Ragab,Sales associate,Male,2026-07-20,,12950,GIZ,21
+E-1221,Mona Helmy,Sales associate,Female,2026-07-24,2026-09-15,9500,NCA,6
+E-1222,Ali Fouad,Sales associate,Male,2026-08-24,,10100,HEL,26
+E-1223,Nour Sobhy,Interior designer,Female,2026-08-16,,17900,MAA,6
+E-1224,Omar Adel,Sales associate,Male,2026-08-10,,9350,MAA,24
+E-1225,Mohamed Fathy,Driver,Male,2026-08-08,,10250,ZAY,20
+E-1226,Amr Helmy,Sales associate,Male,2026-08-06,,11400,NAS,18
+E-1227,Sara Shawky,Sales associate,Female,2026-08-20,,9600,NAS,4
+E-1228,Mohamed Mansour,Warehouse,Male,2026-08-10,2026-09-03,9250,GIZ,26
+E-1229,Ali Mansour,Warehouse,Male,2026-07-26,,8500,MAA,14
+E-1230,Tarek Mansour,Warehouse,Male,2026-08-15,,10400,NCA,13
+E-1231,Sherif Adel,Sales associate,Male,2026-09-07,,12350,NAS,22
+E-1232,Nour Adel,Sales associate,Female,2026-09-10,,10250,NAS,6
+E-1233,Islam Hassan,Sales associate,Male,2026-09-22,,9800,NCA,22
+E-1234,Hany Ragab,Warehouse,Male,2026-09-22,,8550,HEL,22

@@ -261,7 +261,7 @@ class Data:
         self.cancelled = {'lines': 0, 'value': 0.0}
         if len(ret) and len(out):
             def keyed(x):
-                return pd.DataFrame({'date': x['date'], 'k': x['customer'].astype(str) + '|' + x['product'].astype(str) + '|' + x['qty'].abs().round(3).astype(str), 'i': x.index})
+                return pd.DataFrame({'date': x['date'], 'k': x['customer'].astype(str) + '|' + x['product'].astype(str) + '|' + x['qty'].abs().round(3).astype(str) + '|' + x['price'].abs().round(2).astype(str), 'i': x.index})
             r, o = keyed(ret).sort_values('date'), keyed(out).sort_values('date')
             m = pd.merge_asof(r, o.rename(columns={'i': 'sale'}), on='date', by='k', direction='backward', tolerance=pd.Timedelta(days=30))
             gone = m['sale'].dropna().astype(int).unique()

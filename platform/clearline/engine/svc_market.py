@@ -64,6 +64,9 @@ def competitors(c: Ctx) -> dict:
     priced = t.dropna(subset=['ours'])
     if priced.empty:
         raise NeedsData('Add “our price” to the competitor sheet, or upload the client’s price list.')
+    priced = priced[(priced['price'] > 0) & (priced['ours'] > 0)]
+    if priced.empty:
+        raise NeedsData('No product has both a competitor price and our price above zero.')
     idx = (priced['ours'] / priced['price']).groupby(priced['competitor']).mean() * 100
     avg_gap = priced['ours'].sum() / priced['price'].sum() - 1
     pivot = priced.pivot_table(index='product', columns='competitor', values='price', aggfunc='mean')

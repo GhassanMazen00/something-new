@@ -161,7 +161,7 @@ def _sales(rng, p) -> tuple[pd.DataFrame, dict]:
         po['amount'] = 25.0
         df = pd.concat([df, po], ignore_index=True)
     sold = df.drop(index=list(cancelled))
-    last = sold[sold['date'] > end.normalize() - pd.Timedelta(days=365)]
+    last = sold[pd.to_datetime(sold['date']).dt.normalize() > end.normalize() - pd.Timedelta(days=365)]
     goods = last[last['product'] != 'POST']
     top_product = goods.groupby('product_name')['amount'].sum().idxmax() if len(goods) else None
     truth = {

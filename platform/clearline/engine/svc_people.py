@@ -188,13 +188,13 @@ def pay_fairness(c: Ctx) -> dict:
     raw = s[s['female'] == 1]['salary'].mean() / s[s['female'] == 0]['salary'].mean() - 1
     mixed = [r for r in s['role_'].unique() if s[(s['role_'] == r)]['female'].nunique() == 2]
     women, men = s[s['female'] == 1], s[s['female'] == 0]
-    close = (women['salary'] * -min(0, gap)).sum() * 12
+    close = (women['salary'] * -min(0, gap)).sum() * 12 if clear else 0.0
     return result(
-        [kpi('Raw gap, women vs men', f.spct(raw), 'all roles mixed together'), kpi('Same role and tenure', f.spct(gap), f'95% range {f.spct(glo)} to {f.spct(ghi)}', 'bad' if clear and gap < 0 else 'good'), kpi('Cost to close it', f.money(close), 'a year')],
+        [kpi('Raw gap, women vs men', f.spct(raw), 'all roles mixed together'), kpi('Same role and tenure', f.spct(gap), f'95% range {f.spct(glo)} to {f.spct(ghi)}', 'bad' if clear and gap < 0 else 'good'), kpi('Cost to close it', f.money(close) if close else '–', 'a year' if close else 'no clear gap within roles')],
         [chart('Average monthly pay by role', bars(mixed, [women[women['role_'] == r]['salary'].mean() for r in mixed], extra={'name': 'Men', 'values': [men[men['role_'] == r]['salary'].mean() for r in mixed]}), wide=True)],
         [
             finding(f'In the same role and with the same tenure, women are paid {f.pct(abs(gap))} {"less" if gap < 0 else "more"} than men.', 'high', f'Closing the gap costs about {f.money(close)} a year; review starting salaries first.' if gap < 0 else None) if clear else finding('No clear pay gap between women and men once role and tenure are taken into account.', 'high'),
-            finding(f'Much of the raw {f.spct(raw)} gap comes from which roles women and men hold, not from pay within a role.', 'medium') if abs(raw) > abs(gap) else finding('The gap is mostly within roles, not between them.', 'medium'),
+            finding(f'Much of the raw {f.spct(raw)} gap comes from which roles women and men hold, not from pay within a role.', 'medium') if abs(raw - gap) > abs(gap) else finding('The gap is mostly within roles, not between them.', 'medium'),
         ],
     )
 

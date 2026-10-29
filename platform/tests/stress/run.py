@@ -297,9 +297,12 @@ def truth_checks(c, sid, out, mapped_ok, rec, data):
         for g in pt['ghosts']:
             check('ghost employee', g in text, f'{g} not flagged')
     if sid == 'pay-fairness-check' and pt and pt['staff'] >= 80 and data.has('staff') and 'gender' in data.t('staff'):
-        v = pct_value(kpi(res, 'Same role') or '')
-        if v is not None:
-            check('pay gap', abs(abs(v) - pt['pay_gap']) < 0.06, f'reported {v:+.1%} vs planted −{pt["pay_gap"]:.0%}')
+        k = next((x for x in res['kpis'] if 'Same role' in x['label']), None)
+        m = re.search(r'95% range (\S+%) to (\S+%)', (k or {}).get('note', ''))
+        if m:
+            lo, hi = pct_value(m.group(1)), pct_value(m.group(2))
+            truth = -pt['pay_gap']
+            check('pay gap', lo - 0.01 <= truth <= hi + 0.01, f'planted {truth:+.0%} outside the reported range {m.group(1)} to {m.group(2)}')
     at = t.get('accounts')
     if sid == 'error-and-fraud-scan' and at and at['dup_ledger'] and data.has('ledger'):
         cells = {str(x) for x in strings(res)}

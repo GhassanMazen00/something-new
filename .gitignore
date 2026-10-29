@@ -9,3 +9,4 @@ __pycache__/
 .pytest_cache/
 platform/data/
 platform/.venv/
+platform/sample-report/

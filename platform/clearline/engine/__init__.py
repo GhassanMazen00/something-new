@@ -21,7 +21,7 @@ DEPTS = [{'id': d['id'], 'name': d['name']} for d in _CATALOG]
 # The website describes the full offer; these say what this version actually runs, for reports and the screens.
 METHODS = {
     'kpi-dashboard': 'Targets from the same month last year plus the business’s own growth',
-    'driver-analysis': 'Multiple regression with robust errors, on weekly data',
+    'driver-analysis': 'Multiple regression with robust errors, on daily sales',
     'sales-forecast-3-to-12-months': 'ETS, ARIMA and Theta compared with a Ramadan-aware regression on months held back; the most accurate wins',
     'budget-split-across-channels': 'Marketing mix model with carry-over (adstock) and saturation curves',
     'employee-survey': 'eNPS and themes from keywords in the written comments',

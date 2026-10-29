@@ -92,10 +92,15 @@ def staffing(c: Ctx) -> dict:
         need = np.where(grid.values > 0, np.maximum(1, np.ceil(grid.values / c.p['per'])), 0).astype(int)
         cols = [str(h) for h in hours]
         flat = [(need[k, i], k, hours[i]) for k in range(7) for i in range(len(hours))]
-        peak = max(flat)
-        quiet = min(x for x in flat if x[0] > 0)
+        g = grid.values
+        pk = np.unravel_index(np.argmax(g), g.shape)
+        qt = np.unravel_index(np.argmin(np.where(g > 0, g, np.inf)), g.shape)
+        peak, quiet = (need[pk], pk[0], hours[pk[1]]), (need[qt], qt[0], hours[qt[1]])
         title = 'People needed on the floor' + (', average branch' if units > 1 else '')
-        text = f'Need peaks at {peak[0]} {"person" if peak[0] == 1 else "people"} on {DAYS[peak[1]]} around {peak[2]}:00, and drops to {quiet[0]} on {DAYS[quiet[1]]} at {quiet[2]}:00.'
+        if peak[0] <= quiet[0]:
+            text = f'At {f.money(c.p["per"])} of sales per person an hour, one person covers every open hour; the busiest time is {DAYS[peak[1]]} around {peak[2]}:00. Set the real productivity to plan rotas.'
+        else:
+            text = f'Need peaks at {peak[0]} {"person" if peak[0] == 1 else "people"} on {DAYS[peak[1]]} around {peak[2]}:00, and drops to {quiet[0]} on {DAYS[quiet[1]]} at {quiet[2]}:00.'
         lvl = 'medium'
     else:
         grid = s.groupby(s['date'].dt.dayofweek)['amount'].sum().reindex(range(7), fill_value=0) / weeks / units

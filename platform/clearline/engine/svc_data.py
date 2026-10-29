@@ -37,7 +37,7 @@ def health_check(c: Ctx) -> dict:
             if gaps:
                 findings.append(finding(f'{gaps:,} invoice numbers are missing from the sequence.', 'high', 'Ask for the cancelled-invoice log; unexplained gaps are a tax-audit risk.'))
     score = int(np.average(scores, weights=[max(1, f.get('rows', 1)) for f in files])) if files else 0
-    findings.insert(0, finding(f'Data quality score: {score} out of 100.' + (' The files are in good shape.' if score >= 85 else ' Several files need attention before results can be trusted fully.'), 'high', 'Every fix below is applied automatically and listed in the report appendix.'))
+    findings.insert(0, finding(f'Data quality score: {score} out of 100.' + (' The files are in good shape.' if score >= 85 else ' Several files need attention before results can be trusted fully.'), 'high', 'Every fix is applied automatically and listed under Data cleaning and merging.'))
     return result(
         [kpi('Health score', f'{score} / 100', tone='good' if score >= 85 else 'bad'), kpi('Files checked', str(len(files))), kpi('Rows checked', f"{sum((f.get('health') or {}).get('rows_in', f.get('rows', 0)) for f in files):,}"), kpi('Files with problems', str(sum(1 for r in rows if r[4] != 'No problems found')))],
         [chart('File by file', table(['File', 'Type', 'Rows in', 'Clean rows', 'What we found'], rows, [False, False, True, True, False]), wide=True)],

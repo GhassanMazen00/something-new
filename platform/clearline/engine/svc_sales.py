@@ -208,11 +208,11 @@ def ranking(c: Ctx) -> dict:
     show = prod.head(40)
     tones = ['accent' if c_ == 'A' else 'muted' if c_ == 'B' else 'orange' for c_ in show['cls']]
     rows = [[i, cl, f.money(rw['rev']), f.pct(rw['rev'] / total), f.money(rw['profit']) if 'profit' in prod else '–'] for (i, rw), cl in zip(show.iterrows(), show['cls'])]
-    findings = [finding(f'{cnt.get("A", 0)} of {len(prod)} products bring 80% of sales.', 'high', 'Never let these run out; review their prices first.'), finding(f'{cnt.get("C", 0)} products together bring under 5% of sales.', 'high', 'Candidates to drop or sell to order only, freeing cash and shelf space.')]
+    findings = [finding(f'{cnt.get("A", 0):,} of {len(prod):,} products bring 80% of sales.', 'high', 'Never let these run out; review their prices first.'), finding(f'{cnt.get("C", 0):,} products together bring under 5% of sales.', 'high', 'Candidates to drop or sell to order only, freeing cash and shelf space.')]
     if np.isfinite(top20):
         findings.append(finding(f'The top 20% of customers bring {f.pct(top20, 0)} of sales to known customers' + (f' ({f.pct(unnamed, 0)} of sales carry no customer).' if unnamed >= 0.02 else '.'), 'high', 'Look after them: a loyalty offer or a named contact.' if top20 > 0.6 else 'Sales are well spread across customers.'))
     return result(
-        [kpi('A products (80% of sales)', f'{cnt.get("A", 0)} of {len(prod)}'), kpi('C products (last 5%)', str(cnt.get('C', 0)), tone='bad' if cnt.get('C', 0) > len(prod) * 0.3 else None), kpi('Top 20% of customers bring', f.pct(top20, 0) if np.isfinite(top20) else '–')],
+        [kpi('A products (80% of sales)', f'{cnt.get("A", 0):,} of {len(prod):,}'), kpi('C products (last 5%)', f'{cnt.get("C", 0):,}', tone='bad' if cnt.get('C', 0) > len(prod) * 0.3 else None), kpi('Top 20% of customers bring', f.pct(top20, 0) if np.isfinite(top20) else '–')],
         [chart('Products by sales, last 12 months (A · B · C)', bars(show.index, show['rev'].values, tones=tones), wide=True), chart(f'Ranking (top {len(show)})', table(['Product', 'Class', 'Sales', 'Share', 'Profit'], rows, [False, False, True, True, True]), wide=True)],
         findings,
     )

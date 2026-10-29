@@ -40,7 +40,7 @@ def customer_groups(c: Ctx) -> dict:
         findings.append(finding(f'{int(b.n):,} best customers ({f.pct(b.n / len(g), 0)}) bring {f.pct(b.rev / total, 0)} of sales.', 'high', 'Give them early access and a named contact.'))
     if 'At risk' in grp.index:
         a = grp.loc['At risk']
-        findings.append(finding(f'{int(a.n):,} regular customers have gone quiet; they spent {f.money(a.rev)} last year.', 'high', 'A win-back message this month, before they are lost.'))
+        findings.append(finding(f'{int(a.n):,} customers who used to buy have gone quiet (no order for {f.num(a.rec)} days on average); they spent {f.money(a.rev)} last year.', 'high', 'A win-back message this month, before they are lost.'))
     findings.append(finding(f'{f.pct(repeat, 0)} of customers bought more than once in the year.', 'high', 'Most buy once, normal for big purchases: focus on referrals and accessories.' if repeat < 0.2 else 'Repeat buying is healthy; protect it.'))
     return result(
         [kpi('Customers, last 12 months', f.num(len(g))), kpi('Bought more than once', f.pct(repeat, 0)), kpi('Best customers', f.num(grp.loc['Best customers', 'n']) if 'Best customers' in grp.index else '0'), kpi('At risk', f.num(grp.loc['At risk', 'n']) if 'At risk' in grp.index else '0', tone='bad')],

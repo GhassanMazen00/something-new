@@ -161,6 +161,12 @@ def canonical_names(names: pd.Series) -> tuple[pd.Series, list[list[str]]]:
 # ---------- The client's data ----------
 
 
+# Lines in a sales export that aren't goods: shipping, fees, discounts and manual corrections. Words that could
+# also be part of a real product's name ("Manual juicer") only count when they are the whole name.
+NOT_GOODS = r'(?i)\b(?:postage|carriage|shipping|delivery charges?|bank charges?|fees?|commission|service charge)\b|شحن|رسوم'
+NOT_GOODS_NAMES = {'MANUAL', 'DISCOUNT', 'ADJUSTMENT', 'ADJUST BAD DEBT', 'SAMPLES', 'DELIVERY', 'POST', 'DOT', 'M', 'C2', 'D', 'S', 'B', 'CRUK', 'AMAZONFEE', 'PADS', 'خصم', 'توصيل'}
+
+
 @dataclass
 class Data:
     tables: dict[str, pd.DataFrame]
@@ -238,8 +244,27 @@ class Data:
 
     @cached_property
     def sales(self) -> pd.DataFrame:
+        """Sales lines, without returns and without orders cancelled in full soon after (same customer, product and
+        quantity returned within 30 days): those were never really sold."""
         s = self.sales_all
-        return s[~s['is_return'] & (s['amount'] > 0)].reset_index(drop=True)
+        ret = s[s['is_return']]
+        out = s[~s['is_return'] & (s['amount'] > 0)]
+        self.cancelled = {'lines': 0, 'value': 0.0}
+        if len(ret) and len(out):
+            def keyed(x):
+                return pd.DataFrame({'date': x['date'], 'k': x['customer'].astype(str) + '|' + x['product'].astype(str) + '|' + x['qty'].abs().round(3).astype(str), 'i': x.index})
+            r, o = keyed(ret).sort_values('date'), keyed(out).sort_values('date')
+            m = pd.merge_asof(r, o.rename(columns={'i': 'sale'}), on='date', by='k', direction='backward', tolerance=pd.Timedelta(days=30))
+            gone = m['sale'].dropna().astype(int).unique()
+            if len(gone):
+                self.cancelled = {'lines': int(len(gone)), 'value': float(out.loc[gone, 'amount'].sum())}
+                out = out.drop(index=gone)
+        return out.reset_index(drop=True)
+
+    def goods(self, s: pd.DataFrame) -> pd.DataFrame:
+        """Only real products: no postage, delivery, fees, discounts or manual adjustments."""
+        names = s['product'].astype(str)
+        return s[~names.str.contains(NOT_GOODS, regex=True) & ~names.str.strip().str.upper().isin(NOT_GOODS_NAMES)]
 
     @cached_property
     def products(self) -> pd.DataFrame:

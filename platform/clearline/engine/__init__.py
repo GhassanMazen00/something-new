@@ -100,7 +100,8 @@ def run(service_id: str, data: Data, params: dict | None, client: dict) -> dict:
     except Exception as e:  # noqa: BLE001
         return {'level': r['level'], 'error': f'The model failed on this data: {e}', 'trace': traceback.format_exc(limit=4), 'params': p}
     out['currency'] = client.get('currency', 'EGP')
-    return {'level': r['level'], 'why': r['why'], 'params': p, 'result': clean_json(out), 'ms': int((time.perf_counter() - t0) * 1000)}
+    level = out.pop('level', None) or r['level']
+    return {'level': level, 'why': r['why'], 'params': p, 'result': clean_json(out), 'ms': int((time.perf_counter() - t0) * 1000)}
 
 
 def build_data(tables: dict[str, list[pd.DataFrame]], settings: dict | None = None) -> Data:

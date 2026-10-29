@@ -228,13 +228,14 @@ def _bgnbd_fit(df: pd.DataFrame) -> np.ndarray:
         A4 = np.where(x > 0, np.log(a) - np.log(np.maximum(b + x - 1, 1e-9)) - (r + x) * np.log(alpha + tx), -np.inf)
         return -(A1 + A2 + np.logaddexp(A3, A4)).sum()
 
-    res = minimize(nll, np.log([0.5, 5, 0.6, 2.0]), method='Nelder-Mead', options={'maxiter': 3000})
+    # Bounded, so a flat likelihood (little sign of anyone leaving) can't push a parameter to absurd values.
+    res = minimize(nll, np.log([0.5, 5, 0.6, 2.0]), method='L-BFGS-B', bounds=[(-6.0, 6.0)] * 4)
     return np.exp(res.x)
 
 
 def _expected(p, df: pd.DataFrame, t: float) -> np.ndarray:
     r, alpha, a, b = p
-    a = max(a, 1.01)
+    a = a if abs(a - 1) > 1e-3 else 1.001  # the formula divides by a − 1; it holds on either side of 1
     x, tx, T = df['x'].values, df['tx'].values, df['T'].values
     z = t / (alpha + T + t)
     head = (a + b + x - 1) / (a - 1)

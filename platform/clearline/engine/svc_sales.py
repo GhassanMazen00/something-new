@@ -98,12 +98,13 @@ def forecast(c: Ctx) -> dict:
     same_last_year = y.iloc[-12 : -12 + h].sum() if n >= 12 + h else np.nan
     peak = int(np.argmax(point))
     err = scores[best]
-    level_text = 'high' if err < 0.1 and n >= 24 else 'medium'
+    level_text = 'high' if err < 0.1 and n >= 24 else 'medium' if err < 0.2 else 'low'
+    seasonal = n >= 24
     return result(
         [
             kpi(f'Next {h} months', f.money(total), f'{f.spct(total / same_last_year - 1)} on the same months last year' if np.isfinite(same_last_year) and same_last_year > 0 else None),
             kpi('Likely range (80%)', f'{f.money(max(0, total - z * tsd))} – {f.money(total + z * tsd)}'),
-            kpi('Peak month', month_label(future[peak]), f.money(point[peak])),
+            kpi('Peak month', month_label(future[peak]), f.money(point[peak])) if seasonal else kpi('Peak month', '–', 'needs two years of history'),
             kpi('Error on hidden months', f.pct(err), tone='good' if err < 0.1 else 'bad'),
         ],
         [
@@ -113,7 +114,7 @@ def forecast(c: Ctx) -> dict:
                     labels,
                     [series('Actual', list(y.values) + [None] * h), series(f'Forecast ({best})', [None] * (n - 1) + [y.values[-1]] + list(point), dashed=True)],
                     band={'lo': [None] * n + list(lo), 'hi': [None] * n + list(hi), 'name': '80% range'},
-                    marks=[{'index': n + peak, 'label': 'Peak'}],
+                    marks=[{'index': n + peak, 'label': 'Peak'}] if seasonal else None,
                     zero=True,
                 ),
                 wide=True,
@@ -122,12 +123,16 @@ def forecast(c: Ctx) -> dict:
         ],
         [
             finding(f'Expected sales over the next {h} months: {f.money(total)}, most likely between {f.money(max(0, total - z * tsd))} and {f.money(total + z * tsd)}.', level_text),
-            finding(f'{month_label(future[peak])} should be the strongest month.', 'medium', 'Place stock orders at least one supplier lead time before it.'),
-            finding(f'{best} won the accuracy test with {f.pct(err)} average error on {test} months it had not seen.', 'high'),
+            finding(f'{month_label(future[peak])} should be the strongest month.', 'medium', 'Place stock orders at least one supplier lead time before it.')
+            if seasonal
+            else finding('With under two years of history the models can’t learn the yearly pattern, so they can’t say which month will peak or allow for seasonal highs and lows.', 'high', 'Ask the client for an earlier year of sales.'),
+            finding(f'{best} won the accuracy test with {f.pct(err)} average error on {test} months it had not seen.', 'high')
+            if err < 0.2
+            else finding(f'Even the best model ({best}) was off by {f.pct(err)} on the {test} months it had not seen: treat these figures as a rough guide only.', 'high', 'Don’t plan stock or budgets on this forecast alone.'),
         ],
         accuracy=f'Each model was fitted without the last {test} months, then compared with what really happened: {best} was off by {f.pct(err)} on average.',
         notes=[] if n >= 24 else ['Under two years of history: no yearly seasonal pattern can be learned, so ranges are wider.'],
-    )
+    ) | ({'level': 'low'} if err >= 0.2 else {})
 
 
 def price_whatif(c: Ctx) -> dict:
@@ -184,10 +189,11 @@ def price_whatif(c: Ctx) -> dict:
 
 def ranking(c: Ctx) -> dict:
     d, f = c.data, c.fmt
-    r = d.recent(365)
+    r_all = d.recent(365)
+    if r_all['product'].nunique() < 3:
+        return _customer_ranking(c, r_all)
+    r = d.goods(r_all)
     total = r['amount'].sum()
-    if r['product'].nunique() < 3:
-        return _customer_ranking(c, r)
     prod = r.groupby('product').agg(rev=('amount', 'sum'))
     if r['cost'].notna().any():
         prod['profit'] = (r['amount'] - r['cost'] * r['qty']).groupby(r['product']).sum()
@@ -195,14 +201,16 @@ def ranking(c: Ctx) -> dict:
     cum = prod['rev'].cumsum() / total
     prod['cls'] = np.where(cum.shift(fill_value=0) < 0.8, 'A', np.where(cum.shift(fill_value=0) < 0.95, 'B', 'C'))
     cnt = prod['cls'].value_counts()
-    custs = r.groupby('customer')['amount'].sum().sort_values(ascending=False) if r['customer'].notna().any() else pd.Series(dtype=float)
-    top20 = custs.head(max(1, round(len(custs) * 0.2))).sum() / total if len(custs) else np.nan
+    # Customer shares are of sales to customers the file names; anonymous sales can't be ranked.
+    custs = r_all.groupby('customer')['amount'].sum().sort_values(ascending=False) if r_all['customer'].notna().any() else pd.Series(dtype=float)
+    top20 = custs.head(max(1, round(len(custs) * 0.2))).sum() / custs.sum() if len(custs) else np.nan
+    unnamed = 1 - custs.sum() / r_all['amount'].sum() if len(custs) else 0.0
     show = prod.head(40)
     tones = ['accent' if c_ == 'A' else 'muted' if c_ == 'B' else 'orange' for c_ in show['cls']]
     rows = [[i, cl, f.money(rw['rev']), f.pct(rw['rev'] / total), f.money(rw['profit']) if 'profit' in prod else '–'] for (i, rw), cl in zip(show.iterrows(), show['cls'])]
     findings = [finding(f'{cnt.get("A", 0)} of {len(prod)} products bring 80% of sales.', 'high', 'Never let these run out; review their prices first.'), finding(f'{cnt.get("C", 0)} products together bring under 5% of sales.', 'high', 'Candidates to drop or sell to order only, freeing cash and shelf space.')]
     if np.isfinite(top20):
-        findings.append(finding(f'The top 20% of customers bring {f.pct(top20, 0)} of sales.', 'high', 'Look after them: a loyalty offer or a named contact.' if top20 > 0.6 else 'Sales are well spread across customers.'))
+        findings.append(finding(f'The top 20% of customers bring {f.pct(top20, 0)} of sales to known customers' + (f' ({f.pct(unnamed, 0)} of sales carry no customer).' if unnamed >= 0.02 else '.'), 'high', 'Look after them: a loyalty offer or a named contact.' if top20 > 0.6 else 'Sales are well spread across customers.'))
     return result(
         [kpi('A products (80% of sales)', f'{cnt.get("A", 0)} of {len(prod)}'), kpi('C products (last 5%)', str(cnt.get('C', 0)), tone='bad' if cnt.get('C', 0) > len(prod) * 0.3 else None), kpi('Top 20% of customers bring', f.pct(top20, 0) if np.isfinite(top20) else '–')],
         [chart('Products by sales, last 12 months (A · B · C)', bars(show.index, show['rev'].values, tones=tones), wide=True), chart(f'Ranking (top {len(show)})', table(['Product', 'Class', 'Sales', 'Share', 'Profit'], rows, [False, False, True, True, True]), wide=True)],
@@ -247,7 +255,7 @@ def stock(c: Ctx) -> dict:
     if d.sales['product'].nunique() < 3:
         raise NeedsData('The sales data carries no products (e-invoices list totals only): send a sales list with product codes.')
     window = 180
-    s = d.sales[d.sales['date'] > d.end - pd.Timedelta(days=window)]
+    s = d.goods(d.sales[d.sales['date'] > d.end - pd.Timedelta(days=window)])
     days = pd.date_range(d.end - pd.Timedelta(days=window - 1), d.end, freq='D')
     pivot = s.groupby([s['product'].astype(str).str.strip().str.lower(), s['date'].dt.normalize()])['qty'].sum().unstack(fill_value=0).reindex(columns=days, fill_value=0)
     st = d.t('stock').copy() if d.has('stock') else None

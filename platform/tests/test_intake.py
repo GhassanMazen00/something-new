@@ -59,3 +59,18 @@ def test_market_calendar_from_currency():
     assert market_settings('AED') == {'ramadan': True, 'weekend': [5, 6]}
     assert market_settings('GBP') == {'ramadan': False, 'weekend': [5, 6]}
     assert market_settings('GBP', {'ramadan': True})['ramadan'] is True
+
+
+def test_cancelled_orders_and_postage_are_not_products():
+    rows = []
+    for i in range(60):
+        rows.append({'date': f'2024-01-{i % 28 + 1:02d}', 'order_id': f'A{i}', 'customer': f'C{i % 7}', 'product': ['Lamp', 'Chair', 'Table'][i % 3], 'qty': '2', 'price': '10'})
+    rows.append({'date': '2024-01-10', 'order_id': 'BIG', 'customer': 'C1', 'product': 'Vase', 'qty': '5000', 'price': '10'})  # mistaken order...
+    rows.append({'date': '2024-01-10', 'order_id': 'CBIG', 'customer': 'C1', 'product': 'Vase', 'qty': '-5000', 'price': '10'})  # ...cancelled minutes later
+    rows.append({'date': '2024-01-11', 'order_id': 'P1', 'customer': 'C2', 'product': 'POSTAGE', 'qty': '1', 'price': '900'})
+    df = pd.DataFrame(rows)
+    std, _ = intake.standardize('sales', df, {k: k for k in df.columns})
+    data = engine.build_data({'sales': [std]})
+    assert 'Vase' not in set(data.sales['product'])
+    assert data.cancelled['lines'] == 1
+    assert 'POSTAGE' in set(data.sales['product']) and 'POSTAGE' not in set(data.goods(data.sales)['product'])

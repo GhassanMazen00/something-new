@@ -45,6 +45,16 @@ def health_check(c: Ctx) -> dict:
     )
 
 
+def _clean_notes(d, recent) -> list[str]:
+    out = []
+    if getattr(d, 'cancelled', {}).get('lines'):
+        out.append(f'{d.cancelled["lines"]:,} order lines cancelled in full within 30 days were left out of sales.')
+    other = len(recent) - len(d.goods(recent))
+    if other:
+        out.append(f'{other:,} lines for postage, fees, discounts or manual adjustments count in total sales but not in product rankings.')
+    return out
+
+
 def snapshot(c: Ctx) -> dict:
     d, f = c.data, c.fmt
     m = d.monthly
@@ -56,7 +66,7 @@ def snapshot(c: Ctx) -> dict:
     has_prev = (d.end - d.sales['date'].min()).days >= 700
     orders = recent['order_id'].nunique()
     custs = recent['customer'].nunique() if recent['customer'].notna().any() else None
-    prod = recent.groupby('product')['amount'].sum().sort_values(ascending=False)
+    prod = d.goods(recent).groupby('product')['amount'].sum().sort_values(ascending=False)
     top5 = prod.head(5)
     share5 = top5.sum() / last12
     charts = [
@@ -83,6 +93,7 @@ def snapshot(c: Ctx) -> dict:
         ],
         charts,
         findings,
+        notes=_clean_notes(d, recent),
     )
 
 
@@ -283,6 +294,7 @@ def benchmarking(c: Ctx) -> dict:
         )
     if recent['product'].nunique() < 3:
         raise NeedsData('No branches and no products to compare (e-invoices carry neither): send a sales list with products or branch details.')
+    recent = d.goods(recent)
     g = recent.groupby('product').agg(rev=('amount', 'sum'), units=('qty', 'sum'))
     has_cost = recent['cost'].notna().any()
     if has_cost:

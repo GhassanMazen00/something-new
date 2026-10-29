@@ -340,13 +340,19 @@ def churn(c: Ctx) -> dict:
 def ab_test(c: Ctx) -> dict:
     d, f = c.data, c.fmt
     t = d.t('abtest').groupby('variant', as_index=False)[['visitors', 'conversions']].sum()
+    t = t[t['visitors'] > 0]
+    t['conversions'] = t['conversions'].clip(lower=0, upper=t['visitors'])
     if len(t) < 2:
-        raise NeedsData('The file needs two versions.')
+        raise NeedsData('The file needs two versions, each with visitors.')
     t = t.sort_values('visitors', ascending=False).head(2).sort_values('variant')
     # The control is the version named like one, else the first.
     ctrl_mask = t['variant'].astype(str).str.lower().str.contains('control|old|^a$|original|baseline')
     A = t[ctrl_mask].iloc[0] if ctrl_mask.any() else t.iloc[0]
     B = t[t['variant'] != A['variant']].iloc[0]
+    if min(A.visitors, B.visitors) < 30:
+        raise NeedsData('Fewer than 30 visitors in a version: too few to compare.')
+    if A.conversions + B.conversions == 0:
+        raise NeedsData('No conversions in either version yet: keep the test running.')
     pa, pb = A.conversions / A.visitors, B.conversions / B.visitors
     pool = (A.conversions + B.conversions) / (A.visitors + B.visitors)
     se0 = np.sqrt(pool * (1 - pool) * (1 / A.visitors + 1 / B.visitors))
@@ -357,12 +363,16 @@ def ab_test(c: Ctx) -> dict:
     rng = np.random.default_rng(0)
     prob_b = (rng.beta(1 + B.conversions, 1 + B.visitors - B.conversions, 20000) > rng.beta(1 + A.conversions, 1 + A.visitors - A.conversions, 20000)).mean()
     win = p < 0.05
+
+    def rel(x):  # change relative to the control; in percentage points when the control converted nobody
+        return f.spct(x / pa) if pa > 0 else f'{x * 100:+.2f} points'
+
     return result(
-        [kpi(str(A.variant) if 'control' in str(A.variant).lower() else f'{A.variant} (control)', f.pct(pa, 2), f'{int(A.conversions):,} of {int(A.visitors):,}'), kpi(str(B.variant), f.pct(pb, 2), f'{int(B.conversions):,} of {int(B.visitors):,}'), kpi('Lift', f.spct(pb / pa - 1), tone='good' if win and pb > pa else None), kpi('p-value', '< 0.001' if p < 0.001 else f'{p:.3f}', 'chance of a gap this big if there were no real difference', 'good' if win else 'bad')],
+        [kpi(str(A.variant) if 'control' in str(A.variant).lower() else f'{A.variant} (control)', f.pct(pa, 2), f'{int(A.conversions):,} of {int(A.visitors):,}'), kpi(str(B.variant), f.pct(pb, 2), f'{int(B.conversions):,} of {int(B.visitors):,}'), kpi('Lift', rel(pb - pa), tone='good' if win and pb > pa else None), kpi('p-value', '< 0.001' if p < 0.001 else f'{p:.3f}', 'chance of a gap this big if there were no real difference', 'good' if win else 'bad')],
         [chart('Conversion rate (%)', bars([str(A.variant), str(B.variant)], [pa * 100, pb * 100], 'num', tones=['muted', 'green' if win and pb > pa else 'accent']))],
         [
-            finding(f'{B.variant} really is {"better" if pb > pa else "worse"}: {f.spct(pb / pa - 1)} conversion.', 'high', f'Switch everyone to {B.variant}.' if pb > pa else f'Keep {A.variant}.') if win else finding('The difference could easily be chance.', 'medium', 'Keep the test running or test a bolder change.'),
-            finding(f'The true change is most likely between {f.spct(lo / pa)} and {f.spct(hi / pa)}; chance that {B.variant} is better: {f.pct(prob_b, 0)}.', 'high'),
+            finding(f'{B.variant} really is {"better" if pb > pa else "worse"}: {rel(pb - pa)} conversion.', 'high', f'Switch everyone to {B.variant}.' if pb > pa else f'Keep {A.variant}.') if win else finding('The difference could easily be chance.', 'medium', 'Keep the test running or test a bolder change.'),
+            finding(f'The true change is most likely between {rel(lo)} and {rel(hi)}; chance that {B.variant} is better: {f.pct(prob_b, 0)}.', 'high'),
         ],
     )
 

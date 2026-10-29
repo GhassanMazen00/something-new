@@ -240,6 +240,8 @@ def drivers(c: Ctx) -> dict:
             continue
         keep.append(col)
     y = daily[open_]
+    if len(y) < 28 or not keep:
+        raise NeedsData('Fewer than four weeks of trading days: too little to separate the effect of each factor.')
     model = sm.OLS(y, sm.add_constant(X[keep])).fit(cov_type='HC3')
     eff = [(k, model.params[k], model.pvalues[k] < 0.05) for k in keep]
     eff.sort(key=lambda e: -abs(e[1]))

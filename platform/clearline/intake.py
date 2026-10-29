@@ -74,7 +74,7 @@ KINDS: dict[str, Kind] = {
             [
                 F('invoice_no', 'Invoice number', 'text', 'invoice no|invoice number|internal id|uuid|document number|رقم الفاتورة|رقم المستند', True),
                 F('date', 'Date', 'date', DATE + '|issued|date issued', True),
-                F('customer', 'Customer', 'text', 'customer|receiver|buyer|receiver name|العميل|المستلم', True),
+                F('customer', 'Customer', 'text', 'customer|client|receiver|buyer|receiver name|customer name|العميل|المستلم', True),
                 F('amount', 'Total', 'number', AMOUNT + '|total amount', True),
             ],
             hints=['einvoice', 'e-invoice', 'eta', 'einv', 'e_invoice'],
@@ -151,8 +151,8 @@ KINDS: dict[str, Kind] = {
             'Prices & costs',
             [
                 F('product', 'Product', 'text', 'product|item|sku|item code|stockcode|description|الصنف|المنتج', True),
-                F('price', 'Price', 'number', 'price|selling price|list price|unit price|السعر', True),
-                F('cost', 'Cost', 'number', 'cost|unit cost|cost price|purchase price|التكلفة', True),
+                F('price', 'Price', 'number', 'price|selling price|list price|unit price|السعر|سعر البيع|سعر الوحدة', True),
+                F('cost', 'Cost', 'number', 'cost|unit cost|cost price|purchase price|التكلفة|سعر الشراء', True),
                 F('name', 'Product name', 'text', 'product name|item name|name|description|الاسم|اسم الصنف'),
                 F('category', 'Category', 'text', 'category|group|family|department|الفئة|المجموعة'),
                 F('imported', 'Imported share', 'number', 'imported|import share|imported %|foreign|مستورد'),
@@ -219,7 +219,7 @@ KINDS: dict[str, Kind] = {
                 F('tenure_years', 'Years at company', 'number', 'years at company|yearsatcompany|tenure|years of service|سنوات الخدمة'),
                 F('left', 'Has left', 'bool', 'attrition|left|terminated|resigned|exited|ترك'),
                 F('salary', 'Monthly salary', 'number', 'salary|monthly income|monthlyincome|monthly salary|pay|الراتب'),
-                F('branch', 'Branch or department', 'text', 'branch|department|location|site|الفرع|القسم'),
+                F('branch', 'Branch or department', 'text', 'branch|store|shop|department|location|site|الفرع|القسم'),
                 F('overtime_hours', 'Overtime hours a month', 'number', 'overtime hours|ot hours|overtime|ساعات إضافية'),
             ],
             any_of=[['hire_date'], ['tenure_years']],
@@ -271,7 +271,7 @@ KINDS: dict[str, Kind] = {
             [
                 F('competitor', 'Competitor', 'text', 'competitor|store|brand|seller|shop|المنافس', True),
                 F('product', 'Product', 'text', 'product|item|sku|الصنف|المنتج', True),
-                F('price', 'Their price', 'number', 'price|their price|competitor price|السعر', True),
+                F('price', 'Their price', 'number', 'price|their price|competitor price|السعر|سعر المنافس|سعر الوحدة', True),
                 F('our_price', 'Our price', 'number', 'our price|client price|سعرنا'),
                 F('complaint', 'What reviews complain about', 'text', 'complaint|issue|theme|review|شكوى'),
             ],
@@ -295,6 +295,9 @@ KINDS: dict[str, Kind] = {
 # ---------- Reading files ----------
 
 
+TOTAL_WORDS = {'total', 'totals', 'grand total', 'sum', 'الإجمالي', 'الاجمالي', 'المجموع', 'إجمالي'}
+
+
 def _decode(data: bytes) -> str:
     for enc in ('utf-8-sig', 'utf-8', 'cp1256', 'latin-1'):
         try:
@@ -302,6 +305,23 @@ def _decode(data: bytes) -> str:
         except UnicodeDecodeError:
             continue
     return data.decode('latin-1', errors='replace')
+
+
+def _delimiter(sample: str, low: str) -> str:
+    """The separator that splits most lines into the same number of columns; more columns wins a tie, so
+    '1.234,50;Cairo' with semicolons isn't mistaken for commas."""
+    lines = [ln for ln in sample.splitlines()[:80] if ln.strip()]
+    best, best_score = ('\t' if low.endswith('.tsv') else ','), (0.0, 0)
+    for d in (',', ';', '\t', '|'):
+        counts = [len(r) - 1 for r in csv.reader(lines, delimiter=d)]
+        nz = [c for c in counts if c > 0]
+        if not nz:
+            continue
+        mode = max(set(nz), key=nz.count)
+        score = (nz.count(mode) / len(lines), mode)
+        if score > best_score:
+            best, best_score = d, score
+    return best
 
 
 def sheets(name: str, data: bytes) -> list[str]:
@@ -321,10 +341,7 @@ def read_raw(name: str, data: bytes, options: dict | None = None, nrows: int | N
     elif low.endswith(('.csv', '.txt', '.tsv')):
         text = _decode(data)
         sample = text[:20000]
-        try:
-            delim = csv.Sniffer().sniff(sample, delimiters=',;\t|').delimiter
-        except csv.Error:
-            delim = '\t' if low.endswith('.tsv') else ','
+        delim = _delimiter(sample, low)
         # Rows can have different lengths (title lines above the header), so read them one by one.
         reader = csv.reader(io.StringIO(text), delimiter=delim)
         rows = []
@@ -353,6 +370,12 @@ def read_raw(name: str, data: bytes, options: dict | None = None, nrows: int | N
     body = df.iloc[header + 1 :].copy()
     body.columns = unique
     body = body.reset_index(drop=True)
+    # A total row at the bottom (exports often end with one): only the last few rows are checked.
+    tail = body.tail(5)
+    hit = tail.apply(lambda col: col.astype(str).str.strip().str.lower().isin(TOTAL_WORDS)).any(axis=1) & (tail.notna().mean(axis=1) < 0.8)
+    if hit.any():
+        body = body.drop(index=hit[hit].index).reset_index(drop=True)
+    body.attrs['totals'] = int(hit.sum())
     return body if nrows is None else body.head(nrows)
 
 
@@ -388,7 +411,8 @@ def to_number(s: pd.Series) -> pd.Series:
         return pd.to_numeric(s, errors='coerce')
     t = s.astype(str).str.translate(_AR_DIGITS).str.strip()
     neg = t.str.match(r'^\(.*\)$') | t.str.endswith('-')
-    t = t.str.replace(r'[^\d.,\-eE]', '', regex=True)
+    sci = t.str.fullmatch(r'-?\d+(\.\d+)?[eE][+-]?\d+')
+    t = t.str.replace(r'[^\d.,\-]', '', regex=True).where(~sci, t)
     # 1.234,56 (European) vs 1,234.56: if the last separator is a comma followed by 1-2 digits, it is the decimal mark.
     euro = t.str.match(r'^-?\d{1,3}(\.\d{3})+(,\d{1,2})?$') | t.str.match(r'^-?\d+,\d{1,2}$')
     t = t.where(~euro, t.str.replace('.', '', regex=False).str.replace(',', '.', regex=False))
@@ -398,6 +422,9 @@ def to_number(s: pd.Series) -> pd.Series:
 
 
 def to_bool(s: pd.Series) -> pd.Series:
+    if pd.api.types.is_numeric_dtype(s) or to_number(s.dropna().astype(str)).isin([0, 1]).mean() > 0.9:
+        n = to_number(s)
+        return n.map(lambda v: True if v == 1 else False if v == 0 else None)
     t = s.astype(str).str.strip().str.lower()
     yes = {'1', 'true', 'yes', 'y', 't', 'نعم', 'left', 'terminated', 'converted', '1.0'}
     no = {'0', 'false', 'no', 'n', 'f', 'لا', 'stayed', 'active', '0.0'}
@@ -474,7 +501,7 @@ def _score(header: str, syn: str) -> float:
 def _type_fit(f: Field, values: pd.Series) -> float:
     v = values.dropna().head(200)
     if v.empty:
-        return 0.5
+        return 0.65  # nothing to check yet (e.g. nobody has left): the header decides
     if f.type == 'number':
         return to_number(v).notna().mean()
     if f.type == 'date':
@@ -582,10 +609,15 @@ def suggest_kind(name: str, df: pd.DataFrame) -> tuple[str, dict[str, str], floa
 # ---------- Building the standard table ----------
 
 
+# Files where two identical rows can be a real event (paid twice), so repeats are kept for the scans to judge.
+MONEY_KINDS = {'payroll', 'bank', 'ledger', 'einv', 'bills', 'unpaid'}
+
+
 def standardize(kind: str, df: pd.DataFrame, mapping: dict[str, str], options: dict | None = None) -> tuple[pd.DataFrame, dict]:
     """Returns the clean standard table and a health report of what was fixed or set aside."""
     options = options or {}
     k = KINDS[kind]
+    totals = int(df.attrs.get('totals', 0))
     out = pd.DataFrame(index=df.index)
     bad: dict[str, int] = {}
     dayfirst = options.get('dayfirst')
@@ -609,6 +641,8 @@ def standardize(kind: str, df: pd.DataFrame, mapping: dict[str, str], options: d
             bad[f.label] = unreadable
         out[f.key] = v
     health: dict = {'rows_in': int(len(df)), 'issues': []}
+    if totals:
+        health['issues'].append(f'{totals} total row{"s" if totals > 1 else ""} at the bottom left out')
     for label, n in bad.items():
         health['issues'].append(f'{n:,} values in “{label}” couldn’t be read and were left empty')
     if kind == 'adswide':
@@ -621,7 +655,10 @@ def standardize(kind: str, df: pd.DataFrame, mapping: dict[str, str], options: d
     if before - len(out):
         health['issues'].append(f'{before - len(out):,} rows missing a required value were set aside')
     dupes = int(out.duplicated().sum())
-    if dupes and kind not in ('empsurvey', 'custsurvey', 'abtest'):
+    if dupes and kind in MONEY_KINDS:
+        health['issues'].append(f'{dupes:,} rows appear twice; kept, since they may be real double payments (the scans check them)')
+        health['repeats'] = dupes
+    elif dupes and kind not in ('empsurvey', 'custsurvey', 'abtest'):
         health['issues'].append(f'{dupes:,} rows appear twice; the copies were removed')
         health['duplicates'] = dupes
         out = out.drop_duplicates()

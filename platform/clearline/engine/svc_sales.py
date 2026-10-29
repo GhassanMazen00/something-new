@@ -220,6 +220,8 @@ def ranking(c: Ctx) -> dict:
 
 def _customer_ranking(c: Ctx, r: pd.DataFrame) -> dict:
     f = c.fmt
+    if r['customer'].nunique() < 3:
+        raise NeedsData('Fewer than three products and no customer names to rank: send a sales list with product codes or customers.')
     total = r['amount'].sum()
     cust = r.groupby('customer')['amount'].sum().sort_values(ascending=False)
     cum = cust.cumsum() / total

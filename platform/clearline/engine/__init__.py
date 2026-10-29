@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import time
 import traceback
 from dataclasses import asdict
@@ -59,9 +60,54 @@ def catalog() -> list[dict]:
     return [describe(s) for s in SERVICES]
 
 
+def _staff_ok(d: Data) -> bool:
+    s = svc_people._staff(d)
+    s = s[~s['left'] & s['salary'].notna() & (s['salary'] > 0) & s['gender'].isin(['F', 'M'])]
+    return s['gender'].nunique() == 2 and len(s) >= 20
+
+
+def _trend_points(d: Data) -> bool:
+    t = d.t('trends').groupby('date')['interest'].mean()
+    weekly = t.index.to_series().diff().dt.days.median() < 20
+    return len(t) >= (104 if weekly else 24)
+
+
+# Cheap checks of the minimum each service needs, so the list says "Needs data" before anyone presses Run.
+# They mirror the NeedsData checks inside each service, which stay as the last word.
+PRECHECK = {
+    'business-snapshot': (lambda d: len(d.monthly) >= 2, 'Less than two full months of sales.'),
+    'kpi-dashboard': (lambda d: len(d.monthly) >= 3, 'Fewer than three full months of sales.'),
+    'trends-and-seasonality': (lambda d: len(d.monthly) >= 6, 'Fewer than six full months of sales.'),
+    'sales-forecast-3-to-12-months': (lambda d: len(d.monthly) >= 12, 'A forecast needs at least 12 full months of sales.'),
+    'stock-reorder-plan': (lambda d: d.sales['product'].nunique() >= 3, 'The sales data carries no products (e-invoices list totals only): send a sales list with product codes.'),
+    'product-and-customer-ranking': (lambda d: d.sales['product'].nunique() >= 3 or d.sales['customer'].nunique() >= 3, 'Fewer than three products and no customer names to rank.'),
+    'customer-groups': (lambda d: d.recent(365)['customer'].nunique() >= 20, 'Fewer than 20 identified customers in the last year.'),
+    'customer-value-and-churn': (lambda d: d.sales['customer'].nunique() >= 20, 'Fewer than 20 identified customers.'),
+    'profit-projection-with-what-ifs': (lambda d: len(svc_accounting._pnl(d)[0].tail(12)) >= 6, 'Fewer than six months of profit and loss.'),
+    'pay-fairness-check': (_staff_ok, 'Needs salaries and gender for at least 20 current staff, both women and men.'),
+    'error-and-fraud-scan': (lambda d: (svc_accounting._entries(d)[0]['amount'] > 0).sum() >= 50, 'Fewer than 50 entries to scan.'),
+    'demand-trends': (_trend_points, 'Needs at least two years of search interest.'),
+    'budget-split-across-channels': (lambda d: d.t('ads')['date'].dt.to_period('W').nunique() >= 26, 'Fewer than 26 weeks of ad spend.'),
+    'branch-and-product-benchmarking': (lambda d: (d.sales['branch'] is not None and d.sales['branch'].nunique() > 1) or d.sales['product'].nunique() >= 3, 'No branches and no products to compare: send a sales list with products or branch details.'),
+    'driver-analysis': (lambda d: d.sales['date'].dt.normalize().nunique() >= 28, 'Fewer than four weeks of trading days: too little to separate the effect of each factor.'),
+    'exchange-rate-and-inflation-impact': (lambda d: (d.recent(365)['cost'] * d.recent(365)['qty']).sum() > 0, 'Sales can’t be matched to product costs: send a sales list with product codes that match the price list.'),
+    'a-b-test-check': (lambda d: (d.t('abtest').groupby('variant')['visitors'].sum() > 0).sum() >= 2 and d.t('abtest')['conversions'].sum() > 0, 'The file needs two versions with visitors, and some conversions.'),
+}
+
+
 def readiness(s: Service, data: Data) -> dict:
     level = level_for(s, data.kinds)
     why = None
+    if level != 'none' and s.id in PRECHECK:
+        ok, msg = PRECHECK[s.id]
+        try:
+            passed = ok(data)
+        except NeedsData as e:
+            passed, msg = False, str(e)
+        except Exception:  # noqa: BLE001 - a check must never break the list; the run will say what's wrong
+            passed = True
+        if not passed:
+            return {'level': 'none', 'why': msg, 'missing': missing_for(s, data.kinds)}
     if level != 'none' and s.adjust:
         try:
             adj = s.adjust(data, level)
@@ -84,6 +130,22 @@ def start_params(s: Service, data: Data, client: dict) -> dict:
     return p
 
 
+_ONE = {'people': 'person', 'products': 'product', 'months': 'month', 'customers': 'customer', 'accounts': 'account', 'weeks': 'week', 'days': 'day', 'employees': 'employee', 'branches': 'branch', 'files': 'file', 'rows': 'row', 'entries': 'entry', 'invoices': 'invoice', 'payments': 'payment', 'channels': 'channel', 'orders': 'order', 'suppliers': 'supplier', 'flags': 'flag', 'lines': 'line'}
+_VERB = {'are': 'is', 'have': 'has', 'bring': 'brings', 'order': 'orders', 'make': 'makes', 'buy': 'buys', 'were': 'was', 'need': 'needs', 'sell': 'sells', 'appear': 'appears', 'pay': 'pays', 'look': 'looks'}
+_ONE_RE = re.compile(r'(?<![\d.,])\b1 (' + '|'.join(_ONE) + r')\b((?: \w+ly| now| also| together)?) ?(' + '|'.join(_VERB) + r')?\b')
+
+
+def _grammar(x):
+    """'1 products have' → '1 product has', everywhere in a result."""
+    if isinstance(x, str):
+        return _ONE_RE.sub(lambda m: f'1 {_ONE[m.group(1)]}{m.group(2)}' + (f' {_VERB[m.group(3)]}' if m.group(3) else (' ' if m.group(0).endswith(' ') else '')), x)
+    if isinstance(x, list):
+        return [_grammar(v) for v in x]
+    if isinstance(x, dict):
+        return {k: _grammar(v) for k, v in x.items()}
+    return x
+
+
 def run(service_id: str, data: Data, params: dict | None, client: dict) -> dict:
     """Runs one service. Returns {'level', 'result'} or {'level', 'error'} with a plain-language reason."""
     s = BY_ID[service_id]
@@ -101,7 +163,7 @@ def run(service_id: str, data: Data, params: dict | None, client: dict) -> dict:
         return {'level': r['level'], 'error': f'The model failed on this data: {e}', 'trace': traceback.format_exc(limit=4), 'params': p}
     out['currency'] = client.get('currency', 'EGP')
     level = out.pop('level', None) or r['level']
-    return {'level': level, 'why': r['why'], 'params': p, 'result': clean_json(out), 'ms': int((time.perf_counter() - t0) * 1000)}
+    return {'level': level, 'why': r['why'], 'params': p, 'result': _grammar(clean_json(out)), 'ms': int((time.perf_counter() - t0) * 1000)}
 
 
 def build_data(tables: dict[str, list[pd.DataFrame]], settings: dict | None = None) -> Data:

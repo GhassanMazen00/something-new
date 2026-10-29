@@ -14,7 +14,7 @@ from sklearn.model_selection import cross_val_predict
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
-from .core import Ctx, Data, NeedsData, Param, Service, bars, chart, finding, heatmap, kpi, line, result, series, table
+from .core import Ctx, Data, NeedsData, Param, Service, bars, chart, finding, heatmap, kpi, line, result, series, table, text
 
 DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
@@ -48,18 +48,17 @@ def turnover(c: Ctx) -> dict:
     months = np.arange(0, min(61, int(km.timeline.max()) + 1))
     surv = km.survival_function_at_times(months).values
     first_year = 1 - float(km.survival_function_at_times(12).iloc[0])
-    charts = [
-        chart('Still employed after … months (Kaplan-Meier)', line([str(m) for m in months], [series('Still employed (%)', surv * 100)], 'num')),
-        chart('Who leaves, by role (%)', bars(by_role.index, (by_role['rate'] * 100).values, 'num', horizontal=True, tones=['orange' if r > by_role['rate'].mean() * 1.3 else 'accent' for r in by_role['rate']])),
-    ]
-    findings = [finding(f'{f.pct(rate, 0)} of staff {"left in the last 12 months" if rate_label.startswith("Turnover") else "in this file have left"} ({len(leavers):,} people)' + (f', costing about {f.money(cost)} to replace.' if np.isfinite(cost) else '.'), 'high')]
+    charts = [chart('Still employed after … months (Kaplan-Meier)', line([str(m) for m in months], [series('Still employed (%)', surv * 100)], 'num'))]
+    if len(by_role) >= 2:
+        charts.append(chart('Who leaves, by role (%)', bars(by_role.index, (by_role['rate'] * 100).values, 'num', horizontal=True, tones=['orange' if r > by_role['rate'].mean() * 1.3 else 'accent' for r in by_role['rate']])))
+    findings = [finding(f'{f.pct(rate, 0)} of staff {"left in the last 12 months" if rate_label.startswith("Turnover") else "in this file have left"} ({len(leavers):,} {"person" if len(leavers) == 1 else "people"})' + (f', costing about {f.money(cost)} to replace.' if np.isfinite(cost) else '.'), 'high')]
     if len(by_role):
         findings.append(finding(f'{by_role.index[0]} has the highest turnover: {f.pct(by_role["rate"].iloc[0], 0)}.', 'high'))
     findings.append(finding(f'{f.pct(first_year, 0)} of new joiners leave within their first year.', 'medium', 'Better onboarding and a 6-month check-in are the cheapest fix.'))
     score = np.nan
     if c.level != 'low' and s['salary'].notna().mean() > 0.8:
         med = s.groupby('role')['salary'].transform('median')
-        X = pd.DataFrame({'pay_vs_role': s['salary'] / med, 'tenure': s['tenure_years'].fillna(0), 'overtime': s['overtime_hours'].fillna(0) if s['overtime_hours'].notna().any() else 0.0})
+        X = pd.DataFrame({'pay_vs_role': (s['salary'] / med.replace(0, np.nan)).replace([np.inf, -np.inf], np.nan).fillna(1.0), 'tenure': s['tenure_years'].fillna(0), 'overtime': s['overtime_hours'].fillna(0) if s['overtime_hours'].notna().any() else 0.0})
         X = pd.concat([X, pd.get_dummies(s['role'], prefix='role', drop_first=True, dtype=float)], axis=1).fillna(0)
         y = s['left'].astype(int).values
         if 0.05 < y.mean() < 0.95 and len(s) >= 50:
@@ -135,14 +134,14 @@ def payroll_scan(c: Ctx) -> dict:
         st = _staff(d).set_index('employee_id')
         ghost = p[~p['employee_id'].isin(st.index)]
         for emp, g in ghost.groupby('employee_id'):
-            flags.append({'emp': emp, 'name': g['name'].iloc[0] or '–', 'month': str(g['m'].max()), 'amount': (g['base'] + g['overtime']).sum(), 'why': f'Paid {g["m"].nunique()} months, not on the staff list', 'tone': 'red'})
+            flags.append({'emp': emp, 'name': text(g['name'].iloc[0]), 'month': str(g['m'].max()), 'amount': (g['base'] + g['overtime']).sum(), 'why': f'Paid {g["m"].nunique()} months, not on the staff list', 'tone': 'red'})
         after = p.join(st['leave_date'], on='employee_id')
         after = after[after['leave_date'].notna() & (after['m'].dt.start_time > after['leave_date'] + pd.Timedelta(days=31))]
         for _, r in after.iterrows():
             flags.append({'emp': r['employee_id'], 'name': r['name'] or '–', 'month': str(r['m']), 'amount': r['base'] + r['overtime'], 'why': 'Paid after leaving', 'tone': 'red'})
     for (emp, m), g in p.groupby(['employee_id', 'm']):
         if len(g) > 1:
-            flags.append({'emp': emp, 'name': g['name'].iloc[0] or '–', 'month': str(m), 'amount': (g['base'] + g['overtime']).iloc[1:].sum(), 'why': 'Paid twice in the same month', 'tone': 'red'})
+            flags.append({'emp': emp, 'name': text(g['name'].iloc[0]), 'month': str(m), 'amount': (g['base'] + g['overtime']).iloc[1:].sum(), 'why': 'Paid twice in the same month', 'tone': 'red'})
     med = p.groupby('employee_id')['overtime'].transform('median')
     spikes = p[(med > 0) & (p['overtime'] > 3.5 * med) & (p['overtime'] > p['overtime'].quantile(0.9))]
     for _, r in spikes.iterrows():

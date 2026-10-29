@@ -73,16 +73,25 @@ def series(name, values, tone='accent', dashed=False) -> dict:
     return {'name': name, 'values': list(values), 'tone': tone, 'dashed': dashed}
 
 
+def text(v) -> str:
+    """A value as table or label text: blanks (None, NaN, NaT) show as a dash, never as 'nan'."""
+    if v is None or (not isinstance(v, str) and pd.isna(v)):
+        return '–'
+    if isinstance(v, pd.Timestamp):
+        return v.strftime('%Y-%m-%d') if v == v.normalize() else v.strftime('%Y-%m-%d %H:%M')
+    return str(v)
+
+
 def bars(labels, values, fmt='money', tones=None, horizontal=False, ref=None, extra=None) -> dict:
-    return {'type': 'bars', 'labels': [str(v) for v in labels], 'values': list(values), 'format': fmt, 'tones': tones, 'horizontal': horizontal, 'ref': ref, 'extra': extra}
+    return {'type': 'bars', 'labels': [text(v) for v in labels], 'values': list(values), 'format': fmt, 'tones': tones, 'horizontal': horizontal, 'ref': ref, 'extra': extra}
 
 
 def table(columns, rows, numeric=None, tones=None) -> dict:
-    return {'type': 'table', 'columns': columns, 'rows': [[str(v) for v in r] for r in rows], 'numeric': numeric, 'tones': tones}
+    return {'type': 'table', 'columns': columns, 'rows': [[text(v) for v in r] for r in rows], 'numeric': numeric, 'tones': tones}
 
 
 def heatmap(rows, cols, values, fmt='num') -> dict:
-    return {'type': 'heatmap', 'rows': [str(r) for r in rows], 'cols': [str(c) for c in cols], 'values': values, 'format': fmt}
+    return {'type': 'heatmap', 'rows': [text(r) for r in rows], 'cols': [text(c) for c in cols], 'values': values, 'format': fmt}
 
 
 def chart(title: str, c: dict, wide: bool = False) -> dict:
@@ -141,7 +150,7 @@ def canonical_names(names: pd.Series) -> tuple[pd.Series, list[list[str]]]:
         for group in by_start.values():
             for i, a in enumerate(group):
                 for b in group[i + 1 :]:
-                    if len(a) > 6 and difflib.SequenceMatcher(None, a, b).ratio() >= 0.93:
+                    if len(a) > 6 and re.sub(r'\D', '', a) == re.sub(r'\D', '', b) and difflib.SequenceMatcher(None, a, b).ratio() >= 0.93:
                         parent[b] = parent[a]
     counts = names.astype(str).value_counts()
     groups: dict[str, list[str]] = {}
@@ -259,6 +268,8 @@ class Data:
             if len(gone):
                 self.cancelled = {'lines': int(len(gone)), 'value': float(out.loc[gone, 'amount'].sum())}
                 out = out.drop(index=gone)
+        if out.empty:
+            raise NeedsData('No sales lines with a readable date and a positive amount: check the date and number columns on the file’s column check.')
         return out.reset_index(drop=True)
 
     def goods(self, s: pd.DataFrame) -> pd.DataFrame:

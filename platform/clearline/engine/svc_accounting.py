@@ -348,9 +348,12 @@ def profit(c: Ctx) -> dict:
 def break_even(c: Ctx) -> dict:
     d, f = c.data, c.fmt
     p, est = _pnl(d)
-    last3 = p.tail(3)
+    # The last three months that had sales (a closed or empty month would make every ratio infinite).
+    last3 = p[p['revenue'] > 0].tail(3)
+    if last3.empty:
+        raise NeedsData('No month in the profit and loss has any sales.')
     rev = last3['revenue'].mean()
-    cmr = 1 - (last3['cogs'] / last3['revenue']).mean() - (last3['other'] / last3['revenue']).mean()
+    cmr = 1 - (last3['cogs'].sum() + last3['other'].sum()) / last3['revenue'].sum()
     fixed = (last3['payroll'] + last3['rent'] + last3['marketing']).mean() * (1 + c.p['fixed'] / 100)
     if cmr <= 0:
         raise NeedsData('Costs are higher than sales on every unit: check the cost column.')

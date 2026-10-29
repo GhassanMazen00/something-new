@@ -72,6 +72,25 @@ def _trend_points(d: Data) -> bool:
     return len(t) >= (104 if weekly else 24)
 
 
+def _budget_weeks(d: Data) -> bool:
+    a = d.t('ads')
+    weeks = set(a.loc[a['spend'] > 0, 'date'].dt.to_period('W-SUN').dt.start_time)
+    if a['new_customers'].notna().any():
+        return len(weeks) >= 26
+    if 'total_sales' in a and a['total_sales'].notna().any():
+        return len(weeks & set(a.dropna(subset=['total_sales'])['date'].dt.to_period('W-SUN').dt.start_time)) >= 26
+    if d.has('sales') or d.has('einv'):
+        return len(weeks & set(d.sales['date'].dt.to_period('W-SUN').dt.start_time)) >= 26
+    raise NeedsData('Needs new customers per channel, or a sales file to measure against.')
+
+
+def _competitor_prices(d: Data) -> bool:
+    t = d.t('competitors')
+    if 'our_price' in t and t['our_price'].notna().any():
+        return True
+    return len(d.products) > 0 and t['product'].astype(str).str.strip().str.lower().isin(set(d.products['key'])).any()
+
+
 # Cheap checks of the minimum each service needs, so the list says "Needs data" before anyone presses Run.
 # They mirror the NeedsData checks inside each service, which stay as the last word.
 PRECHECK = {
@@ -87,7 +106,8 @@ PRECHECK = {
     'pay-fairness-check': (_staff_ok, 'Needs salaries and gender for at least 20 current staff, both women and men.'),
     'error-and-fraud-scan': (lambda d: (svc_accounting._entries(d)[0]['amount'] > 0).sum() >= 50, 'Fewer than 50 entries to scan.'),
     'demand-trends': (_trend_points, 'Needs at least two years of search interest.'),
-    'budget-split-across-channels': (lambda d: d.t('ads')['date'].dt.to_period('W').nunique() >= 26, 'Fewer than 26 weeks of ad spend.'),
+    'budget-split-across-channels': (_budget_weeks, 'Fewer than 26 weeks of ad spend that overlap with the sales.'),
+    'competitor-check': (_competitor_prices, 'Add “our price” to the competitor sheet, or upload the client’s price list with the same product names.'),
     'branch-and-product-benchmarking': (lambda d: (d.sales['branch'] is not None and d.sales['branch'].nunique() > 1) or d.sales['product'].nunique() >= 3, 'No branches and no products to compare: send a sales list with products or branch details.'),
     'driver-analysis': (lambda d: d.sales['date'].dt.normalize().nunique() >= 28, 'Fewer than four weeks of trading days: too little to separate the effect of each factor.'),
     'exchange-rate-and-inflation-impact': (lambda d: (d.recent(365)['cost'] * d.recent(365)['qty']).sum() > 0, 'Sales can’t be matched to product costs: send a sales list with product codes that match the price list.'),

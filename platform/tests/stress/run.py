@@ -100,6 +100,8 @@ def check_result(res: dict) -> list[str]:
                 out.append(f'bars labels ≠ values: {ch["title"]}')
             if not c['labels']:
                 out.append(f'empty bar chart: {ch["title"]}')
+            if any(v is None for v in c['values']):
+                out.append(f'blank bar value: {ch["title"]}')
             if c.get('tones') and len(c['tones']) != len(c['labels']):
                 out.append(f'bars tones ≠ labels: {ch["title"]}')
         elif t == 'table':

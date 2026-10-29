@@ -71,7 +71,9 @@ def chart_png(c: dict, currency: str) -> bytes | None:
         labels = [lab[:28] for lab in c['labels']]
         tones = c.get('tones') or []
         colors = [TONES.get(tones[i] if i < len(tones) and tones[i] else 'accent') for i in range(len(labels))]
-        vals = c['values']
+        vals = [v if v is not None else float('nan') for v in c['values']]
+        if c.get('extra'):
+            c = {**c, 'extra': {**c['extra'], 'values': [v if v is not None else float('nan') for v in c['extra']['values']]}}
         if c.get('horizontal'):
             h = max(2.2, 0.28 * len(labels) + 0.6)
             fig.set_size_inches(6.6, min(h, 8))
@@ -227,7 +229,12 @@ def to_docx(rep: dict) -> bytes:
             if spec.get('type') == 'table':
                 _table(doc, spec['columns'], spec['rows'], spec.get('numeric'))
             else:
-                png = chart_png(spec, cur or 'EGP')
+                try:
+                    png = chart_png(spec, cur or 'EGP')
+                except Exception:  # noqa: BLE001 - one chart must never stop the whole report
+                    plt.close('all')
+                    png = None
+                    doc.add_paragraph('(This chart could not be drawn; its figures are in the Excel file.)').runs[0].italic = True
                 if png:
                     doc.add_picture(io.BytesIO(png), width=Cm(16.4))
         if res.get('accuracy'):

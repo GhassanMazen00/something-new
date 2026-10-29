@@ -61,6 +61,13 @@ def _weekly_ads(d) -> pd.DataFrame:
     return a.groupby(['week', 'channel'], as_index=False).agg(spend=('spend', 'sum'), new_customers=('new_customers', lambda x: x.sum(min_count=1)), revenue=('revenue', lambda x: x.sum(min_count=1)))
 
 
+def _spend_only(d, level):
+    a = d.t('ads')
+    if not (a['new_customers'].notna().any() or a['revenue'].notna().any()):
+        return 'none', 'The ad file has spend only: this needs new customers or revenue per channel. The budget split works from total sales instead.'
+    return None
+
+
 def ad_channels(c: Ctx) -> dict:
     d, f = c.data, c.fmt
     a = _weekly_ads(d)
@@ -115,9 +122,15 @@ def budget_split(c: Ctx) -> dict:
         outcome = a.pivot_table(index='week', columns='channel', values='new_customers', aggfunc='sum').reindex(spend.index).fillna(0)
         unit = 'customers'
     else:
-        if not (d.has('sales') or d.has('einv')):
+        raw = d.t('ads')
+        if 'total_sales' in raw and raw['total_sales'].notna().any():
+            # A weekly marketing sheet carries total sales on every channel's row: count each date once.
+            t = raw.drop_duplicates('date')
+            wk = t.groupby(t['date'].dt.to_period('W-SUN').dt.start_time)['total_sales'].sum(min_count=1)
+        elif d.has('sales') or d.has('einv'):
+            wk = d.sales.groupby(d.sales['date'].dt.to_period('W-SUN').dt.start_time)['amount'].sum()
+        else:
             raise NeedsData('Needs new customers per channel, or a sales file to measure against.')
-        wk = d.sales.groupby(d.sales['date'].dt.to_period('W-SUN').dt.start_time)['amount'].sum()
         y_total = wk.reindex(spend.index)
         keep = y_total.notna()
         spend = spend[keep]
@@ -186,7 +199,7 @@ def budget_split(c: Ctx) -> dict:
         ],
         [
             finding(f'The same budget, split differently, could bring {f.spct(gain, 0)} more {"customers" if per_channel else "sales"} a week.', 'medium', 'Move money in steps of 10–20% and check results after four weeks.') if gain > 0.02 else finding('Today’s split is already close to the best one for this budget.', 'medium', 'Extra budget should go to the channel with the most return per 1,000.'),
-            finding(f'{low} is closest to its limit: the next 1,000 there brings {per1000[low]:.1f} {"customers" if per_channel else unit}, against {per1000[top]:.1f} on {top}.', 'medium'),
+            finding(f'{low} is closest to its limit: the next 1,000 there brings ' + (f'{per1000[low]:.1f} customers, against {per1000[top]:.1f} on {top}.' if per_channel else f'{f.money(per1000[low])} in sales, against {f.money(per1000[top])} on {top}.'), 'medium'),
         ],
         notes=['Response curves are fitted with carry-over (adstock) and diminishing returns. A pause test in one area is the best confirmation before large moves.'],
     )
@@ -296,15 +309,24 @@ def churn(c: Ctx) -> dict:
     spent = s[s['date'] > d.end - pd.Timedelta(days=365)].groupby('customer')['amount'].sum().reindex(now.index).fillna(0)
     lost = prob < 0.05
     fading = (now['x'] >= 1).values & (alive >= 0.2) & (alive < 0.7)
+    # Over a short history the model may see almost nobody leave for good (a tiny drop-out rate per purchase).
+    # Then judge each repeat customer against their own rhythm: quiet for well over their usual gap.
+    rhythm = p[2] / (p[2] + p[3]) < 0.01
+    if rhythm:
+        gap = now['tx'] / now['x'].clip(lower=1)
+        quiet = now['T'] - now['tx']
+        fading = ((now['x'] >= 2) & (quiet > np.maximum(2.5 * gap, 4.3))).values
+        lost = (quiet > 26).values
     stake = spent[fading].sum()
     buckets = [0, 0.05, 0.15, 0.3, 0.5, 1.01]
     dist = [int(((prob >= lo) & (prob < hi)).sum()) for lo, hi in zip(buckets[:-1], buckets[1:])]
     return result(
-        [kpi('Customers', f.num(len(now)), f'{f.pct(repeat, 0)} have bought twice or more'), kpi('Probably lost', f.pct(lost.mean(), 0), 'under 5% chance of buying in 90 days', 'bad'), kpi('Regulars fading', f.num(fading.sum()), f'spent {f.money(stake)} last year'), kpi('Test: who comes back', f'AUC {score:.2f}' if np.isfinite(score) else '–', tone='good' if np.isfinite(score) and score > 0.7 else 'bad')],
+        [kpi('Customers', f.num(len(now)), f'{f.pct(repeat, 0)} have bought twice or more'), kpi('Quiet for 6+ months' if rhythm else 'Probably lost', f.pct(lost.mean(), 0), 'no order in the last 26 weeks' if rhythm else 'under 5% chance of buying in 90 days', 'bad'), kpi('Regulars fading', f.num(fading.sum()), f'spent {f.money(stake)} last year'), kpi('Test: who comes back', f'AUC {score:.2f}' if np.isfinite(score) else '–', tone='good' if np.isfinite(score) and score > 0.7 else 'bad')],
         [chart('Chance each customer buys in the next 90 days', bars(['<5%', '5–15%', '15–30%', '30–50%', '>50%'], dist, 'num', tones=['muted', 'orange', 'amber', 'accent', 'green'])), cohort],
         [
-            finding(f'{int(fading.sum()):,} regular customers are fading: they used to buy often but have gone quiet. Together they spent {f.money(stake)} in the last 12 months.', 'high' if np.isfinite(score) and score > 0.7 else 'medium', 'Send them a personal offer now; it is too late for the lost group.'),
-            finding(f'About {f.pct(lost.mean(), 0)} of past customers have probably stopped buying for good.', 'medium'),
+            finding(f'{int(fading.sum()):,} regular customers are fading: they used to buy often but have gone quiet. Together they spent {f.money(stake)} in the last 12 months.', 'high' if np.isfinite(score) and score > 0.7 else 'medium', 'Send them a personal offer now; it is too late for the lost group.') if fading.sum() else finding('No regular customer has gone unusually quiet.', 'high'),
+            finding(f'{f.pct(lost.mean(), 0)} of past customers haven’t ordered in over six months.', 'medium') if rhythm else finding(f'About {f.pct(lost.mean(), 0)} of past customers have probably stopped buying for good.', 'medium'),
+            *([finding('Over this period the model sees almost no customers leave for good, which is common with about a year of history. “Fading” compares each repeat customer with their own usual gap between orders instead.', 'low')] if rhythm else []),
             finding(f'{f.pct(month_one, 0)} of new customers buy again within their first month.', 'high', 'A reminder 3–5 weeks after the first order is the cheapest lever.') if np.isfinite(month_one) else finding('Too few cohorts to measure repeat timing.', 'low'),
         ],
         accuracy=f'Fitted on data up to 90 days before the end, then checked against who actually bought in those 90 days: AUC {score:.2f} (0.5 is a coin toss, 1.0 is perfect).' if np.isfinite(score) else None,
@@ -346,7 +368,7 @@ def ab_test(c: Ctx) -> dict:
 
 SERVICES = [
     Service('customer-groups', 'marketing', 'Customer groups', [['sales']], customer_groups, medium=[['einv']]),
-    Service('ad-channel-performance', 'marketing', 'Ad channel performance', [['ads', 'sales'], ['ads', 'einv']], ad_channels, medium=[['ads']]),
+    Service('ad-channel-performance', 'marketing', 'Ad channel performance', [['ads', 'sales'], ['ads', 'einv']], ad_channels, medium=[['ads']], adjust=_spend_only),
     Service('budget-split-across-channels', 'marketing', 'Budget split across channels', [['ads']], budget_split, adjust=lambda d, l: ('medium', 'Under two years of weekly spend: curves are rougher; confirm with a pause test.') if d.t('ads')['date'].dt.to_period('W').nunique() < 100 else None, preview='Response curves with carry-over (adstock) and diminishing returns fitted per channel, or jointly against weekly sales when new customers aren’t tracked; budget moved in small steps to wherever it brings the most. Google Meridian joins in a later version.'),
     Service('customer-value-and-churn', 'marketing', 'Customer value and churn', [['sales']], churn, medium=[['einv']], adjust=lambda d, l: ('low', 'Under a year of orders: cohort tables only.') if (d.end - d.sales['date'].min()).days < 365 else None, preview='BG/NBD model fitted by maximum likelihood, tested on a 90-day hold-out; accounts watched one by one when there are under 500 customers.'),
     Service('a-b-test-check', 'marketing', 'A/B test check', [['abtest']], ab_test),

@@ -1,14 +1,19 @@
-// Number formatting for the workspace. Money is Egyptian pounds.
+// Number formatting for the workspace. Money is in the open client's currency, Egyptian pounds unless set.
+
+let currency = 'EGP'
+export const setCurrency = (c: string) => {
+  currency = c || 'EGP'
+}
 
 export function egp(n: number, opts: { exact?: boolean } = {}) {
   const sign = n < 0 ? '−' : ''
   const a = Math.abs(n)
   if (!opts.exact) {
-    if (a >= 1e9) return `${sign}EGP ${(a / 1e9).toFixed(2)}B`
-    if (a >= 1e6) return `${sign}EGP ${(a / 1e6).toFixed(a >= 1e7 ? 1 : 2)}M`
-    if (a >= 1e4) return `${sign}EGP ${(a / 1e3).toFixed(0)}K`
+    if (a >= 1e9) return `${sign}${currency} ${(a / 1e9).toFixed(2)}B`
+    if (a >= 1e6) return `${sign}${currency} ${(a / 1e6).toFixed(a >= 1e7 ? 1 : 2)}M`
+    if (a >= 1e4) return `${sign}${currency} ${(a / 1e3).toFixed(0)}K`
   }
-  return `${sign}EGP ${Math.round(a).toLocaleString('en-US')}`
+  return `${sign}${currency} ${Math.round(a).toLocaleString('en-US')}`
 }
 export const num = (n: number, digits = 0) => n.toLocaleString('en-US', { maximumFractionDigits: digits, minimumFractionDigits: digits })
 export const pct = (x: number, digits = 1) => `${(x * 100).toFixed(digits)}%`

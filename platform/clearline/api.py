@@ -17,6 +17,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from . import audit, config, engine, intake, security, storage
+from .engine.calendar import market_settings
 from .db import Activity, Client, DataFile, LoginSession, ReportSection, Run, User, get_db, now
 
 api = APIRouter(prefix='/api')
@@ -254,6 +255,14 @@ def update_user(uid: int, body: UserPatch, admin: User = Depends(admin_only), db
 # ---------- Clients ----------
 
 
+def _calendar(settings: dict) -> str:
+    if 'ramadan' not in settings:
+        return 'auto'
+    if not settings['ramadan']:
+        return 'other'
+    return 'mena' if settings.get('weekend') == [4, 5] else 'gulf'
+
+
 def client_out(c: Client, db: Session, full: bool = False) -> dict:
     out = {
         'id': c.id,
@@ -269,6 +278,7 @@ def client_out(c: Client, db: Session, full: bool = False) -> dict:
         'delivered_at': c.delivered_at.isoformat() if c.delivered_at else None,
         'delete_on': c.delete_on.isoformat(),
         'currency': c.settings.get('currency', 'EGP'),
+        'calendar': _calendar(c.settings),
         'files': db.query(DataFile).filter(DataFile.client_id == c.id).count(),
         'review_comment': c.review_comment,
     }
@@ -315,6 +325,7 @@ class ClientPatch(BaseModel):
     analyst_id: int | None = None
     reviewer_id: int | None = None
     currency: str | None = None
+    calendar: str | None = None  # auto, mena (Ramadan, Fri–Sat), gulf (Ramadan, Sat–Sun), other
     extend_days: int | None = None
 
 
@@ -330,6 +341,10 @@ def update_client(cid: int, body: ClientPatch, user: User = Depends(current_user
             setattr(c, k, changes[k])
     if 'currency' in changes:
         c.settings = {**c.settings, 'currency': (changes['currency'] or 'EGP').upper()}
+    if 'calendar' in changes:
+        cal = {'mena': {'ramadan': True, 'weekend': [4, 5]}, 'gulf': {'ramadan': True, 'weekend': [5, 6]}, 'other': {'ramadan': False, 'weekend': [5, 6]}}.get(changes['calendar'] or 'auto', {})
+        c.settings = {**{k: v for k, v in c.settings.items() if k not in ('ramadan', 'weekend')}, **cal}
+        _cache.clear()
     if 'analyst_id' in changes and changes['analyst_id'] != c.analyst_id:
         c.analyst_id = changes['analyst_id']
         db.flush()
@@ -429,13 +444,29 @@ async def upload(cid: int, files: list[UploadFile] = File(...), user: User = Dep
 
 
 @api.get('/files/{fid}')
-def get_file(fid: int, user: User = Depends(current_user), db: Session = Depends(get_db)):
+def get_file(fid: int, kind: str | None = None, sheet: str | None = None, header_row: int | None = None, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    """The file with a preview. Trying another type, sheet or header row returns fresh column suggestions for it."""
     f = db.get(DataFile, fid)
     if not f:
         raise HTTPException(404, 'No such file.')
     c = visible(db, user, f.client_id)
-    raw = intake.read_raw(f.name, storage.load(c.data_key, f.blob), f.options, nrows=10)
-    return {**file_out(f), 'preview': intake.preview(raw), 'preview_columns': list(raw.columns)}
+    opts = {k: v for k, v in f.options.items() if k in ('sheet', 'header_row')}
+    if sheet is not None:
+        opts['sheet'] = sheet or None
+    if header_row is not None:
+        opts['header_row'] = header_row if header_row >= 0 else None
+    try:
+        raw = intake.read_raw(f.name, storage.load(c.data_key, f.blob), opts, nrows=400)
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(400, f'That sheet or header row can’t be read: {e}') from e
+    out = {**file_out(f), 'preview': intake.preview(raw, 12), 'preview_columns': list(raw.columns)}
+    changed = (sheet is not None or header_row is not None) and list(raw.columns) != f.columns
+    if (kind and kind in intake.KINDS and kind != f.kind) or changed:
+        k = kind if kind in intake.KINDS else f.kind
+        out['kind'], out['mapping'], out['columns'] = k, intake.suggest_mapping(k, raw), list(raw.columns)
+    if out['kind'] == 'adswide':
+        out['spend_columns'] = intake.wide_spend_columns(raw, out['mapping'])
+    return out
 
 
 class MappingIn(BaseModel):
@@ -460,7 +491,10 @@ def set_mapping(fid: int, body: MappingIn, user: User = Depends(current_user), d
     raw = intake.read_raw(f.name, storage.load(c.data_key, f.blob), opts)
     if set(mapping.values()) - set(raw.columns):
         raise HTTPException(400, 'Some chosen columns aren’t in the file. Reload the page and try again.')
-    std, health = intake.standardize(body.kind, raw, mapping, dict(opts))
+    try:
+        std, health = intake.standardize(body.kind, raw, mapping, dict(opts))
+    except ValueError as e:
+        raise HTTPException(400, str(e)) from e
     if std.empty:
         raise HTTPException(400, 'No usable rows after cleaning. Check the date and number columns.')
     old_std = f.options.get('std')
@@ -508,9 +542,9 @@ def client_data(db: Session, c: Client) -> tuple[engine.Data, dict]:
     tables: dict[str, list[pd.DataFrame]] = {}
     for f in files:
         # Our own encrypted, authenticated blob: only this app could have written it.
-        tables.setdefault(f.kind, []).append(pickle.loads(storage.load(c.data_key, f.options['std'])))  # noqa: S301
+        tables.setdefault(intake.KINDS[f.kind].store_as or f.kind, []).append(pickle.loads(storage.load(c.data_key, f.options['std'])))  # noqa: S301
     info = {'files': [{'name': f.name, 'kind': f.kind, 'kind_label': intake.KINDS[f.kind].label, 'rows': f.rows, 'health': f.health} for f in files], 'sector': c.sector, 'currency': c.settings.get('currency', 'EGP')}
-    out = (engine.build_data(tables), info)
+    out = (engine.build_data(tables, market_settings(info['currency'], c.settings)), info)
     with _cache_lock:
         _cache[key] = out
         while len(_cache) > 4:

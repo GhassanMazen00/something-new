@@ -1,0 +1,324 @@
+/* Extras for the real workspace on top of the demo's styles: forms, the column checker, review and print. */
+
+.boot {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  color: var(--muted);
+}
+.tag.green {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--green) 16%, transparent);
+  color: var(--green);
+}
+.tag.amber {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--amber) 16%, transparent);
+  color: var(--amber);
+}
+.tag.orange {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--orange) 16%, transparent);
+  color: var(--orange);
+}
+.tag.red {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--red) 16%, transparent);
+  color: var(--red);
+}
+
+/* Forms */
+.field textarea,
+.review-box textarea,
+.summary-edit,
+.note-edit {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line-2);
+  background: var(--inner);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 500;
+  font-size: 0.9rem;
+  resize: vertical;
+}
+.field textarea:focus,
+.field select:focus,
+.summary-edit:focus,
+.note-edit:focus,
+.review-box textarea:focus,
+.search:focus,
+.num-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.field select,
+.mini,
+.map-tbl select {
+  appearance: auto;
+}
+.field select {
+  width: 100%;
+  min-width: 0;
+  text-overflow: ellipsis;
+}
+.field {
+  min-width: 0;
+}
+.search,
+.num-input,
+.mini,
+.map-tbl select {
+  min-height: 36px;
+  padding: 0 10px;
+  border-radius: 9px;
+  border: 1px solid var(--line-2);
+  background: var(--inner);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.86rem;
+}
+.search {
+  min-width: 220px;
+}
+.num-input {
+  width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+option {
+  background: var(--panel-solid);
+  color: var(--ink);
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0 14px;
+}
+.form-grid .span-2 {
+  grid-column: 1 / -1;
+}
+.form-panel {
+  margin-bottom: 18px;
+}
+.hint {
+  margin-top: 12px;
+  color: var(--faint);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.signin-card .hint {
+  color: var(--faint);
+}
+.link-btn {
+  width: 100%;
+  margin-top: 10px;
+  border-color: transparent;
+  background: none;
+  color: var(--muted);
+}
+.btn-danger {
+  border-color: color-mix(in srgb, var(--red) 50%, transparent);
+  color: var(--red);
+}
+.btn-danger:hover:not([disabled]) {
+  background: var(--red);
+  color: #fff;
+}
+details.danger summary {
+  cursor: pointer;
+  color: var(--red);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+.notice {
+  border-color: color-mix(in srgb, var(--amber) 45%, transparent);
+}
+.notice-line {
+  font-size: 0.86rem;
+  color: var(--ink-2);
+}
+code,
+.secret {
+  font-family: var(--mono);
+  font-size: 0.86em;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--inner-2);
+}
+.secret {
+  user-select: all;
+}
+
+/* Two-step setup */
+.qr {
+  display: grid;
+  place-items: center;
+  margin-top: 18px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #fff;
+}
+.qr svg {
+  width: 190px;
+  height: 190px;
+}
+details.hint summary {
+  cursor: pointer;
+}
+details.hint code {
+  display: block;
+  margin-top: 8px;
+  padding: 8px;
+  text-align: center;
+  letter-spacing: 0.08em;
+}
+
+/* Files */
+.file .warn {
+  display: block;
+  color: var(--amber);
+}
+.health {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+.health.good {
+  color: var(--green);
+}
+.health.ok {
+  color: var(--amber);
+}
+.health.bad {
+  color: var(--orange);
+}
+.upload.drop {
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+.upload.drop.over {
+  border-color: var(--accent);
+  background: var(--accent-t);
+}
+.upload b {
+  color: var(--ink);
+}
+.issues {
+  margin: 14px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  color: var(--ink-2);
+  font-size: 0.88rem;
+}
+.mapping-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+.map-tbl {
+  margin-top: 18px;
+}
+.map-tbl select {
+  width: 100%;
+  min-width: 150px;
+}
+.map-tbl td {
+  vertical-align: middle;
+}
+.map-tbl .req {
+  color: var(--faint);
+  font-size: 0.72rem;
+}
+.map-tbl tr.need td:first-child {
+  box-shadow: inset 3px 0 0 var(--amber);
+}
+.map-tbl .sample {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.76rem;
+}
+.preview-panel th.mapped {
+  color: var(--accent);
+}
+.tbl tr.off td {
+  opacity: 0.5;
+}
+
+/* Running a service */
+.run-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+}
+
+/* Report */
+.workflow {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.review-box {
+  display: grid;
+  gap: 10px;
+  width: min(560px, 100%);
+}
+.summary-edit {
+  margin-top: 10px;
+}
+.note-edit {
+  margin-bottom: 14px;
+  font-size: 0.86rem;
+}
+.analyst-note {
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  border-left: 3px solid var(--accent);
+  background: var(--inner);
+  border-radius: 0 10px 10px 0;
+}
+.pre {
+  white-space: pre-wrap;
+}
+.icon-btn[disabled] {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1000px) {
+  .mapping-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  .no-print,
+  .side,
+  .top,
+  .tabs,
+  .client-head,
+  .note-edit:placeholder-shown {
+    display: none !important;
+  }
+  .summary-edit,
+  .note-edit {
+    border: 0;
+    padding: 0;
+    resize: none;
+    background: none;
+  }
+  .report-section {
+    break-inside: avoid-page;
+  }
+}

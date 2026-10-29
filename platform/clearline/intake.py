@@ -34,6 +34,7 @@ class Kind:
     # At least one of these groups must be fully mapped, on top of the required fields.
     any_of: list[list[str]] = field(default_factory=list)
     hints: list[str] = field(default_factory=list)  # words in a file name that suggest this kind
+    store_as: str | None = None  # read as another kind's table once reshaped
 
 
 def F(key, label, type_, syn='', required=False):
@@ -54,6 +55,7 @@ KINDS: dict[str, Kind] = {
                 F('order_id', 'Order or invoice', 'text', 'order|order id|order no|invoice|invoice no|invoiceno|receipt|bill no|transaction id|رقم الفاتورة|الفاتورة|رقم الطلب'),
                 F('customer', 'Customer', 'text', 'customer|customer id|customerid|client|buyer|account|phone|العميل|رقم العميل|اسم العميل'),
                 F('product', 'Product', 'text', 'product|item|sku|stockcode|stock code|item code|product id|description|product name|الصنف|المنتج|كود الصنف', True),
+                F('product_name', 'Product name', 'text', 'description|product name|item name|product description|item description|اسم الصنف|اسم المنتج'),
                 F('branch', 'Branch or store', 'text', 'branch|store|shop|location|outlet|country|region|الفرع|المتجر'),
                 F('channel', 'Channel', 'text', 'channel|source|platform|القناة'),
                 F('qty', 'Quantity', 'number', 'qty|quantity|units|pieces|الكمية|عدد'),
@@ -178,6 +180,18 @@ KINDS: dict[str, Kind] = {
                 F('revenue', 'Revenue', 'number', 'revenue|sales|value|الإيرادات'),
             ],
             hints=['ads', 'marketing', 'spend', 'media', 'campaign', 'إعلان'],
+        ),
+        # Marketing teams often keep one row per week with a spend column per channel. Reshaped to the table above.
+        Kind(
+            'adswide',
+            'Weekly marketing sheet',
+            [
+                F('date', 'Week or date', 'date', 'week|date|day|period|time|الأسبوع|التاريخ', True),
+                F('total_sales', 'Sales that week, all channels', 'number', 'revenue|sales|total sales|turnover|conversions|kpi|المبيعات|الإيرادات'),
+                F('unit_value', 'Value per sale (if sales are a count)', 'number', 'revenue per conversion|value per conversion|average order value|aov'),
+            ],
+            hints=['mmm', 'media mix', 'marketing mix', 'weekly', 'robyn', 'meridian'],
+            store_as='ads',
         ),
         Kind(
             'payroll',
@@ -403,6 +417,22 @@ def to_date(s: pd.Series, dayfirst: bool | None = None) -> tuple[pd.Series, bool
     # Weeks like "2024-W05" become the Monday of that week.
     if t.dropna().str.fullmatch(r'\d{4}-?W\d{1,2}').mean() > 0.9:
         return pd.to_datetime(t.str.replace(r'(\d{4})-?W(\d{1,2})', r'\1-W\2-1', regex=True), format='%G-W%V-%u', errors='coerce'), bool(dayfirst)
+    # Numeric dates like 5/22/2011 or 22.05.2011: settle the order from values that only fit one way, then apply that
+    # order to every row. (Letting the parser decide row by row silently swaps day and month where both would fit.)
+    parts = t.str.extract(r'^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{2,4})(.*)$')
+    if parts[0].notna().mean() > 0.9 * max(t.notna().mean(), 1e-9):
+        a, b = pd.to_numeric(parts[0], errors='coerce'), pd.to_numeric(parts[1], errors='coerce')
+        if dayfirst is None:
+            day_votes, month_votes = int((a > 12).sum()), int((b > 12).sum())
+            dayfirst = day_votes >= month_votes  # no evidence either way: day first, as in the region
+        day, month = (a, b) if dayfirst else (b, a)
+        year = pd.to_numeric(parts[2], errors='coerce')
+        year = year.where(year >= 100, year + 2000)
+        iso = year.astype('Int64').astype(str) + '-' + month.astype('Int64').astype(str).str.zfill(2) + '-' + day.astype('Int64').astype(str).str.zfill(2) + parts[3].fillna('')
+        iso = iso.where(parts[0].notna())
+        with np.errstate(all='ignore'):
+            parsed = pd.to_datetime(iso, errors='coerce', format='mixed')
+        return parsed, bool(dayfirst)
     options = [dayfirst] if dayfirst is not None else [True, False]
     best = None
     for df_ in options:
@@ -484,7 +514,40 @@ def suggest_mapping(kind: str, df: pd.DataFrame) -> dict[str, str]:
                     mapping[f.key] = col
                     used.add(col)
                     break
+    # One column naming the product: it is the product, not just its name.
+    if kind == 'sales' and 'product' not in mapping and 'product_name' in mapping:
+        mapping['product'] = mapping.pop('product_name')
     return mapping
+
+
+SPEND_COL = re.compile(r'(^|[_\s\-])(spend|cost|budget|investment)s?$|_s$', re.I)
+
+
+def wide_spend_columns(df: pd.DataFrame, mapping: dict[str, str] | None = None) -> list[str]:
+    """Columns of a weekly marketing sheet that hold one channel's spend: 'TV spend', 'facebook_S', 'Channel0_spend'."""
+    taken = set((mapping or {}).values())
+    return [c for c in df.columns if c not in taken and SPEND_COL.search(str(c).strip()) and to_number(df[c]).notna().mean() >= 0.5]
+
+
+def channel_name(col: str) -> str:
+    name = re.sub(r'([_\s\-]?(spend|cost|budget|investment)s?|_s)$', '', str(col).strip(), flags=re.I).strip(' _-')
+    name = (name or str(col)).replace('_', ' ').strip()
+    return name.upper() if len(name) <= 3 else name[0].upper() + name[1:]
+
+
+def _melt_wide(df: pd.DataFrame, out: pd.DataFrame, mapping: dict[str, str], health: dict) -> pd.DataFrame:
+    cols = wide_spend_columns(df, mapping)
+    if not cols:
+        raise ValueError('No spend columns found. Name each channel’s column like “TV spend” or “facebook_S”.')
+    total = out['total_sales'] if 'total_sales' in out else pd.Series(np.nan, index=out.index)
+    if 'unit_value' in out:
+        total = total * out['unit_value'].fillna(1)
+    parts = [pd.DataFrame({'date': out['date'], 'channel': channel_name(c), 'spend': to_number(df[c]).fillna(0).values, 'total_sales': total.values}) for c in cols]
+    health['channels'] = [channel_name(c) for c in cols]
+    long = pd.concat(parts, ignore_index=True)
+    long['new_customers'] = np.nan
+    long['revenue'] = np.nan
+    return long
 
 
 def mapping_problems(kind: str, mapping: dict[str, str]) -> list[str]:
@@ -507,6 +570,10 @@ def suggest_kind(name: str, df: pd.DataFrame) -> tuple[str, dict[str, str], floa
         groups_ok = not k.any_of or any(all(x in m for x in g) for g in k.any_of)
         extra = sum(1 for f in k.fields if not f.required and f.key in m) / max(len(k.fields), 1)
         score = covered * (1 if groups_ok else 0.6) + 0.3 * extra + (0.25 if any(h in low for h in k.hints) else 0)
+        if key == 'adswide':
+            score = score if len(wide_spend_columns(df, m)) >= 2 else 0
+        elif key == 'ads' and len(wide_spend_columns(df)) >= 2 and 'channel' not in m:
+            score *= 0.5
         if score > best[2]:
             best = (key, m, score)
     return best[0], best[1], min(1.0, max(0.0, best[2] / 1.3))
@@ -544,6 +611,9 @@ def standardize(kind: str, df: pd.DataFrame, mapping: dict[str, str], options: d
     health: dict = {'rows_in': int(len(df)), 'issues': []}
     for label, n in bad.items():
         health['issues'].append(f'{n:,} values in “{label}” couldn’t be read and were left empty')
+    if kind == 'adswide':
+        out = _melt_wide(df, out, mapping, health)
+        health['rows_in'] = int(len(out))
     out = _shape(kind, out, health)
     req = [f.key for f in k.fields if f.required and f.key in out]
     before = len(out)

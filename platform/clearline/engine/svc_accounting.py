@@ -73,7 +73,7 @@ def fraud_scan(c: Ctx) -> dict:
         logs = np.log(e['amount'])
         med = logs.groupby(e['party']).transform('median')
         spread = (logs - med).abs().groupby(e['party']).transform('median').clip(lower=0.4)
-        X = np.column_stack([logs, (logs - med) / spread, (e['amount'] % 1000 == 0).astype(float), e['date'].dt.dayofweek.isin([4, 5]).astype(float)])
+        X = np.column_stack([logs, (logs - med) / spread, (e['amount'] % 1000 == 0).astype(float), e['date'].dt.dayofweek.isin(d.weekend).astype(float)])
         iso = IsolationForest(n_estimators=200, contamination=min(0.01, 30 / len(e)), random_state=0).fit(X)
         out = e[(iso.predict(X) == -1) & ((logs - med) / spread > 2.5)]
         for _, r in out.iterrows():
@@ -279,6 +279,9 @@ def cash13(c: Ctx) -> dict:
     )
 
 
+ASSUMED_MARGIN = 0.35
+
+
 def _pnl(d: Data) -> tuple[pd.DataFrame, bool]:
     """Monthly profit and loss as sent, or rebuilt from sales, costs, staff and ads."""
     if d.has('pnl'):
@@ -292,7 +295,12 @@ def _pnl(d: Data) -> tuple[pd.DataFrame, bool]:
     m = d.monthly
     s = d.sales
     cogs = (s['cost'] * s['qty']).groupby(s['date'].dt.to_period('M')).sum().reindex(m.index)
+    # Without the cost of most goods sold, assume a typical retail gross margin rather than treating sales as profit.
+    costed = s.loc[s['cost'].notna(), 'amount'].sum() / max(s['amount'].sum(), 1e-9)
+    if costed < 0.5:
+        cogs = m * (1 - ASSUMED_MARGIN)
     p = pd.DataFrame({'revenue': m, 'cogs': cogs})
+    p.attrs['assumed_margin'] = costed < 0.5
     p['payroll'] = d.t('staff')['salary'].where(~d.t('staff')['left']).sum() * 1.1 if d.has('staff') and d.t('staff')['salary'].notna().any() else 0.0
     p['marketing'] = d.t('ads').groupby(d.t('ads')['date'].dt.to_period('M'))['spend'].sum().reindex(m.index).fillna(0) if d.has('ads') else 0.0
     p['rent'] = 0.0
@@ -332,7 +340,8 @@ def profit(c: Ctx) -> dict:
             finding(f'{loss_m} months are likely to make a loss on their own.' if loss_m else 'Every month is likely to stay profitable.', 'medium', 'Plan cash for those months in advance.' if loss_m else None),
             finding(f'Each extra 5% of wage rise costs about {f.money(last["payroll"].sum() * 0.05)} a year.', 'high'),
         ],
-        notes=['No profit and loss file: costs other than goods are estimates from staff and ad data. Ask the client for a P&L.'] if est else [],
+        notes=(['No profit and loss file: costs other than goods are estimates from staff and ad data. Ask the client for a P&L.'] if est else [])
+        + ([f'No cost prices for most of what was sold: a {ASSUMED_MARGIN:.0%} gross margin was assumed. Send a price list with costs to replace it.'] if p.attrs.get('assumed_margin') else []),
     )
 
 
@@ -356,7 +365,7 @@ def break_even(c: Ctx) -> dict:
             finding(f'Sales could fall {f.pct(max(0, safety), 0)} before the business makes a loss.', 'high', 'Thin cushion: cut fixed costs or raise prices.' if safety < 0.15 else None),
             finding(f'A new branch adding {f.money(fixed * 0.15)} of fixed costs a month must sell at least {f.money(fixed * 0.15 / cmr)} a month to pay for itself.', 'medium'),
         ],
-        notes=['No profit and loss file: fixed costs are estimates.'] if est else [],
+        notes=(['No profit and loss file: fixed costs are estimates.'] if est else []) + ([f'No cost prices for most of what was sold: a {ASSUMED_MARGIN:.0%} gross margin was assumed.'] if p.attrs.get('assumed_margin') else []),
     )
 
 

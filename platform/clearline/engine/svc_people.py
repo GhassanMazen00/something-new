@@ -96,7 +96,7 @@ def staffing(c: Ctx) -> dict:
         peak = max(flat)
         quiet = min(x for x in flat if x[0] > 0)
         title = 'People needed on the floor' + (', average branch' if units > 1 else '')
-        text = f'Need peaks at {peak[0]} people on {DAYS[peak[1]]} around {peak[2]}:00, and drops to {quiet[0]} on {DAYS[quiet[1]]} at {quiet[2]}:00.'
+        text = f'Need peaks at {peak[0]} {"person" if peak[0] == 1 else "people"} on {DAYS[peak[1]]} around {peak[2]}:00, and drops to {quiet[0]} on {DAYS[quiet[1]]} at {quiet[2]}:00.'
         lvl = 'medium'
     else:
         grid = s.groupby(s['date'].dt.dayofweek)['amount'].sum().reindex(range(7), fill_value=0) / weeks / units

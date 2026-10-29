@@ -181,7 +181,7 @@ def trends(c: Ctx) -> dict:
         findings.append(finding(f'{DAYS[best_days[0][1]]} and {DAYS[best_days[1][1]]} are the busiest days: {f.spct(best_days[0][0] - 1, 0)} and {f.spct(best_days[1][0] - 1, 0)} on an average day.', 'high', 'Put the strongest staff and the stock on these days.'))
     else:
         findings.append(finding('There is no real weekday pattern: every day sells about the same.', 'high'))
-    if covers_ramadan(daily.index.min(), daily.index.max()):
+    if d.ramadan and covers_ramadan(daily.index.min(), daily.index.max()):
         ram = in_ramadan(daily.index)
         pre = pre_ramadan(daily.index)
         other = daily[~ram.values & ~pre.values].mean()
@@ -211,11 +211,10 @@ def drivers(c: Ctx) -> dict:
     price_idx = s_rel.groupby(s['date'].dt.normalize()).mean().reindex(days)
     promo = s.groupby(s['date'].dt.normalize())['promo'].max().astype(float).reindex(days).fillna(0.0)
     cands = {
-        'Weekend (Fri–Sat)': pd.Series(days.dayofweek.isin([4, 5]).astype(float), index=days),
-        'Thursday': pd.Series((days.dayofweek == 3).astype(float), index=days),
+        f'Weekend ({DAYS[d.weekend[0]][:3]}–{DAYS[d.weekend[-1]][:3]})': pd.Series(days.dayofweek.isin(d.weekend).astype(float), index=days),
+        DAYS[(d.weekend[0] - 1) % 7]: pd.Series((days.dayofweek == (d.weekend[0] - 1) % 7).astype(float), index=days),
         'Promotion running': promo,
-        'Two weeks before Ramadan': pre_ramadan(days).astype(float),
-        'During Ramadan': in_ramadan(days).astype(float),
+        **({'Two weeks before Ramadan': pre_ramadan(days).astype(float), 'During Ramadan': in_ramadan(days).astype(float)} if d.ramadan else {}),
         'Price level (+10%)': ((price_idx - 1) * 10).fillna(0),
         'Growth per month': pd.Series(np.arange(len(days)) / 30.4, index=days),
         'Season (yearly cycle)': pd.Series(np.sin(2 * np.pi * days.dayofyear / 365.25), index=days),

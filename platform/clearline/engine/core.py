@@ -173,6 +173,15 @@ class Data:
     def has(self, kind: str) -> bool:
         return kind in self.kinds
 
+    # Where the client trades: whether the Ramadan calendar moves its sales, and which days are the weekend.
+    @property
+    def ramadan(self) -> bool:
+        return bool(self.settings.get('ramadan', True))
+
+    @property
+    def weekend(self) -> list[int]:
+        return list(self.settings.get('weekend', [4, 5]))
+
     def t(self, kind: str) -> pd.DataFrame:
         if not self.has(kind):
             raise NeedsData(f'No {kind} file.')
@@ -184,11 +193,17 @@ class Data:
 
     @cached_property
     def names(self) -> dict[str, str]:
-        """Product code (lower case) to product name, from the price list."""
-        if not self.has('cost') or 'name' not in self.tables['cost']:
-            return {}
-        c = self.tables['cost'].dropna(subset=['name'])
-        return dict(zip(c['product'].astype(str).str.strip().str.lower(), c['name'].astype(str).str.strip()))
+        """Product code (lower case) to product name, from the sales file's name column and the price list."""
+        out: dict[str, str] = {}
+        s = self.tables.get('sales')
+        if s is not None and 'product_name' in s and s['product_name'].notna().any():
+            named = s.dropna(subset=['product_name'])
+            top = named.groupby(named['product'].astype(str).str.strip().str.lower())['product_name'].agg(lambda x: x.value_counts().index[0])
+            out.update({k: str(v).strip() for k, v in top.items()})
+        if self.has('cost') and 'name' in self.tables['cost']:
+            c = self.tables['cost'].dropna(subset=['name'])
+            out.update(zip(c['product'].astype(str).str.strip().str.lower(), c['name'].astype(str).str.strip()))
+        return out
 
     def label(self, products: pd.Series) -> pd.Series:
         """Product names in place of codes, where the price list gives them."""

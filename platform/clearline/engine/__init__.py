@@ -45,7 +45,7 @@ def describe(s: Service) -> dict:
         'id': s.id,
         'dept': s.dept,
         'name': t['name'],
-        'get': t['get'],
+        'get': t['get'].replace('EGP ', ''),
         'method': METHODS.get(s.id, t['method']),
         'data': s.data_text or t['data'],
         'missing': s.missing_text or t['missing'],

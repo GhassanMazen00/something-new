@@ -39,3 +39,16 @@ def days_in_month(periods: pd.PeriodIndex, which: str = 'ramadan') -> list[int]:
 
 def covers_ramadan(start: pd.Timestamp, end: pd.Timestamp) -> bool:
     return any(a <= end and b >= start for a, b in _R)
+
+
+# Currencies of markets where Ramadan moves sales, and of those where the weekend is Friday and Saturday.
+RAMADAN_MARKETS = {'EGP', 'SAR', 'AED', 'KWD', 'QAR', 'BHD', 'OMR', 'JOD', 'LBP', 'IQD', 'MAD', 'DZD', 'TND', 'LYD', 'SDG', 'YER', 'SYP', 'PKR', 'BDT', 'IDR', 'MYR', 'TRY'}
+FRI_SAT_WEEKEND = {'EGP', 'SAR', 'KWD', 'QAR', 'BHD', 'OMR', 'JOD', 'IQD', 'DZD', 'LYD', 'SDG', 'YER', 'SYP'}
+
+
+def market_settings(currency: str, overrides: dict | None = None) -> dict:
+    """The calendar a client's sales follow, guessed from its currency unless set by hand."""
+    cur = (currency or 'EGP').upper()
+    out = {'ramadan': cur in RAMADAN_MARKETS, 'weekend': [4, 5] if cur in FRI_SAT_WEEKEND else [5, 6]}
+    out.update({k: v for k, v in (overrides or {}).items() if k in out})
+    return out

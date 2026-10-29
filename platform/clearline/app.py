@@ -71,7 +71,7 @@ def create_app(database_url: str | None = None) -> FastAPI:
 
     static = config.STATIC_DIR.resolve()
 
-    @app.get('/{path:path}')
+    @app.api_route('/{path:path}', methods=['GET', 'HEAD'])
     def screens(path: str):
         target = (static / path).resolve()
         if path and target.is_file() and static in target.parents:

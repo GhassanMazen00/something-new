@@ -74,7 +74,7 @@ def forecast(c: Ctx) -> dict:
     test = 6 if n >= 24 else 3
     train = y.iloc[:-test]
     scores = {name: _mape(y.iloc[-test:], fc[0]) for name, fc in _sf_forecast(train, test).items()}
-    ramadan_ok = n >= 18 and covers_ramadan(y.index[0].start_time, y.index[-1].end_time)
+    ramadan_ok = d.ramadan and n >= 18 and covers_ramadan(y.index[0].start_time, y.index[-1].end_time)
     if ramadan_ok:
         try:
             scores['Ramadan-calendar regression'] = _mape(y.iloc[-test:], _ramadan_reg(train, test)[0])
@@ -146,7 +146,7 @@ def price_whatif(c: Ctx) -> dict:
     e = None
     if len(dd) > 60 and np.log(dd['rel']).std() > 0.02:
         idx = dd.index
-        X = pd.DataFrame({'logp': np.log(dd['rel']), 'trend': np.arange(len(dd)) / 365, 'sin': np.sin(2 * np.pi * idx.dayofyear / 365.25), 'cos': np.cos(2 * np.pi * idx.dayofyear / 365.25), 'ram': in_ramadan(idx).astype(float).values, 'pre': pre_ramadan(idx).astype(float).values}, index=idx)
+        X = pd.DataFrame({'logp': np.log(dd['rel']), 'trend': np.arange(len(dd)) / 365, 'sin': np.sin(2 * np.pi * idx.dayofyear / 365.25), 'cos': np.cos(2 * np.pi * idx.dayofyear / 365.25), **({'ram': in_ramadan(idx).astype(float).values, 'pre': pre_ramadan(idx).astype(float).values} if d.ramadan else {})}, index=idx)
         for k in range(6):
             X[f'wd{k}'] = (idx.dayofweek == k).astype(float)
         X = X.loc[:, X.std() > 0]

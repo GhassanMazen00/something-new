@@ -667,8 +667,9 @@ def standardize(kind: str, df: pd.DataFrame, mapping: dict[str, str], options: d
     if date_col and len(out):
         health['from'] = out[date_col].min().date().isoformat()
         health['to'] = out[date_col].max().date().isoformat()
-    lost = health['rows_out'] / max(health['rows_in'], 1)
-    health['score'] = int(max(30, min(100, round(100 * lost - 2 * len(health['issues']) + (2 if not health['issues'] else 0)))))
+    kept = health.get('grouped', health['rows_out']) / max(health['rows_in'], 1)
+    grouped_note = 1 if 'grouped' in health else 0  # adding up per version isn't a problem with the file
+    health['score'] = int(max(30, min(100, round(100 * kept - 2 * (len(health['issues']) - grouped_note) + (2 if len(health['issues']) == grouped_note else 0)))))
     if 'dayfirst_used' in options:
         health['dayfirst'] = options['dayfirst_used']
     return out.reset_index(drop=True), health
@@ -725,8 +726,10 @@ def _shape(kind: str, out: pd.DataFrame, health: dict) -> pd.DataFrame:
         out['gender'] = out['gender'].astype(str).str.strip().str.upper().str[0].map({'F': 'F', 'M': 'M', 'W': 'F', 'أ': 'F', 'ذ': 'M'}).where(out['gender'].notna())
     if kind == 'abtest' and 'converted' in out and 'visitors' not in out:
         g = out.groupby('variant')['converted']
+        visitors = out.dropna(subset=['variant'])
         out = pd.DataFrame({'variant': g.size().index, 'visitors': g.size().values, 'conversions': g.sum().values})
         health['issues'].append('One row per visitor: totals were added up per version')
+        health['grouped'] = int(len(visitors))  # rows kept before adding up, for the health score
     if kind == 'cost' and 'imported' in out:
         imp = out['imported']
         out['imported'] = np.where(imp > 1, imp / 100, imp)

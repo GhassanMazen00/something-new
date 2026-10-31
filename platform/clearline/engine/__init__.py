@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from . import svc_accounting, svc_data, svc_market, svc_marketing, svc_people, svc_sales
+from . import checks, svc_accounting, svc_data, svc_market, svc_marketing, svc_people, svc_sales
 from .core import Ctx, Data, Fmt, NeedsData, Service, clean_json, level_for, missing_for
 
 _CATALOG = json.loads((Path(__file__).parent / 'catalog.json').read_text(encoding='utf-8'))
@@ -183,7 +183,9 @@ def run(service_id: str, data: Data, params: dict | None, client: dict) -> dict:
         return {'level': r['level'], 'error': f'The model failed on this data: {e}', 'trace': traceback.format_exc(limit=4), 'params': p}
     out['currency'] = client.get('currency', 'EGP')
     level = out.pop('level', None) or r['level']
-    return {'level': level, 'why': r['why'], 'params': p, 'result': _grammar(clean_json(out)), 'ms': int((time.perf_counter() - t0) * 1000)}
+    res = _grammar(clean_json(out))
+    res['checks'] = _grammar(checks.run_checks(s, data, res, level, p, client))
+    return {'level': level, 'why': r['why'], 'params': p, 'result': res, 'ms': int((time.perf_counter() - t0) * 1000)}
 
 
 def build_data(tables: dict[str, list[pd.DataFrame]], settings: dict | None = None) -> Data:

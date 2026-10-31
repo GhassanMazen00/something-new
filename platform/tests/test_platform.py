@@ -152,6 +152,11 @@ def test_report_review_and_export(app):
     assert len(rep['sections']) == 6
     first = rep['sections'][0]['id']
     sara.patch(f'/api/sections/{first}', json={'note': 'Sales are seasonal around Ramadan.'}, headers=H)
+    sara.put(f'/api/clients/{cid}/report/summary', json={'text': 'Three things to fix this quarter. Sales grew 912.4% last year.'}, headers=H)
+    rep = sara.get(f'/api/clients/{cid}/report').json()
+    chk = rep['checks']
+    assert chk['blocking'] == 0 and chk['passed'] > 20, chk
+    assert any(i['id'] == 'summary-numbers' and '912.4%' in i['detail'] for i in chk['items'])  # a made-up figure is caught
     sara.put(f'/api/clients/{cid}/report/summary', json={'text': 'Three things to fix this quarter.'}, headers=H)
     assert mona.post(f'/api/clients/{cid}/report/review', json={'approve': True}, headers=H).status_code == 400  # not submitted
     assert sara.post(f'/api/clients/{cid}/report/submit', headers=H).json()['status'] == 'In review'
@@ -172,6 +177,30 @@ def test_report_review_and_export(app):
         Path(out_dir).mkdir(parents=True, exist_ok=True)
         (Path(out_dir) / 'sample_report.docx').write_bytes(docx.content)
         (Path(out_dir) / 'sample_report.xlsx').write_bytes(xlsx.content)
+
+
+def test_failed_check_blocks_until_explained(app, monkeypatch):
+    from clearline.engine import checks
+
+    sara, admin = STATE['Sara'], STATE['admin']
+    cid = STATE['clients']['lotus-beauty']
+    again = sara.post(f'/api/clients/{cid}/runs', json={'service_id': 'business-snapshot', 'params': {}}, headers=H).json()
+    assert next(k for k in again['result']['checks'] if k['id'] == 'stability')['detail'].startswith('Re-run on the same files')
+    monkeypatch.setattr(checks, 'integrity', lambda res: checks.check('integrity', 'Result is complete', checks.FAIL, 'Planted failure.'))
+    bad = sara.post(f'/api/clients/{cid}/runs', json={'service_id': 'trends-and-seasonality', 'params': {}}, headers=H).json()
+    rep = sara.post(f'/api/clients/{cid}/report/sections', json={'run_id': bad['id']}, headers=H).json()
+    sec = next(s for s in rep['sections'] if s['run']['id'] == bad['id'])
+    assert rep['checks']['blocking'] == 1
+    r = sara.post(f'/api/clients/{cid}/report/submit', headers=H)
+    assert r.status_code == 400 and 'Planted failure' in r.json()['detail']
+    assert sara.get(f'/api/clients/{cid}/report.docx').status_code == 400
+    assert sara.post(f'/api/sections/{sec["id"]}/acks', json={'check_id': 'integrity', 'reason': 'fine'}, headers=H).status_code == 400
+    assert sara.post(f'/api/sections/{sec["id"]}/acks', json={'check_id': 'plausible', 'reason': 'This one did not fail at all.'}, headers=H).status_code == 400
+    rep = sara.post(f'/api/sections/{sec["id"]}/acks', json={'check_id': 'integrity', 'reason': 'Checked by hand against the client file.'}, headers=H).json()
+    assert rep['checks']['blocking'] == 0 and rep['checks']['accepted'] == 1
+    assert next(i for i in rep['checks']['items'] if i['id'] == 'integrity')['ack']['by'] == 'Sara'
+    assert sara.post(f'/api/clients/{cid}/report/submit', headers=H).json()['status'] == 'In review'
+    assert 'Accepted a failed check' in str(admin.get('/api/activity').json())
 
 
 def test_delete_shreds_everything(app):

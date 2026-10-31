@@ -19,13 +19,14 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 OUT = Path(__file__).parent / 'out'
 LEVELS = {'high', 'medium', 'low'}
-BAD_TEXT = re.compile(r'\bnan\b|\binf\b|NaT|\bNone\b(?! of)|[{}]|\be[+-]\d\d\b|(?<![\d.,])\b1 (?:people|months|customers|products|days|weeks|accounts|files|rows|employees|branches)\b', re.I)
+BAD_TEXT = re.compile(r'(?i:\bnan\b|\binf\b)|\bNaT\b|\bNone\b(?! of)|[{}]|\de[+-]\d\d\b|(?<![\d.,])\b1 (?:people|months|customers|products|days|weeks|accounts|files|rows|employees|branches)\b')
 
 
 def money_value(s: str) -> float | None:
@@ -138,6 +139,7 @@ def run_client(seed: int, scale: float) -> list[dict]:
     import pandas as pd
 
     from clearline import engine, intake
+    from clearline.engine import checks
     from clearline.engine.calendar import market_settings
     from tests.stress.gen import make_client
 
@@ -211,7 +213,7 @@ def run_client(seed: int, scale: float) -> list[dict]:
     if not tables:
         rec('client', 'ok', 'no files')
     data = engine.build_data(tables, market_settings(p['currency']))
-    info = {'currency': p['currency'], 'sector': 'retail', 'files': [{'name': f.name, 'kind': f.kind, 'kind_label': f.kind, 'rows': 1, 'health': {'score': 90, 'issues': [], 'rows_in': 1, 'rows_out': 1}} for f in c.files]}
+    info = {'currency': p['currency'], 'sector': 'retail', 'files': [{'name': f.name, 'kind': f.kind, 'store_as': intake.KINDS[f.kind].store_as, 'kind_label': f.kind, 'rows': 1, 'health': {'score': 90, 'issues': [], 'rows_in': 1, 'rows_out': 1}} for f in c.files]}
     rng = np.random.default_rng(seed + 1)
     for s in engine.SERVICES:
         try:
@@ -257,8 +259,37 @@ def run_client(seed: int, scale: float) -> list[dict]:
                 rec('result', 'ok', service=s.id)
             if vi == 0:
                 truth_checks(c, s.id, out, mapped_ok, rec, data)
+                built_in_checks(c, s.id, out, rec, data)
+                if seed % 3 == 0:
+                    again = engine.run(s.id, data, params, info)
+                    if 'result' in again:
+                        st = checks.stability({'result': out['result'], 'params': out['params'], 'files': []}, {'result': again['result'], 'params': again['params'], 'files': []})
+                        rec('repeat', 'ok' if st['status'] == 'pass' else 'fail', '' if st['status'] == 'pass' else st['detail'][:200], service=s.id)
     rec('client', 'done', f'{time.time() - t0:.1f}s', profile={k: v for k, v in p.items() if k in ('biz', 'months', 'currency', 'products', 'customers', 'staff')})
     return recs
+
+
+def built_in_checks(c, sid, out, rec, data):
+    """The app's own checks: planted mistakes must be caught, and nothing else may fail."""
+    got = {k['id']: k for k in out['result'].get('checks', [])}
+    edge = c.truth.get('edge')
+    for k in got.values():
+        planted = (edge == 'future' and k['id'] == 'dates')
+        if k['status'] == 'fail' and not planted:
+            rec('check', 'fail', f'{k["id"]}: {k["detail"][:160]}', service=sid)
+        elif k['status'] == 'warn':
+            rec('check', 'warn', f'{k["id"]}: {re.sub(r"[“”].*?[“”]", "…", k["detail"])[:90]}', service=sid)
+    if 'reconcile' not in got:
+        return
+    if edge == 'missing_month':
+        k = got.get('coverage', {})
+        rec('caught', 'ok' if k.get('status') == 'warn' and c.truth['month'] in k.get('detail', '') else 'fail', f'missing month {c.truth["month"]} not caught: {k.get("detail", "")[:100]}', service=sid)
+    if edge == 'typo':
+        k = got.get('outliers', {})
+        rec('caught', 'ok' if k.get('status') == 'warn' else 'fail', f'extra-zeros line not caught: {k.get("detail", "")[:100]}', service=sid)
+    if edge == 'future' and (data.sales['date'] > pd.Timestamp.now() + pd.Timedelta(days=2)).any():
+        k = got.get('dates', {})
+        rec('caught', 'ok' if k.get('status') == 'fail' else 'fail', f'future dates not caught: {k.get("detail", "")[:100]}', service=sid)
 
 
 def truth_checks(c, sid, out, mapped_ok, rec, data):
@@ -352,7 +383,7 @@ def main():
 def summarize(recs, secs):
     status = Counter(r['status'] for r in recs)
     runs = sum(1 for r in recs if r['stage'] in ('result', 'run'))
-    print(f'\n{len({r["seed"] for r in recs})} clients · {runs} service runs · {sum(1 for r in recs if r["stage"] == "truth")} truth checks · {secs:.0f}s')
+    print(f'\n{len({r["seed"] for r in recs})} clients · {runs} service runs · {sum(1 for r in recs if r["stage"] == "truth")} truth checks · {sum(1 for r in recs if r["stage"] == "caught")} planted mistakes · {secs:.0f}s')
     print('status:', dict(status))
     groups = defaultdict(list)
     for r in recs:

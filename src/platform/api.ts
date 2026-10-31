@@ -113,7 +113,10 @@ export type ServiceT = {
 export type Catalog = { departments: { id: string; name: string }[]; services: ServiceT[] }
 export type Readiness = { id: string; level: Level; why: string | null; missing: string[]; last_run: { id: number; at: string; level: Level } | null; params: Record<string, number> }
 
-export type RunT = { id: number; service_id: string; level: Level; params: Record<string, number>; created_at: string; ms: number; result: Result & { currency?: string }; why?: string | null }
-export type Section = { id: number; position: number; note: string; run: RunT; service: ServiceT }
-export type ReportT = { client: ClientT; summary: string; sections: Section[] }
+export type CheckT = { id: string; title: string; status: 'pass' | 'warn' | 'fail'; detail: string }
+export type Ack = { reason: string; by: string; at: string }
+export type ReportCheck = CheckT & { section_id: number | null; service: string | null; ack: Ack | null }
+export type RunT = { id: number; service_id: string; level: Level; params: Record<string, number>; created_at: string; ms: number; result: Result & { currency?: string; checks?: CheckT[] }; why?: string | null }
+export type Section = { id: number; position: number; note: string; run: RunT; files: string[]; acks: Record<string, Ack>; service: ServiceT }
+export type ReportT = { client: ClientT; summary: string; sections: Section[]; checks: { blocking: number; accepted: number; warnings: number; passed: number; items: ReportCheck[] } }
 export type ActivityT = { entries: { at: string; who: string; client: string | null; what: string }[]; chain_intact: boolean | null }

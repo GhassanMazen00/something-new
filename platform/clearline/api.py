@@ -17,6 +17,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from . import audit, config, engine, intake, security, storage
+from .engine import checks
 from .engine.calendar import market_settings
 from .db import Activity, Client, DataFile, LoginSession, ReportSection, Run, User, get_db, now
 
@@ -543,7 +544,7 @@ def client_data(db: Session, c: Client) -> tuple[engine.Data, dict]:
     for f in files:
         # Our own encrypted, authenticated blob: only this app could have written it.
         tables.setdefault(intake.KINDS[f.kind].store_as or f.kind, []).append(pickle.loads(storage.load(c.data_key, f.options['std'])))  # noqa: S301
-    info = {'files': [{'name': f.name, 'kind': f.kind, 'kind_label': intake.KINDS[f.kind].label, 'rows': f.rows, 'health': f.health} for f in files], 'sector': c.sector, 'currency': c.settings.get('currency', 'EGP')}
+    info = {'files': [{'name': f.name, 'kind': f.kind, 'store_as': intake.KINDS[f.kind].store_as, 'kind_label': intake.KINDS[f.kind].label, 'rows': f.rows, 'health': f.health} for f in files], 'sector': c.sector, 'currency': c.settings.get('currency', 'EGP')}
     out = (engine.build_data(tables, market_settings(info['currency'], c.settings)), info)
     with _cache_lock:
         _cache[key] = out
@@ -591,7 +592,11 @@ def run_service(cid: int, body: RunIn, user: User = Depends(current_user), db: S
     if 'error' in out:
         audit.log(db, user, f'Ran “{name}”: could not complete ({out["error"][:120]})', c.id)
         return {'error': out['error'], 'level': out['level'], 'params': out.get('params', {})}
-    r = Run(client_id=c.id, service_id=body.service_id, params=out['params'], level=out['level'], result=security.client_cipher(c.data_key).encrypt(json.dumps(out['result']).encode()), files=[f['name'] for f in info['files']], duration_ms=out['ms'], created_by=user.id)
+    files = [f['name'] for f in info['files']]
+    prev = db.scalar(select(Run).where(Run.client_id == c.id, Run.service_id == body.service_id).order_by(Run.created_at.desc(), Run.id.desc()).limit(1))
+    before = {'result': json.loads(security.client_cipher(c.data_key).decrypt(prev.result)), 'params': prev.params, 'files': prev.files} if prev else None
+    out['result'].setdefault('checks', []).append(checks.stability(before, {'result': out['result'], 'params': out['params'], 'files': files}))
+    r = Run(client_id=c.id, service_id=body.service_id, params=out['params'], level=out['level'], result=security.client_cipher(c.data_key).encrypt(json.dumps(out['result']).encode()), files=files, duration_ms=out['ms'], created_by=user.id)
     db.add(r)
     db.commit()
     audit.log(db, user, f'Ran “{name}”', c.id)
@@ -611,14 +616,64 @@ def list_runs(cid: int, service_id: str | None = None, user: User = Depends(curr
 # ---------- Report and review ----------
 
 
+def section_acks(c: Client, s: ReportSection) -> dict:
+    """The analyst's reasons for accepting failed checks, for the run the section shows now."""
+    raw = security.decrypt_text(c.data_key, s.acks)
+    every = json.loads(raw) if raw else {}
+    return {k.split(':', 1)[1]: v for k, v in every.items() if k.startswith(f'{s.run_id}:')}
+
+
 def report_out(c: Client, db: Session) -> dict:
     secs = db.scalars(select(ReportSection).where(ReportSection.client_id == c.id).order_by(ReportSection.position, ReportSection.id)).all()
     out = []
     for s in secs:
         r = db.get(Run, s.run_id)
         if r:
-            out.append({'id': s.id, 'position': s.position, 'note': security.decrypt_text(c.data_key, s.note), 'run': run_out(r, c), 'service': engine.describe(engine.BY_ID[r.service_id])})
-    return {'client': client_out(c, db), 'summary': security.decrypt_text(c.data_key, c.summary), 'sections': out}
+            out.append({'id': s.id, 'position': s.position, 'note': security.decrypt_text(c.data_key, s.note), 'run': run_out(r, c), 'files': r.files, 'acks': section_acks(c, s), 'service': engine.describe(engine.BY_ID[r.service_id])})
+    summary = security.decrypt_text(c.data_key, c.summary)
+    current = sorted(f.name for f in db.scalars(select(DataFile).where(DataFile.client_id == c.id, DataFile.ready.is_(True))))
+    return {'client': client_out(c, db), 'summary': summary, 'sections': out, 'checks': report_checks(out, summary, current)}
+
+
+def report_checks(sections: list[dict], summary: str, current_files: list[str]) -> dict:
+    """Every check on every section, plus the report's own: current files, and numbers in the writing that the results back up."""
+    items = []
+
+    def add(sec, k):
+        acked = sec['acks'].get(k['id']) if sec else None
+        items.append({**k, 'section_id': sec['id'] if sec else None, 'service': sec['service']['name'] if sec else None, 'ack': acked})
+
+    for sec in sections:
+        res = sec['run']['result']
+        if 'checks' not in res:
+            add(sec, checks.check('rerun', 'Checked before use', checks.FAIL, 'Run before the built-in checks existed. Run it again and update the report.'))
+        for k in res.get('checks', []):
+            add(sec, k)
+        if sorted(sec['files']) != current_files:
+            add(sec, checks.check('files', 'Run on the current files', checks.WARN, 'The client’s files changed after this was run. Run it again so it uses them.'))
+        stray = checks.unbacked_numbers(sec['note'], [res])
+        if stray:
+            add(sec, checks.check('note-numbers', 'Numbers in the note are backed', checks.WARN, f'Not found in this section’s results: {", ".join(stray[:6])}. Check them, or point to where they come from.'))
+    stray = checks.unbacked_numbers(summary, [s['run']['result'] for s in sections])
+    if not summary.strip():
+        add(None, checks.check('summary', 'Summary written', checks.WARN, 'The report has no summary yet.'))
+    elif stray:
+        add(None, checks.check('summary-numbers', 'Numbers in the summary are backed', checks.WARN, f'Not found in any section: {", ".join(stray[:6])}. Check them, or add the section they come from.'))
+    blocking = [i for i in items if i['status'] == checks.FAIL and not i['ack']]
+    return {
+        'blocking': len(blocking),
+        'accepted': sum(1 for i in items if i['status'] == checks.FAIL and i['ack']),
+        'warnings': sum(1 for i in items if i['status'] == checks.WARN),
+        'passed': sum(1 for i in items if i['status'] == checks.PASS),
+        'items': [i for i in items if i['status'] != checks.PASS],
+    }
+
+
+def _gate(rep: dict) -> None:
+    n = rep['checks']['blocking']
+    if n:
+        first = next(i for i in rep['checks']['items'] if i['status'] == checks.FAIL and not i['ack'])
+        raise HTTPException(400, f'{n} failed check{"s" if n > 1 else ""} to fix first, starting with “{first["title"]}” in {first["service"] or "the report"}: {first["detail"]} Fix it, or write down why it is fine.')
 
 
 @api.get('/clients/{cid}/report')
@@ -675,6 +730,43 @@ def update_section(sid: int, body: SectionPatch, user: User = Depends(current_us
     return report_out(c, db)
 
 
+class AckIn(BaseModel):
+    check_id: str
+    reason: str
+
+
+@api.post('/sections/{sid}/acks')
+def accept_check(sid: int, body: AckIn, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    """The analyst writes down why a failed check is fine. An empty reason takes it back."""
+    s = db.get(ReportSection, sid)
+    if not s:
+        raise HTTPException(404, 'No such section.')
+    c = visible(db, user, s.client_id, write=True)
+    if c.status in ('In review', 'Approved', 'Delivered'):
+        raise HTTPException(400, 'The report is locked while it is reviewed or after approval.')
+    r = db.get(Run, s.run_id)
+    res = json.loads(security.client_cipher(c.data_key).decrypt(r.result))
+    failed = {k['id'] for k in res.get('checks', []) if k['status'] == checks.FAIL}
+    if body.check_id not in failed:
+        raise HTTPException(400, 'Only a failed check on this result can be accepted.')
+    raw = security.decrypt_text(c.data_key, s.acks)
+    every = json.loads(raw) if raw else {}
+    key = f'{s.run_id}:{body.check_id}'
+    reason = body.reason.strip()[:1000]
+    name = engine.BY_ID[r.service_id].name
+    if reason:
+        if len(reason) < 15:
+            raise HTTPException(400, 'Write a reason the reviewer can follow (at least a short sentence).')
+        every[key] = {'reason': reason, 'by': user.name, 'at': now().isoformat()}
+        audit.log(db, user, f'Accepted a failed check on “{name}”', c.id)
+    else:
+        every.pop(key, None)
+        audit.log(db, user, f'Took back an accepted check on “{name}”', c.id)
+    s.acks = security.encrypt_text(c.data_key, json.dumps(every))
+    db.commit()
+    return report_out(c, db)
+
+
 @api.delete('/sections/{sid}')
 def delete_section(sid: int, user: User = Depends(current_user), db: Session = Depends(get_db)):
     s = db.get(ReportSection, sid)
@@ -704,6 +796,7 @@ def submit(cid: int, user: User = Depends(current_user), db: Session = Depends(g
     c = visible(db, user, cid, write=True)
     if not db.scalar(select(ReportSection).where(ReportSection.client_id == c.id).limit(1)):
         raise HTTPException(400, 'Add at least one section before sending for review.')
+    _gate(report_out(c, db))
     c.status = 'In review'
     c.review_comment = ''
     db.commit()
@@ -753,6 +846,8 @@ def export(cid: int, fmt: str, user: User = Depends(current_user), db: Session =
     rep = report_out(c, db)
     if not rep['sections']:
         raise HTTPException(400, 'The report has no sections yet.')
+    if c.status not in ('Approved', 'Delivered'):  # approved reports passed the checks when they were sent for review
+        _gate(rep)
     if fmt == 'docx':
         data, mime = reports.to_docx(rep), 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     elif fmt == 'xlsx':

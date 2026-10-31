@@ -6,6 +6,7 @@ import { ResultView } from '../../app/ui/ResultView'
 import { api, type ClientT, type ReportT, type Section } from '../api'
 import { fmtTime, useAction, useLoad } from '../hooks'
 import { useSession } from '../session'
+import { count, ReportChecks } from './Checks'
 
 const TODAY = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
 
@@ -33,6 +34,11 @@ export function ReportTab({ client, changed }: { client: ClientT; changed: () =>
     if (summary === null || summary === r.summary) return
     if (await a.run(() => api.put(`/clients/${client.id}/report/summary`, { text: summary }))) rep.reload()
   }
+  const accept = async (sectionId: number, checkId: string, reason: string) => {
+    const out = await a.run(() => api.post<ReportT>(`/sections/${sectionId}/acks`, { check_id: checkId, reason }))
+    if (out) rep.setData(out)
+  }
+  const blocked = r.checks.blocking > 0 && !['Approved', 'Delivered'].includes(client.status)
   const section = async (s: Section, body: object | null) => {
     const out = await a.run(() => (body ? api.patch<ReportT>(`/sections/${s.id}`, body) : api.del<ReportT>(`/sections/${s.id}`)))
     if (out) rep.setData(out)
@@ -56,12 +62,20 @@ export function ReportTab({ client, changed }: { client: ClientT; changed: () =>
             {client.status} · {r.sections.length} sections
           </span>
           <div className="row">
-            <a className="btn btn-sm" href={`/api/clients/${client.id}/report.docx`} download>
-              Word
-            </a>
-            <a className="btn btn-sm" href={`/api/clients/${client.id}/report.xlsx`} download>
-              Excel
-            </a>
+            {blocked ? (
+              <span className="faint" style={{ fontSize: '0.8rem' }}>
+                Downloads open once the failed checks are fixed or explained
+              </span>
+            ) : (
+              <>
+                <a className="btn btn-sm" href={`/api/clients/${client.id}/report.docx`} download>
+                  Word
+                </a>
+                <a className="btn btn-sm" href={`/api/clients/${client.id}/report.xlsx`} download>
+                  Excel
+                </a>
+              </>
+            )}
             <button className="btn btn-sm" type="button" onClick={() => window.print()}>
               Print or PDF
             </button>
@@ -85,7 +99,7 @@ export function ReportTab({ client, changed }: { client: ClientT; changed: () =>
             </p>
           )}
           {isAnalyst && !locked && (
-            <button className="btn btn-primary btn-sm" type="button" disabled={a.busy} onClick={() => act('submit')}>
+            <button className="btn btn-primary btn-sm" type="button" disabled={a.busy || blocked} title={blocked ? 'Fix or explain the failed checks first' : undefined} onClick={() => act('submit')}>
               Send for review{client.reviewer ? ` to ${client.reviewer.name}` : ''}
             </button>
           )}
@@ -112,6 +126,8 @@ export function ReportTab({ client, changed }: { client: ClientT; changed: () =>
           {a.error && <p className="error">{a.error}</p>}
         </div>
       </div>
+
+      <ReportChecks r={r} canEdit={canEdit} accept={accept} />
 
       <div className="report-section panel">
         <h3>Summary</h3>
@@ -157,6 +173,7 @@ export function ReportTab({ client, changed }: { client: ClientT; changed: () =>
           </div>
           <p className="faint" style={{ marginBottom: 14, fontSize: '0.8rem' }}>
             Method: {s.service.method} · run {fmtTime(s.run.created_at)}
+            <SectionChecks s={s} />
           </p>
           <Note s={s} canEdit={canEdit} save={(note) => section(s, { note })} />
           <ResultView r={s.run.result} />
@@ -166,6 +183,20 @@ export function ReportTab({ client, changed }: { client: ClientT; changed: () =>
         Figures in {client.currency}. Every number comes from the models named in each section.
       </p>
     </div>
+  )
+}
+
+function SectionChecks({ s }: { s: Section }) {
+  const c = s.run.result.checks
+  if (!c) return <span className="no-print"> · not checked: run again</span>
+  const n = count(c)
+  const open = c.filter((k) => k.status === 'fail' && !s.acks[k.id]).length
+  return (
+    <span className={`no-print sec-chk${open ? ' bad' : n.warn ? ' warn' : ''}`}>
+      {' · '}
+      {open ? `${open} failed check${open > 1 ? 's' : ''}` : `${n.pass} checks passed`}
+      {n.warn ? `, ${n.warn} to look at` : ''}
+    </span>
   )
 }
 

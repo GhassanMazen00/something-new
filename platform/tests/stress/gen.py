@@ -519,6 +519,28 @@ def _edge(rng, edge: str, tables: dict) -> dict:
     return out
 
 
+def _plant_fault(rng, c, tables) -> None:
+    """Mistakes the built-in checks must catch: a month missing from the export, or a line with extra zeros.
+    Drawn from their own random stream so every other client stays as it was."""
+    s = tables.get('sales')
+    if s is None or c.profile['months'] < 9 or len(s) < 200:
+        return
+    roll = rng.random()
+    months = pd.to_datetime(s['date']).dt.to_period('M')
+    inner = sorted(months.unique())[2:-2]
+    if roll < 0.12 and inner:
+        gone = inner[int(rng.integers(0, len(inner)))]
+        tables['sales'] = s[months != gone].reset_index(drop=True)
+        c.truth = {'edge': 'missing_month', 'month': gone.strftime('%b %y')}
+    elif roll < 0.24:
+        s = s.copy()
+        i = s.index[(~s['is_return']) & (s['amount'] > 0)][int(rng.integers(0, 50))]
+        s.loc[i, 'price'] *= 10_000
+        s.loc[i, 'amount'] *= 10_000
+        tables['sales'] = s
+        c.truth = {'edge': 'typo'}
+
+
 # ---------- A whole client ----------
 
 
@@ -578,6 +600,8 @@ def make_client(seed: int, scale: float = 1.0) -> Client:
     if edge != 'none':
         tables = _edge(rng, edge, tables)
         c.truth = {'edge': edge}
+    else:
+        _plant_fault(np.random.default_rng(seed + 10_000), c, tables)
     c.tables = tables
     for kind, df in tables.items():
         if df.empty:

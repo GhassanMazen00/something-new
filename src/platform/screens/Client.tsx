@@ -11,6 +11,7 @@ import { Shell } from '../App'
 import { daysLeft, fmtDate, fmtTime, useAction, useLoad } from '../hooks'
 import { useSession } from '../session'
 import { ActivityPage } from './Activity'
+import { RunChecks } from './Checks'
 import { PeopleSelect, SECTORS, STATUS_TONE } from './Clients'
 import { FileMapping, FilesTab } from './Files'
 import { ReportTab } from './Report'
@@ -529,6 +530,7 @@ function RunService({ client, svc }: { client: ClientT; svc: ServiceT }) {
               <p className="muted">{failure}</p>
             </div>
           )}
+          {latest && <RunChecks checks={latest.result.checks} />}
           {latest ? <ResultView r={latest.result} /> : !failure && <div className="empty panel">{a.busy || canEdit ? 'Running the models…' : 'No result yet. The analyst runs it.'}</div>}
         </>
       )}

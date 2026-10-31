@@ -48,7 +48,9 @@ On Mac or Linux, run `./start.sh` instead. It sets itself up on first run.
    Arabic. You confirm it once per file, then it cleans the data and gives the file a health score.
 3. **Services.** Each service shows how confidently it can run on these files. Open one to see its result,
    change the what-if settings, and press **Add to report**.
-4. **Report.** Write the summary and a note on each section, then **Send for review**.
+4. **Report.** Write the summary and a note on each section, then **Send for review**. Every result is
+   checked automatically (see **Built-in checks** below). A failed check stops the report going for review or
+   being downloaded until it is fixed, or until you write down why it is fine.
 5. The reviewer **Approves** or **Asks for changes**. Once the report is approved, download it as
    **Word** / **Excel**, or **Print or PDF**, and mark it **delivered**. The files are deleted 30 days later.
 
@@ -111,6 +113,30 @@ No. The workspace makes the Word and Excel files and a printable PDF view itself
 Word only to open those files, and the client can open them in anything. Power BI or Looker Studio are only
 worth adding later, if clients want a live dashboard they can click around in.
 
+## Built-in checks
+
+Every time a service runs, the workspace tests the result before you see it. The checks appear under the result
+and again on the report page:
+
+- **Result is complete:** no blank charts, no "nan", and every chart lines up with its dates.
+- **Numbers are possible:** no negative sales or counts, margins within ±100%, shares within 0–100%.
+- **Sales add up:** the sales lines, minus orders cancelled soon after, equal the sales analysed, to the pound.
+- **Every month is there:** flags a month with no sales or very low sales, which usually means a missing export.
+- **Dates are believable:** flags dates in the future, which usually means the day and month were read the wrong way
+  round.
+- **No single line dominates:** catches a line typed with extra zeros.
+- **Price × quantity = total.**
+- **Sales match the e-invoices / P&L:** the same months in two files should tell the same story; VAT-inclusive
+  e-invoices are recognised.
+- **Beats a simple guess:** a forecast must beat "same as last year" on the months it didn't see, or the check says
+  so.
+- **Opening cash matches the bank:** for the cash forecast.
+- **Headline figures recounted:** sales and orders added up a second way.
+- **Same answer as last time:** the same files and settings must give identical numbers; otherwise any big move is
+  flagged.
+- **Report page:** figures typed into the summary or notes must appear in the results, and results run on old files
+  are flagged.
+
 ## The AI slot
 
 `clearline/ai.py` reserves three jobs for Claude, all switched off:
@@ -121,6 +147,7 @@ worth adding later, if clients want a live dashboard they can click around in.
 
 It stays off until the workspace moves to a secure server, client data is covered by a zero-retention
 agreement, and every AI call is written to the activity log. The AI will never produce the numbers.
+The full plan, and how to test it cheaply first, is in [AI_PLAN.md](AI_PLAN.md).
 
 ## For developers
 
@@ -135,6 +162,6 @@ Folder map:
 
 - `clearline/api.py`: routes and permission checks.
 - `clearline/intake.py`: reading and mapping files.
-- `clearline/engine/`: the 32 services.
+- `clearline/engine/`: the 32 services; `engine/checks.py` holds the built-in checks.
 - `clearline/reports.py`: Word and Excel.
 - `src/platform/` (repo root): the screens.

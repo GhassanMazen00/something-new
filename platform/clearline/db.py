@@ -104,6 +104,7 @@ class ReportSection(Base):
     run_id: Mapped[int] = mapped_column(ForeignKey('runs.id'))
     position: Mapped[int] = mapped_column(Integer, default=0)
     note: Mapped[bytes | None] = mapped_column(LargeBinary)  # analyst's commentary, encrypted
+    acks: Mapped[bytes | None] = mapped_column(LargeBinary)  # reasons a failed check is fine, encrypted JSON
 
 
 class Activity(Base):
@@ -135,7 +136,18 @@ def init(url: str | None = None) -> None:
         cur.close()
 
     Base.metadata.create_all(engine)
+    _add_new_columns(engine)
     SessionLocal = sessionmaker(engine, expire_on_commit=False)
+
+
+def _add_new_columns(eng) -> None:
+    """Columns added in later versions, added to an existing database (SQLite can add nullable columns in place)."""
+    with eng.begin() as conn:
+        for table in Base.metadata.sorted_tables:
+            have = {r[1] for r in conn.exec_driver_sql(f'PRAGMA table_info({table.name})')}
+            for col in table.columns:
+                if col.name not in have and col.nullable:
+                    conn.exec_driver_sql(f'ALTER TABLE {table.name} ADD COLUMN {col.name} {col.type.compile(eng.dialect)}')
 
 
 def get_db():

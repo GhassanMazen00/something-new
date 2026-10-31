@@ -9,8 +9,7 @@ export function LangProvider({ children }: { children: ReactNode }) {
     const html = document.documentElement
     html.lang = lang
     html.dir = lang === 'ar' ? 'rtl' : 'ltr'
-    // Inner pages keep the title in their own HTML file.
-    if ((document.body.dataset.page ?? 'home') === 'home') document.title = meta.title[lang]
+    if (document.body.dataset.page !== 'services') document.title = meta.title[lang]
     document.querySelector('meta[name="description"]')?.setAttribute('content', meta.description[lang])
   }, [lang])
 

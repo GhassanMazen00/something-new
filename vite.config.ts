@@ -23,6 +23,6 @@ export default defineConfig(({ mode }) => {
     build:
       mode === 'app'
         ? { outDir: 'dist-app', rollupOptions: { input: { app: 'app/index.html' } as Record<string, string> } }
-        : { rollupOptions: { input: { index: 'index.html', services: 'services.html', security: 'security.html', how: 'how-it-works.html' } as Record<string, string> } },
+        : { rollupOptions: { input: { index: 'index.html', services: 'services.html' } as Record<string, string> } },
   }
 })

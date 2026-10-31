@@ -629,7 +629,7 @@ export const footer = {
 }
 
 export const meta = {
-  title: { en: 'Clearline Analytics · Your numbers, made clear', ar: 'Clearline Analytics · أرقامك بوضوح تام' },
+  title: { en: 'Clearline Analytics · Clarity for every business decision', ar: 'Clearline Analytics · وضوح في كل قرار تجاري' },
   description: {
     en: 'Clearline Analytics finds errors in your books, forecasts what comes next and shows what each decision will do, across sales, marketing, accounting, people and market research. Privacy first.',
     ar: 'Clearline Analytics تكتشف الأخطاء في حساباتك، وتتوقع ما هو قادم، وتوضح أثر كل قرار، في المبيعات والتسويق والمحاسبة والموارد البشرية وأبحاث السوق. الخصوصية أولًا.',
@@ -644,7 +644,7 @@ export const heroExtra = {
   stats: [
     { value: 6, suffix: '', label: { en: 'departments', ar: 'أقسام' } },
     { value: 32, suffix: '', label: { en: 'services', ar: 'خدمة' } },
-    { value: 256, suffix: '', label: { en: 'bit encryption', ar: 'بت تشفير' } },
+    { value: 256, suffix: '', label: { en: 'encryption, start to finish', ar: 'تشفير من البداية للنهاية' } },
     { value: 30, suffix: '', label: { en: 'days, then deleted', ar: 'يومًا ثم الحذف' } },
   ],
   card: {
@@ -701,12 +701,13 @@ export const checker = {
     { id: 'ads', label: { en: 'Ad spend per channel', ar: 'الإنفاق الإعلاني لكل قناة' } },
     { id: 'payroll', label: { en: 'Payroll', ar: 'الرواتب' } },
     { id: 'staff', label: { en: 'Staff list', ar: 'قائمة الموظفين' } },
+    { id: 'customers', label: { en: 'Customer list', ar: 'قائمة العملاء' } },
   ],
   services: [
     { name: { en: 'Sales forecast', ar: 'توقع المبيعات' }, dept: 'sales', high: [['sales'], ['einv']], medium: [['bank']] },
     { name: { en: 'Price change what-if', ar: 'ماذا لو غيّرنا السعر؟' }, dept: 'sales', high: [['cost', 'sales'], ['cost', 'einv']], medium: [['cost']] },
     { name: { en: 'Stock reorder plan', ar: 'خطة إعادة طلب المخزون' }, dept: 'sales', high: [['stock', 'sales'], ['stock', 'einv']], medium: [['sales'], ['einv']] },
-    { name: { en: 'Customer groups', ar: 'شرائح العملاء' }, dept: 'marketing', high: [['sales']], medium: [['einv']] },
+    { name: { en: 'Customer groups', ar: 'شرائح العملاء' }, dept: 'marketing', high: [['sales'], ['customers', 'einv']], medium: [['einv'], ['customers']] },
     { name: { en: 'Ad channel performance', ar: 'أداء قنوات الإعلان' }, dept: 'marketing', high: [['ads', 'sales'], ['ads', 'einv']], medium: [['ads']] },
     { name: { en: 'Error and fraud scan', ar: 'فحص الأخطاء والاحتيال' }, dept: 'accounting', high: [['ledger', 'bank']], medium: [['einv', 'bank'], ['ledger']], low: [['einv'], ['bank']] },
     { name: { en: 'Books, e-invoices and bank, matched', ar: 'مطابقة الدفاتر والفواتير والبنك' }, dept: 'accounting', high: [['ledger', 'einv', 'bank']], medium: [['ledger', 'einv'], ['ledger', 'bank'], ['einv', 'bank']] },

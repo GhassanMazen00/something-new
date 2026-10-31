@@ -1,10 +1,10 @@
-// The frame every page shares: a plain bar, the closing footer with the wordmark built from blocks, the contact dialog.
+// The frame around the page: a plain bar, the footer, the contact dialog.
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { BRAND, BRAND_FULL, CONTACT, contact, contactDialog, nav } from '../content'
 import { CONTACT_EVENT, openContact } from '../contactEvent'
 import { useLang } from '../lang'
-import { footerCopy, pages, ui, type Page } from './copy'
+import { footerCopy, pages, ui } from './copy'
 
 // The ridge from the logo: three peaks drawn as one line.
 export function Mark({ className }: { className?: string }) {
@@ -25,25 +25,46 @@ function LangSwitch() {
   )
 }
 
-export function Header({ page }: { page: Page }) {
-  const { t } = useLang()
-  const [open, setOpen] = useState(false)
+// Which section the reader is in, for the menu.
+function useActive() {
+  const [active, setActive] = useState('')
   const [scrolled, setScrolled] = useState(false)
   useEffect(() => {
-    const on = () => setScrolled(window.scrollY > 8)
-    on()
+    let raf = 0
+    const update = () => {
+      raf = 0
+      setScrolled(window.scrollY > 8)
+      const line = window.innerHeight * 0.35
+      let current = ''
+      for (const p of pages) {
+        const el = document.getElementById(p.id)
+        if (el && el.getBoundingClientRect().top <= line) current = p.id
+      }
+      setActive(current)
+    }
+    const on = () => {
+      if (!raf) raf = requestAnimationFrame(update)
+    }
+    update()
     window.addEventListener('scroll', on, { passive: true })
     return () => window.removeEventListener('scroll', on)
   }, [])
+  return { active, scrolled }
+}
+
+export function Header() {
+  const { t } = useLang()
+  const [open, setOpen] = useState(false)
+  const { active, scrolled } = useActive()
   return (
     <header className={`bar${scrolled ? ' is-scrolled' : ''}`}>
-      <a className="brand" href="./" aria-label={t(ui.home)} dir="ltr">
+      <a className="brand" href="#top" aria-label={t(ui.home)} dir="ltr">
         <Mark />
         <span>{BRAND}</span>
       </a>
       <nav className={`links${open ? ' is-open' : ''}`} id="site-links" aria-label="Main">
         {pages.map((p) => (
-          <a key={p.id} href={p.href} aria-current={page === p.id ? 'page' : undefined}>
+          <a key={p.id} href={p.href} aria-current={active === p.id ? 'true' : undefined} onClick={() => setOpen(false)}>
             {t(p.label)}
           </a>
         ))}
@@ -61,21 +82,18 @@ export function Header({ page }: { page: Page }) {
 
 export function Footer() {
   const { t } = useLang()
-  const letters = BRAND.toUpperCase().split('')
-  const heights = [100, 74, 88, 66, 96, 80, 70, 92, 84]
   return (
     <footer className="foot">
-      <div className="blocks" dir="ltr" aria-label={BRAND_FULL} role="img">
-        {letters.map((c, i) => (
-          <span key={i} style={{ height: `${heights[i % heights.length]}%`, ['--i' as string]: i }} data-reveal>
-            {c}
-          </span>
-        ))}
+      <div className="foot-top">
+        <a className="brand brand-big" href="#top" dir="ltr" aria-label={BRAND_FULL}>
+          <Mark />
+          <span>{BRAND}</span>
+        </a>
+        <p>{t({ en: 'Business analysis for small and medium companies, in Arabic and English.', ar: 'تحليل أعمال للشركات الصغيرة والمتوسطة، بالعربية والإنجليزية.' })}</p>
       </div>
       <div className="foot-cols">
         <div>
           <h2>{t(footerCopy.pages)}</h2>
-          <a href="./">{BRAND}</a>
           {pages.map((p) => (
             <a key={p.id} href={p.href}>
               {t(p.label)}
@@ -155,14 +173,14 @@ export function ContactDialog() {
   )
 }
 
-export function Shell({ page, children }: { page: Page; children: ReactNode }) {
+export function Shell({ children }: { children: ReactNode }) {
   const { t } = useLang()
   return (
     <>
       <a className="skip" href="#main">
         {t(ui.skip)}
       </a>
-      <Header page={page} />
+      <Header />
       <main id="main">{children}</main>
       <Footer />
       <ContactDialog />

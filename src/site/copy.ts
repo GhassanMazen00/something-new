@@ -3,12 +3,14 @@
 
 import type { T } from '../content'
 
-export type Page = 'home' | 'services' | 'security' | 'how'
+export type Page = 'home'
 
-export const pages: { id: Page; href: string; label: T }[] = [
-  { id: 'services', href: './services.html', label: { en: 'Services', ar: 'الخدمات' } },
-  { id: 'how', href: './how-it-works.html', label: { en: 'How we work', ar: 'كيف نعمل' } },
-  { id: 'security', href: './security.html', label: { en: 'Security', ar: 'الأمان' } },
+// The menu: sections of the one page.
+export const pages: { id: string; href: string; label: T }[] = [
+  { id: 'services', href: '#services', label: { en: 'Services', ar: 'الخدمات' } },
+  { id: 'security', href: '#security', label: { en: 'Security', ar: 'الأمان' } },
+  { id: 'process', href: '#process', label: { en: 'How we work', ar: 'كيف نعمل' } },
+  { id: 'faq', href: '#faq', label: { en: 'Questions', ar: 'أسئلة' } },
 ]
 
 export const ui = {
@@ -84,38 +86,6 @@ export const heroCopy = {
   },
 }
 
-export const finds = {
-  heading: { en: 'What we find for you', ar: 'ما نكتشفه لك' },
-  lead: { en: 'Switch one on to see what it gives you.', ar: 'فعّل أيًّا منها لترى ما يقدمه لك.' },
-  items: [
-    {
-      say: { en: 'Know what you will sell next quarter.', ar: 'اعرف ما ستبيعه في الربع القادم.' },
-      then: { en: 'A likely, low and high case for every month, tested on your own past year.', ar: 'حالة مرجّحة ومنخفضة ومرتفعة لكل شهر، مختبرة على عامك الماضي.' },
-      dept: 'sales',
-    },
-    {
-      say: { en: 'Find money leaking from your books.', ar: 'اكتشف الأموال التي تتسرب من حساباتك.' },
-      then: { en: 'Double payments, odd entries and gaps in invoice numbers, each with a date and an amount.', ar: 'المدفوعات المكررة والقيود الغريبة والفجوات في أرقام الفواتير، كلها بالتاريخ والمبلغ.' },
-      dept: 'accounting',
-    },
-    {
-      say: { en: 'See cash trouble before it hits.', ar: 'انتبه لأزمة السيولة قبل وقوعها.' },
-      then: { en: 'A 13-week cash forecast from your bank statements and unpaid invoices.', ar: 'توقع للسيولة لـ13 أسبوعًا من كشوف البنك والفواتير غير المحصّلة.' },
-      dept: 'accounting',
-    },
-    {
-      say: { en: 'Spot customers you are about to lose.', ar: 'اعرف العملاء الذين أوشكت على فقدانهم.' },
-      then: { en: 'Who has gone quiet, what they used to spend, and who to call first.', ar: 'من توقف عن الشراء، وكم كان ينفق، ومن تتصل به أولًا.' },
-      dept: 'marketing',
-    },
-    {
-      say: { en: 'Check that pay is right and fair.', ar: 'تأكد أن الرواتب صحيحة وعادلة.' },
-      then: { en: 'Payroll errors, people paid but not on the staff list, and pay gaps within each role.', ar: 'أخطاء الرواتب، ومن يتقاضى راتبًا وليس في قائمة الموظفين، وفجوات الأجور داخل كل وظيفة.' },
-      dept: 'people',
-    },
-  ] as { say: T; then: T; dept: string }[],
-}
-
 export const showcase = {
   heading: { en: 'One page, read in five minutes', ar: 'صفحة واحدة تقرؤها في خمس دقائق' },
   text: {
@@ -140,16 +110,6 @@ export const steps = {
   ],
 }
 
-export const figures = {
-  heading: { en: 'Built to be trusted', ar: 'مصمم لتثق به' },
-  items: [
-    { v: '32', k: { en: 'services across sales, marketing, accounting, people and market research', ar: 'خدمة في المبيعات والتسويق والمحاسبة والموارد البشرية وأبحاث السوق' } },
-    { v: 'AES-256', k: { en: 'encryption from upload to deletion', ar: 'تشفير من الرفع حتى الحذف' } },
-    { v: { en: '30 days', ar: '30 يومًا' }, k: { en: 'after your report, your files are deleted', ar: 'بعد تقريرك تُحذف ملفاتك' } },
-  ] as { v: string | T; k: T }[],
-  more: { en: 'How we keep files safe', ar: 'كيف نحمي ملفاتك' },
-}
-
 export const cta = {
   heading: { en: ['Start with', 'one call'], ar: ['ابدأ', 'بمكالمة واحدة'] },
   text: {
@@ -166,36 +126,6 @@ export const cta = {
     send: { en: 'Send by email', ar: 'أرسل بالبريد' },
     or: { en: 'or message us on WhatsApp', ar: 'أو راسلنا على واتساب' },
   },
-}
-
-export const servicesPage = {
-  title: { en: ['32 services,', 'six departments'], ar: ['32 خدمة،', 'في ستة أقسام'] },
-  lead: {
-    en: 'Pick a department. Each service says what you get, the proven method behind it and the files it needs.',
-    ar: 'اختر قسمًا. كل خدمة توضح ما تحصل عليه، والطريقة المثبتة وراءها، والملفات التي تحتاجها.',
-  },
-  get: { en: 'You get', ar: 'تحصل على' },
-}
-
-export const securityPage = {
-  title: { en: ['Your files,', 'kept safe'], ar: ['ملفاتك', 'في أمان'] },
-  journey: { en: 'How your files travel', ar: 'رحلة ملفاتك' },
-  rules: { en: 'Eight rules we keep', ar: 'ثماني قواعد نلتزم بها' },
-}
-
-export const howPage = {
-  title: { en: ['How a job', 'runs'], ar: ['كيف يسير', 'العمل'] },
-  lead: {
-    en: 'Three steps on your side. Everything else is ours, and every result is labelled with how sure we are.',
-    ar: 'ثلاث خطوات من جهتك. والباقي علينا، وكل نتيجة تحمل تصنيفًا لمدى ثقتنا.',
-  },
-  plan: { en: 'You tell us what you have', ar: 'تخبرنا بما لديك' },
-  planText: {
-    en: 'A real example: two years of e-invoices, bank statements and a salary sheet, and no customer list. This is the plan we would send back.',
-    ar: 'مثال حقيقي: فواتير إلكترونية لسنتين، وكشوف البنك، وملف الرواتب، دون قائمة عملاء. هذه هي الخطة التي سنرسلها لك.',
-  },
-  report: { en: 'You read one page', ar: 'تقرأ صفحة واحدة' },
-  levels: { en: 'Every result is labelled', ar: 'كل نتيجة لها تصنيف' },
 }
 
 export const footerCopy = {

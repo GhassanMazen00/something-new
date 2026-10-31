@@ -1,11 +1,13 @@
-// First screen: the statement on the left, and on a blue stage cut like the rising line, a live piece of a Clearline
-// analysis. The tabs switch between four of the questions we answer most; it moves on by itself until someone picks.
+// First screen: the statement on the left, a live piece of a Clearline analysis on the right, and the glowing ridge
+// from the logo running under both. The tabs switch between four of the questions we answer most; the panel moves on
+// by itself until someone picks one.
 
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import type { T } from '../content'
 import { openContact } from '../contactEvent'
 import { useLang } from '../lang'
 import { heroCopy as h, ui } from './copy'
+import { Ridge } from './Ridge'
 
 type Tab = 'forecast' | 'twice' | 'cash' | 'leaving'
 const TABS: Tab[] = ['forecast', 'twice', 'cash', 'leaving']
@@ -195,7 +197,8 @@ function Panel() {
 export function Hero() {
   const { t, lang } = useLang()
   return (
-    <section className="hero">
+    <section className="hero" id="top">
+      <Ridge />
       <div className="hero-text">
         <h1>
           {h.title[lang].map((line) => (
@@ -207,12 +210,12 @@ export function Hero() {
           <button type="button" className="btn" onClick={openContact}>
             {t(ui.book)}
           </button>
-          <a className="link" href="./services.html">
+          <a className="link" href="#services">
             {t(ui.allServices)}
           </a>
         </div>
       </div>
-      <div className="stage">
+      <div className="hero-panel">
         <Panel />
       </div>
     </section>

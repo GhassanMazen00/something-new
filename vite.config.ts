@@ -20,6 +20,9 @@ export default defineConfig(({ mode }) => {
     // Relative paths so the built site works from any folder or host.
     base: './',
     plugins: [react()],
-    build: mode === 'app' ? { outDir: 'dist-app', rollupOptions: { input: { app: 'app/index.html' } } } : undefined,
+    build:
+      mode === 'app'
+        ? { outDir: 'dist-app', rollupOptions: { input: { app: 'app/index.html' } as Record<string, string> } }
+        : { rollupOptions: { input: { index: 'index.html', services: 'services.html', security: 'security.html', how: 'how-it-works.html' } as Record<string, string> } },
   }
 })

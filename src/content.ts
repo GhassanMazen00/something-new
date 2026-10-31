@@ -629,7 +629,7 @@ export const footer = {
 }
 
 export const meta = {
-  title: { en: 'Clearline Analytics · Clarity for every business decision', ar: 'Clearline Analytics · وضوح في كل قرار تجاري' },
+  title: { en: 'Clearline Analytics · Your numbers, made clear', ar: 'Clearline Analytics · أرقامك بوضوح تام' },
   description: {
     en: 'Clearline Analytics finds errors in your books, forecasts what comes next and shows what each decision will do, across sales, marketing, accounting, people and market research. Privacy first.',
     ar: 'Clearline Analytics تكتشف الأخطاء في حساباتك، وتتوقع ما هو قادم، وتوضح أثر كل قرار، في المبيعات والتسويق والمحاسبة والموارد البشرية وأبحاث السوق. الخصوصية أولًا.',

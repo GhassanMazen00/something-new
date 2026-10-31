@@ -11,3 +11,4 @@ platform/data/
 platform/.venv/
 platform/sample-report/
 platform/tests/stress/out/
+preview/

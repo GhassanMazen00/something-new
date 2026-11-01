@@ -400,7 +400,9 @@ def _design(x: pd.DataFrame, factors: list[str]) -> tuple[pd.DataFrame, dict[str
             v = cat(s)
             top = v.value_counts()
             v = v.where(v.isin(top.index[:6]), 'Other')
-            base = v.value_counts().index[0]
+            yesno = {x.strip().lower() for x in v.dropna().unique()} <= {'yes', 'no', 'نعم', 'لا', 'true', 'false', 'y', 'n'}
+            base = next((x for x in v.dropna().unique() if x.strip().lower() in ('no', 'لا', 'false', 'n')), None) if yesno else None
+            base = base if base is not None else v.value_counts().index[0]
             dummies = pd.get_dummies(v, prefix=col, prefix_sep=': ').astype(float).drop(columns=f'{col}: {base}')
             for dc in dummies.columns:
                 labels[dc] = f'{dc} (vs {base})'
@@ -473,7 +475,7 @@ def drivers(c: Ctx) -> dict:
     findings = []
     for name, eff, lo, hi, p, _ in sig[:4]:
         if binary:
-            findings.append(finding(f'{labels[name]}: “{one}” is {nf(eff)} times as likely in odds terms (95% range {nf(lo)} to {nf(hi)}, {pv(p)}).', 'high' if p < 0.01 else 'medium'))
+            findings.append(finding(f'{labels[name]}: “{o}: {one}” is {nf(eff)} times as likely in odds terms (95% range {nf(lo)} to {nf(hi)}, {pv(p)}).', 'high' if p < 0.01 else 'medium'))
         else:
             findings.append(finding(f'{labels[name]}: “{o}” changes by {snf(eff)} (95% range {snf(lo)} to {snf(hi)}, {pv(p)}).', 'high' if p < 0.01 else 'medium'))
     weak = [labels[r[0]].split(' (')[0] for r in rows if r[4] >= 0.05]
@@ -590,20 +592,26 @@ def trend_forecast(c: Ctx) -> dict:
         raise NeedsData(f'Fewer than eight {unit}s of data: too short for a trend.')
     what = f'{how.lower()} of “{mcol}”' if how != 'Count of rows' else 'number of rows'
     t = np.arange(n)
-    tau, p_trend = stats.kendalltau(t, y.values)
-    slope = float(stats.theilslopes(y.values, t)[0])
-    level_now = float(np.median(y.values)) or 1.0
-    per_year = slope * {'MS': 12, 'W-MON': 52, 'D': 365}[freq]
-    trend_word = ('Rising' if slope > 0 else 'Falling') if p_trend < 0.05 else 'No clear trend'
-    findings = [finding(f'{trend_word}: the {what} {"changes" if p_trend < 0.05 else "moves"} by about {snf(per_year)} a year ({snf(per_year / abs(level_now) * 100)}% of its usual level); the trend is {sure(p_trend)} (Mann–Kendall, {pv(p_trend)}).', 'high' if n >= 24 else 'medium')]
-    charts = []
-    seas_strength = 0.0
+    # With a strong yearly or weekly pattern, test the trend once the pattern is taken out: otherwise the seasons hide it.
+    base = y.values
+    seasonal_fit = None
     if n >= 2 * season and season <= 52:
         from statsmodels.tsa.seasonal import STL
 
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')
-            st = STL(y, period=season, robust=True).fit()
+            seasonal_fit = STL(y, period=season, robust=True).fit()
+        base = (y - seasonal_fit.seasonal).values
+    tau, p_trend = stats.kendalltau(t, base)
+    slope = float(stats.theilslopes(base, t)[0])
+    level_now = float(np.median(y.values)) or 1.0
+    per_year = slope * {'MS': 12, 'W-MON': 52, 'D': 365}[freq]
+    trend_word = ('Rising' if slope > 0 else 'Falling') if p_trend < 0.05 else 'No clear trend'
+    findings = [finding(f'{trend_word}: the {what} {"changes" if p_trend < 0.05 else "moves"} by about {snf(per_year)} a year ({snf(per_year / abs(level_now) * 100)}% of its usual level); the trend is {sure(p_trend)} (Mann–Kendall{", after taking out the seasonal pattern" if seasonal_fit is not None else ""}, {pv(p_trend)}).', 'high' if n >= 24 else 'medium')]
+    charts = []
+    seas_strength = 0.0
+    if seasonal_fit is not None:
+        st = seasonal_fit
         seas_strength = max(0.0, 1 - np.var(st.resid) / max(np.var(st.seasonal + st.resid), 1e-12))
         if seas_strength > 0.3:
             prof = pd.Series(st.seasonal.values, index=y.index)
@@ -659,7 +667,8 @@ def _likert(s: pd.Series) -> pd.Series | None:
     if len(v) < 5:
         return None
     if pd.api.types.is_numeric_dtype(v):
-        if (v == v.round()).all() and 3 <= v.nunique() <= 11 and 2 <= v.max() - v.min() <= 10 and v.min() >= 0:
+        # A usual rating scale: 1–4, 1–5, 1–7, 0–10, 1–10 and the like. A count such as household size (2–8) isn't one.
+        if (v == v.round()).all() and 3 <= v.nunique() <= 11 and v.min() in (0, 1) and v.max() in (4, 5, 6, 7, 10):
             return s.astype(float)
         return None
     t = s.astype(str).str.strip().str.lower()
@@ -716,7 +725,7 @@ def survey(c: Ctx) -> dict:
                 tv = m.sum(axis=1).var(ddof=1)
                 alpha = kk / (kk - 1) * (1 - m.var(ddof=1).sum() / tv) if tv > 0 else np.nan
                 word = 'excellent' if alpha >= 0.9 else 'good' if alpha >= 0.8 else 'acceptable' if alpha >= 0.7 else 'questionable' if alpha >= 0.6 else 'poor'
-                findings.append(finding(f'The {kk} questions on the {main_range} scale hang together {word}ly as one measure (Cronbach’s alpha {alpha:.2f}).' if word != 'poor' else f'The {kk} questions on the {main_range} scale don’t measure one thing (Cronbach’s alpha {alpha:.2f}): report them one by one, not as a total.', 'high'))
+                findings.append(finding(f'The {kk} questions on the {main_range} scale can be added up into one score: their reliability is {word} (Cronbach’s alpha {alpha:.2f}).' if word != 'poor' else f'The {kk} questions on the {main_range} scale don’t measure one thing (Cronbach’s alpha {alpha:.2f}): report them one by one, not as a total.', 'high'))
     if g:
         x = df.copy()
         x[g] = cat(x[g])
@@ -790,6 +799,9 @@ def before_after(c: Ctx) -> dict:
     acc = f'{test.capitalize()} on {len(d):,} pairs.'
     if g:
         x[g] = cat(x[g])
+        # "Yes" and "No" alone read badly: name them with the column ("Took part: Yes").
+        if set(x[g].dropna().str.lower().unique()) <= {'yes', 'no', 'نعم', 'لا', 'true', 'false', 'y', 'n', '1', '0'}:
+            x[g] = g + ': ' + x[g]
         st = x.groupby(g)['_d'].agg(['size', 'mean', 'std'])
         st = st[st['size'] >= 3].sort_values('mean', ascending=False)
         if len(st) >= 2:
@@ -843,6 +855,29 @@ def _rules(v: np.ndarray, centre: float, sigma: float) -> dict[int, str]:
     return out
 
 
+def _stable_centre(v: np.ndarray, sigma: float) -> float:
+    """The process's usual level: the average once points beyond the limits are set aside, repeated until none are.
+    A shift late in the data then shows as a shift, instead of pulling the centre line to the middle."""
+    v = np.asarray(v, float)
+    keep = np.ones(len(v), bool)
+    for _ in range(10):
+        centre = float(v[keep].mean())
+        out = keep & (np.abs(v - centre) > 3 * sigma)
+        if not out.any() or keep.sum() - out.sum() < max(8, len(v) // 3):
+            break
+        keep &= ~out
+    return centre
+
+
+def _first_signal(broken: dict[int, str], labels: list[str]) -> str | None:
+    """Where a run of rule-breaking points starts, if most of them follow one point in time."""
+    if not broken:
+        return None
+    first = min(broken)
+    after = [i for i in broken if i >= first]
+    return labels[first] if len(after) >= 0.7 * len(broken) else None
+
+
 def quality(c: Ctx) -> dict:
     df, cols = pick(c, {'measure': 'Measurement', 'order': 'Order', 'sample': 'Sample'})
     m, o, smp = cols['measure'], cols['order'], cols['sample']
@@ -867,7 +902,8 @@ def quality(c: Ctx) -> dict:
     if xbar:
         grp = xs.groupby(smp, sort=False)[m]
         means, ranges = grp.mean().values, (grp.max() - grp.min()).values
-        centre, rbar = float(means.mean()), float(ranges.mean())
+        rbar = float(ranges.mean())
+        centre = _stable_centre(means, A2[n_sub] * rbar / 3)
         ucl, lcl = centre + A2[n_sub] * rbar, centre - A2[n_sub] * rbar
         sigma_w = rbar / d2[n_sub]
         plot, labels = means, [str(k) for k in grp.mean().index]
@@ -877,8 +913,8 @@ def quality(c: Ctx) -> dict:
     else:
         v = vals.values
         mr = np.abs(np.diff(v))
-        centre = float(v.mean())
         sigma_w = float(mr.mean() / 1.128) if len(mr) else 0.0
+        centre = _stable_centre(v, sigma_w)
         ucl, lcl = centre + 3 * sigma_w, centre - 3 * sigma_w
         plot = v
         dated = o and pd.api.types.is_datetime64_any_dtype(x[o])
@@ -896,6 +932,10 @@ def quality(c: Ctx) -> dict:
     charts = [chart(chart_name, line(labels[show], [series(str(m), list(np.asarray(plot, float)[show])), series('Centre', [centre] * n_pts, 'muted', True), series('Upper limit', [ucl] * n_pts, 'orange', True), series('Lower limit', [lcl] * n_pts, 'orange', True)], marks=marks, fmt='num'), wide=True)]
     stable = not broken
     findings = [finding(('The process is stable: no point breaks the control-chart rules, so the variation is the normal kind.' if stable else f'{len(broken)} point{"s" if len(broken) > 1 else ""} break the control-chart rules, so something unusual happened.'), 'high' if len(plot) >= 25 else 'medium', None if stable else 'Look at what changed at those points (materials, shift, machine settings) before changing the process.')]
+    start = _first_signal(broken, labels)
+    if broken and start is not None and len(broken) >= 5:
+        later = np.asarray(plot, float)[min(broken):]
+        findings.insert(1, finding(f'The change starts around {"sample " if xbar else "point "}{start}: since then the average is {nf(later.mean())} against a usual {nf(centre)}.', 'high', 'Find what changed at that point: a new batch of material, a setting, a shift or a machine.'))
     if broken:
         kinds_ = pd.Series(list(broken.values())).value_counts()
         findings.append(finding('Rules broken: ' + ', '.join(f'{k} ({n})' for k, n in kinds_.items()) + '.', 'high'))
@@ -907,9 +947,9 @@ def quality(c: Ctx) -> dict:
         cpk = min(cpk_parts) if sigma_w > 0 else np.nan
         outside = float(((vals < (lsl if lsl is not None else -np.inf)) | (vals > (usl if usl is not None else np.inf))).mean())
         expected = (stats.norm.cdf((lsl - mu) / sd_all) if lsl is not None else 0) + (stats.norm.sf((usl - mu) / sd_all) if usl is not None else 0) if sd_all > 0 else 0
-        cap_kpi = kpi('Capability (Cpk)', f'{cpk:.2f}', '1.33 or more is capable', 'good' if cpk >= 1.33 else 'bad')
+        cap_kpi = kpi('Capability (Cpk)', f'{cpk:.2f}', '1.33 or more is capable' if stable else 'only meaningful once stable', 'good' if cpk >= 1.33 and stable else 'bad')
         word = 'capable' if cpk >= 1.33 else 'only just capable' if cpk >= 1.0 else 'not capable'
-        findings.append(finding(f'Against the specification the process is {word} (Cpk {cpk:.2f}): {outside:.1%} of measurements were outside it, and about {expected * 1e6:,.0f} in a million are expected to be.', 'high' if len(plot) >= 25 else 'medium', None if cpk >= 1.33 else 'Reduce the spread or re-centre the process.'))
+        findings.append(finding(f'Against the specification the process is {word} (Cpk {cpk:.2f}): {outside:.1%} of measurements were outside it, and about {expected * 1e6:,.0f} in a million are expected to be.' + ('' if stable else ' Capability assumes a stable process, so fix the cause of the change first.'), 'high' if len(plot) >= 25 and stable else 'medium', None if cpk >= 1.33 else 'Reduce the spread or re-centre the process.'))
         if lsl is not None and usl is not None and sigma_w > 0:
             cp = (usl - lsl) / (6 * sigma_w)
             if cp >= 1.33 > cpk:

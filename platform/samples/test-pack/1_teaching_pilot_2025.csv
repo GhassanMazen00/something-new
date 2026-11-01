@@ -1,0 +1,481 @@
+Student ID,School,Gender,Group,Score before,Score after,Attendance %,Test date,Q1 Lessons were clear,Q2 I understood the homework,Q3 I felt confident in tests,Q4 I would recommend this class,Q5 The classroom was comfortable
+ST-0001,South,M,New method,73.1,78.4,89.0,21/03/2025,Neutral,Agree,Disagree,Agree,Neutral
+ST-0002,North,M,Usual method,77.0,77.1,85.0,09/04/2025,Neutral,Neutral,Neutral,Neutral,Strongly disagree
+ST-0003,East,F,Usual method,66.2,67.8,95.0,04/04/2025,Disagree,Strongly disagree,Disagree,Strongly disagree,Disagree
+ST-0004,North,M,New method,81.6,83.5,100.0,20/03/2025,Neutral,Neutral,Neutral,Neutral,Agree
+ST-0005,North,M,Usual method,61.1,56.9,90.0,19/04/2025,Neutral,Agree,Neutral,Agree,Neutral
+ST-0006,North,M,Usual method,56.6,62.2,92.0,11/03/2025,Neutral,Disagree,Disagree,Disagree,Disagree
+ST-0007,South,M,Usual method,69.9,68.0,86.0,12/04/2025,Strongly disagree,Disagree,Disagree,Strongly disagree,Strongly disagree
+ST-0008,East,M,Usual method,64.8,67.1,86.0,06/03/2025,Disagree,Disagree,Disagree,Strongly disagree,Agree
+ST-0009,North,M,Usual method,64.0,67.7,86.0,26/04/2025,Neutral,Disagree,Strongly disagree,Neutral,Neutral
+ST-0010,North,M,Usual method,51.6,51.3,88.0,12/03/2025,Agree,Disagree,Neutral,Neutral,Neutral
+ST-0011,North,F,New method,68.1,75.3,92.0,07/04/2025,Neutral,Neutral,Neutral,Agree,Agree
+ST-0012,North,M,New method,72.8,79.6,100.0,05/03/2025,Neutral,Neutral,Disagree,Neutral,Disagree
+ST-0013,North,F,New method,48.5,54.7,97.0,21/03/2025,Neutral,Neutral,Neutral,Agree,Neutral
+ST-0014,South,M,New method,66.5,71.7,89.0,20/04/2025,Neutral,Neutral,Neutral,Strongly agree,Disagree
+ST-0015,North,M,New method,61.9,70.9,90.0,15/04/2025,Agree,Agree,Strongly agree,Agree,Agree
+ST-0016,North,F,Usual method,70.7,74.8,71.0,25/04/2025,Agree,Agree,Agree,Disagree,Strongly disagree
+ST-0017,East,F,Usual method,67.2,71.3,100.0,02/04/2025,Agree,Neutral,Agree,Disagree,Neutral
+ST-0018,North,M,Usual method,54.2,53.2,100.0,04/04/2025,Agree,Agree,Agree,Strongly agree,Agree
+ST-0019,South,M,Usual method,70.5,68.2,90.0,04/03/2025,Disagree,Disagree,Disagree,Disagree,Agree
+ST-0020,East,M,New method,54.4,59.0,89.0,22/04/2025,Neutral,Neutral,Strongly disagree,Neutral,Neutral
+ST-0021,South,F,New method,64.8,73.7,73.0,10/03/2025,Strongly agree,Strongly agree,Strongly agree,Strongly agree,Disagree
+ST-0022,South,M,New method,59.2,66.3,85.0,06/04/2025,Agree,Strongly agree,Strongly agree,Strongly agree,Strongly disagree
+ST-0023,South,F,New method,65.2,71.1,81.0,11/03/2025,Strongly agree,Strongly agree,Strongly agree,Strongly agree,Disagree
+ST-0024,East,F,New method,58.5,66.3,81.0,09/04/2025,Neutral,Agree,Neutral,Agree,Strongly disagree
+ST-0025,North,F,Usual method,52.0,56.0,84.0,09/03/2025,Agree,Neutral,Neutral,Neutral,Neutral
+ST-0026,South,F,New method,53.3,61.5,87.0,23/03/2025,Agree,Disagree,Neutral,Neutral,Disagree
+ST-0027,East,F,New method,69.0,74.5,96.0,28/03/2025,Agree,Strongly agree,Strongly agree,Strongly agree,Strongly disagree
+ST-0028,South,M,New method,49.6,55.5,94.0,27/04/2025,Agree,Agree,Neutral,Agree,Neutral
+ST-0029,East,M,New method,45.8,54.2,87.0,20/04/2025,Strongly disagree,Neutral,Disagree,Strongly disagree,Strongly disagree
+ST-0030,East,M,Usual method,54.2,61.1,85.0,23/04/2025,Agree,Neutral,Strongly agree,Agree,Strongly disagree
+ST-0031,North,M,Usual method,61.2,63.6,85.0,09/04/2025,Agree,Agree,Disagree,Neutral,Neutral
+ST-0032,North,M,New method,81.7,85.5,94.0,18/04/2025,Neutral,Neutral,Neutral,Neutral,Agree
+ST-0033,South,F,New method,48.5,50.1,86.0,06/04/2025,Agree,Agree,Neutral,Agree,Agree
+ST-0034,East,M,New method,52.6,58.2,74.0,09/04/2025,Neutral,Disagree,Strongly disagree,Neutral,Neutral
+ST-0035,North,M,Usual method,67.4,72.4,70.0,11/04/2025,Agree,Neutral,Neutral,Disagree,Agree
+ST-0036,South,F,New method,66.3,64.5,92.0,05/03/2025,Agree,Strongly agree,Strongly agree,Agree,Neutral
+ST-0037,South,F,Usual method,52.7,58.9,91.0,13/04/2025,Agree,Strongly agree,Strongly agree,Agree,Strongly disagree
+ST-0038,North,M,New method,65.8,74.4,82.0,21/03/2025,Strongly agree,Agree,Neutral,Strongly agree,Agree
+ST-0039,North,F,New method,67.9,79.3,93.0,24/03/2025,Strongly agree,Agree,Agree,Strongly agree,Agree
+ST-0040,South,F,New method,55.1,60.6,92.0,10/03/2025,Neutral,Strongly agree,Strongly agree,Agree,Strongly disagree
+ST-0041,South,F,New method,53.5,60.1,,12/03/2025,Strongly agree,Neutral,Agree,Neutral,Disagree
+ST-0042,South,F,New method,64.7,72.7,91.0,10/04/2025,Neutral,Agree,Disagree,Agree,Disagree
+ST-0043,North,M,New method,56.4,59.5,96.0,18/03/2025,Strongly agree,Strongly agree,Agree,Strongly agree,Disagree
+ST-0044,South,M,Usual method,49.8,55.5,,30/03/2025,Neutral,Agree,Disagree,Disagree,Disagree
+ST-0045,South,M,New method,52.8,58.8,100.0,15/03/2025,Agree,Strongly agree,Neutral,Strongly agree,Strongly disagree
+ST-0046,East,M,Usual method,56.7,64.0,88.0,23/04/2025,Neutral,Strongly agree,Agree,Neutral,Neutral
+ST-0047,East,F,Usual method,63.8,71.5,100.0,27/03/2025,Neutral,Agree,Neutral,Agree,Disagree
+ST-0048,South,M,Usual method,60.7,58.0,94.0,09/04/2025,Strongly agree,Strongly agree,Strongly agree,Strongly agree,Disagree
+ST-0049,East,M,New method,63.0,69.2,88.0,09/04/2025,Strongly agree,Agree,Strongly agree,Neutral,Strongly disagree
+ST-0050,South,M,New method,78.4,84.5,100.0,09/03/2025,Strongly agree,Strongly agree,Strongly agree,Strongly agree,Agree
+ST-0051,North,F,New method,79.6,88.1,84.0,04/03/2025,Strongly agree,Strongly agree,Strongly agree,Agree,Disagree
+ST-0052,East,F,New method,59.2,63.2,77.0,23/03/2025,Strongly agree,Strongly agree,Agree,Neutral,Strongly disagree
+ST-0053,North,M,New method,64.2,69.1,92.0,19/04/2025,Strongly disagree,Neutral,Disagree,Agree,Strongly disagree
+ST-0054,South,F,New method,70.2,77.1,85.0,01/04/2025,Disagree,Agree,Agree,Disagree,Agree
+ST-0055,South,M,New method,49.6,52.9,86.0,15/04/2025,Agree,Strongly agree,Agree,Agree,Agree
+ST-0056,North,F,New method,66.8,73.0,84.0,17/03/2025,Neutral,Neutral,Disagree,Neutral,Neutral
+ST-0057,East,F,Usual method,77.0,82.8,96.0,17/03/2025,Disagree,Strongly disagree,Strongly disagree,Strongly disagree,Disagree
+ST-0058,East,M,Usual method,61.8,61.6,92.0,01/04/2025,Agree,Strongly agree,Agree,Strongly agree,Strongly disagree
+ST-0059,East,M,Usual method,48.9,46.5,88.0,04/04/2025,Agree,Agree,Strongly disagree,Disagree,Neutral
+ST-0060,East,M,Usual method,44.7,52.7,72.0,26/03/2025,Neutral,Disagree,Disagree,Strongly disagree,Neutral
+ST-0061,North,M,Usual method,53.0,54.1,97.0,29/04/2025,Disagree,Neutral,Neutral,Neutral,Neutral
+ST-0062,South,F,Usual method,60.1,62.0,90.0,08/04/2025,Neutral,Neutral,Strongly agree,Neutral,Neutral
+ST-0063,East,F,Usual method,53.1,56.7,75.0,04/03/2025,Neutral,Neutral,Agree,Agree,Disagree
+ST-0064,South,F,Usual method,54.4,56.3,83.0,07/03/2025,Strongly agree,Agree,Strongly agree,Agree,Disagree
+ST-0065,North,F,New method,55.6,58.4,81.0,30/03/2025,Disagree,Strongly disagree,Disagree,Disagree,Disagree
+ST-0066,South,M,New method,54.7,57.1,92.0,20/03/2025,Agree,Neutral,Disagree,Neutral,Agree
+ST-0067,North,F,Usual method,67.7,71.6,79.0,21/04/2025,Neutral,Agree,Neutral,Neutral,Neutral
+ST-0068,South,F,Usual method,47.4,56.4,90.0,18/04/2025,Agree,Agree,Agree,Agree,Strongly agree
+ST-0069,South,F,New method,49.5,52.0,89.0,28/03/2025,Neutral,Neutral,Disagree,Neutral,Neutral
+ST-0070,East,M,Usual method,54.8,63.6,74.0,02/04/2025,Disagree,Neutral,Neutral,Neutral,Strongly disagree
+ST-0071,North,F,New method,64.0,69.6,80.0,22/04/2025,Neutral,Disagree,Disagree,Neutral,Neutral
+ST-0072,North,M,Usual method,69.3,75.3,93.0,03/04/2025,Agree,Neutral,Strongly agree,Agree,Neutral
+ST-0073,North,F,New method,55.6,61.5,91.0,16/04/2025,Strongly agree,Neutral,Neutral,Disagree,Neutral
+ST-0074,South,F,Usual method,51.2,52.0,93.0,27/03/2025,Strongly agree,Neutral,Neutral,Neutral,Neutral
+ST-0075,South,M,Usual method,61.3,58.2,85.0,30/03/2025,Agree,Neutral,Agree,Agree,Disagree
+ST-0076,North,M,Usual method,64.3,63.8,95.0,30/03/2025,Disagree,Neutral,Disagree,Neutral,Neutral
+ST-0077,South,M,Usual method,57.4,62.5,79.0,04/03/2025,Neutral,Agree,Disagree,Neutral,Disagree
+ST-0078,South,F,Usual method,62.5,67.3,,03/04/2025,Strongly agree,Neutral,Agree,Agree,Disagree
+ST-0079,North,M,New method,68.7,75.6,100.0,21/03/2025,Strongly agree,Neutral,Agree,Agree,Strongly agree
+ST-0080,North,F,New method,61.7,66.8,87.0,26/03/2025,Strongly agree,Strongly agree,Strongly agree,Strongly agree,Disagree
+ST-0081,North,F,New method,58.9,61.8,82.0,01/04/2025,Disagree,Disagree,Disagree,Strongly disagree,Neutral
+ST-0082,North,M,New method,57.4,67.5,78.0,20/04/2025,Agree,Neutral,Neutral,Agree,Neutral
+ST-0083,North,F,New method,65.2,74.9,89.0,24/04/2025,Agree,Neutral,Neutral,Agree,Disagree
+ST-0084,North,M,New method,58.5,68.5,96.0,16/04/2025,Strongly agree,Agree,Agree,Agree,Neutral
+ST-0085,North,F,New method,70.1,76.8,73.0,16/03/2025,Agree,Strongly agree,Agree,Agree,Neutral
+ST-0086,South,F,Usual method,59.1,66.1,91.0,15/03/2025,Disagree,Agree,Neutral,Neutral,Disagree
+ST-0087,South,F,New method,56.0,59.8,92.0,27/04/2025,Agree,Neutral,Disagree,Neutral,Disagree
+ST-0088,East,F,New method,50.1,54.2,95.0,12/03/2025,Agree,Neutral,Neutral,Agree,Strongly agree
+ST-0089,North,M,New method,53.2,54.4,89.0,05/04/2025,Neutral,Agree,Strongly agree,Strongly agree,Strongly disagree
+ST-0090,North,F,Usual method,62.0,63.6,92.0,15/04/2025,Agree,Neutral,Agree,Agree,Strongly agree
+ST-0091,South,M,Usual method,59.8,62.0,92.0,14/04/2025,Neutral,Neutral,Agree,Disagree,Neutral
+ST-0092,North,F,New method,66.1,72.0,98.0,16/04/2025,Agree,Agree,Neutral,Agree,Agree
+ST-0093,South,F,New method,57.5,65.2,95.0,20/03/2025,Neutral,Agree,Disagree,Agree,Disagree
+ST-0094,North,F,New method,68.7,82.7,87.0,08/03/2025,Agree,Strongly agree,Neutral,Neutral,Strongly agree
+ST-0095,East,F,New method,47.4,61.3,81.0,01/04/2025,Agree,Strongly agree,Neutral,Agree,Neutral
+ST-0096,North,M,Usual method,63.7,68.1,72.0,27/03/2025,Neutral,Neutral,Disagree,Neutral,Disagree
+ST-0097,South,M,New method,73.0,74.6,94.0,23/04/2025,Neutral,Agree,Neutral,Strongly agree,Strongly disagree
+ST-0098,South,M,Usual method,71.4,71.7,73.0,09/04/2025,Agree,Disagree,Neutral,Disagree,Neutral
+ST-0099,South,F,New method,76.7,82.4,85.0,20/03/2025,Agree,Agree,Strongly agree,Strongly agree,Neutral
+ST-0100,East,M,Usual method,73.9,76.5,94.0,03/04/2025,Disagree,Disagree,Disagree,Disagree,Disagree
+ST-0101,North,F,New method,71.0,79.9,85.0,07/03/2025,Disagree,Disagree,Neutral,Agree,Neutral
+ST-0102,East,F,New method,59.4,66.4,82.0,10/03/2025,Disagree,Neutral,Neutral,Disagree,Disagree
+ST-0103,North,F,New method,67.0,72.7,88.0,18/04/2025,Agree,Neutral,Neutral,Disagree,Disagree
+ST-0104,South,F,Usual method,58.3,53.2,90.0,09/03/2025,Strongly agree,Strongly agree,Strongly agree,Strongly agree,Disagree
+ST-0105,North,F,New method,74.3,80.2,87.0,16/03/2025,Agree,Strongly agree,Neutral,Agree,Strongly disagree
+ST-0106,East,F,New method,60.9,70.9,84.0,09/03/2025,Neutral,Agree,Neutral,Agree,Disagree
+ST-0107,South,M,Usual method,49.1,50.7,100.0,14/04/2025,Disagree,Disagree,Disagree,Neutral,Strongly disagree
+ST-0108,North,F,New method,69.3,82.1,94.0,20/04/2025,Disagree,Disagree,Neutral,Disagree,Strongly disagree
+ST-0109,South,F,New method,66.2,73.4,76.0,15/03/2025,Neutral,Agree,Disagree,Neutral,Neutral
+ST-0110,South,F,Usual method,57.8,57.2,84.0,29/04/2025,Strongly agree,Agree,Neutral,Strongly agree,Neutral
+ST-0111,South,M,Usual method,55.1,54.5,73.0,07/03/2025,Neutral,Neutral,Agree,Disagree,Agree
+ST-0112,North,F,Usual method,69.9,66.1,92.0,16/04/2025,Agree,Neutral,Neutral,Strongly agree,Neutral
+ST-0113,South,M,Usual method,78.3,82.4,83.0,27/04/2025,Strongly disagree,Strongly disagree,Disagree,Strongly disagree,Agree
+ST-0114,South,M,Usual method,39.1,35.6,85.0,20/04/2025,Neutral,Agree,Neutral,Agree,Disagree
+ST-0115,South,M,New method,67.1,81.6,86.0,06/03/2025,Neutral,Strongly agree,Strongly agree,Neutral,Strongly disagree
+ST-0116,East,M,Usual method,61.0,60.0,87.0,19/03/2025,Disagree,Neutral,Agree,Disagree,Disagree
+ST-0117,South,M,Usual method,61.4,61.2,100.0,26/03/2025,Agree,Strongly agree,Strongly agree,Strongly agree,Disagree
+ST-0118,North,M,Usual method,60.8,60.6,97.0,16/03/2025,Agree,Disagree,Neutral,Disagree,Neutral
+ST-0119,South,F,New method,55.9,65.7,85.0,16/03/2025,Agree,Agree,Agree,Strongly agree,Neutral
+ST-0120,South,F,Usual method,70.4,76.0,73.0,04/04/2025,Agree,Strongly agree,Strongly agree,Agree,Neutral
+ST-0121,South,M,Usual method,64.8,69.5,100.0,18/04/2025,Neutral,Neutral,Neutral,Agree,Disagree
+ST-0122,North,M,New method,70.2,85.1,88.0,12/03/2025,Neutral,Neutral,Disagree,Neutral,Disagree
+ST-0123,East,M,Usual method,59.6,58.3,92.0,08/04/2025,Agree,Strongly agree,Agree,Agree,Disagree
+ST-0124,East,F,New method,69.8,81.6,88.0,27/03/2025,Neutral,Agree,Strongly agree,Agree,Agree
+ST-0125,South,F,New method,45.8,58.7,90.0,05/04/2025,Agree,Strongly agree,Strongly agree,Agree,Disagree
+ST-0126,South,M,New method,71.0,77.2,100.0,11/03/2025,Agree,Strongly agree,Strongly agree,Agree,Disagree
+ST-0127,East,F,Usual method,46.8,50.4,98.0,09/04/2025,Disagree,Disagree,Disagree,Neutral,Neutral
+ST-0128,South,M,New method,65.9,76.9,82.0,25/03/2025,Agree,Neutral,Agree,Neutral,Disagree
+ST-0129,North,F,Usual method,62.0,54.5,93.0,31/03/2025,Agree,Agree,Agree,Neutral,Neutral
+ST-0130,South,F,Usual method,64.6,66.0,90.0,06/03/2025,Disagree,Neutral,Disagree,Disagree,Agree
+ST-0131,South,F,New method,70.8,79.2,93.0,24/04/2025,Strongly agree,Strongly agree,Disagree,Agree,Disagree
+ST-0132,South,M,Usual method,56.4,56.0,81.0,07/04/2025,Neutral,Neutral,Agree,Strongly agree,Strongly disagree
+ST-0133,East,M,Usual method,49.7,46.5,73.0,07/04/2025,Disagree,Agree,Disagree,Neutral,Strongly disagree
+ST-0134,South,M,New method,55.2,59.0,94.0,08/04/2025,Disagree,Disagree,Disagree,Strongly disagree,Agree
+ST-0135,North,F,New method,61.1,70.4,84.0,17/03/2025,Agree,Agree,Neutral,Agree,Agree
+ST-0136,East,M,New method,56.3,65.0,,28/04/2025,Agree,Disagree,Disagree,Agree,Neutral
+ST-0137,South,M,Usual method,50.2,54.1,91.0,18/04/2025,Agree,Neutral,Neutral,Strongly agree,Neutral
+ST-0138,South,M,Usual method,59.9,61.1,81.0,15/04/2025,Agree,Neutral,Neutral,Agree,Strongly disagree
+ST-0139,South,F,Usual method,61.3,62.4,78.0,25/03/2025,Neutral,Strongly disagree,Disagree,Agree,Neutral
+ST-0140,East,F,Usual method,52.3,54.1,89.0,22/03/2025,Neutral,Neutral,Agree,Agree,Neutral
+ST-0141,East,F,New method,69.0,80.7,88.0,27/03/2025,Agree,Neutral,Agree,Disagree,Disagree
+ST-0142,North,M,New method,71.7,80.0,93.0,14/04/2025,Strongly agree,Agree,Agree,Agree,Strongly disagree
+ST-0143,South,M,Usual method,60.5,67.6,83.0,09/03/2025,Disagree,Agree,Neutral,Agree,Agree
+ST-0144,East,F,New method,55.4,55.6,89.0,16/04/2025,Neutral,Neutral,Agree,Agree,Neutral
+ST-0145,North,F,Usual method,67.3,68.2,82.0,12/03/2025,Strongly agree,Agree,Agree,Neutral,Strongly disagree
+ST-0146,East,M,New method,62.7,81.1,92.0,10/04/2025,Agree,Neutral,Agree,Neutral,Neutral
+ST-0147,North,M,New method,54.4,59.4,91.0,20/04/2025,Strongly agree,Strongly agree,Agree,Strongly agree,Neutral
+ST-0148,North,M,Usual method,54.4,50.5,97.0,21/04/2025,Agree,Neutral,Neutral,Agree,Neutral
+ST-0149,South,F,New method,56.2,61.1,91.0,19/04/2025,Strongly agree,Strongly agree,Agree,Strongly agree,Disagree
+ST-0150,East,F,Usual method,62.3,62.0,87.0,12/03/2025,Neutral,Agree,Neutral,Neutral,Strongly agree
+ST-0151,South,F,New method,51.4,60.0,98.0,24/04/2025,Agree,Strongly agree,Agree,Strongly agree,Disagree
+ST-0152,North,F,New method,68.0,77.8,84.0,08/03/2025,Strongly agree,Strongly agree,Agree,Strongly agree,Neutral
+ST-0153,East,F,Usual method,66.9,63.0,87.0,09/04/2025,Agree,Agree,Neutral,Neutral,Disagree
+ST-0154,North,M,Usual method,63.2,62.0,,19/04/2025,Strongly agree,Strongly agree,Agree,Strongly agree,Neutral
+ST-0155,North,M,Usual method,61.2,67.0,89.0,26/03/2025,Neutral,Neutral,Disagree,Neutral,Neutral
+ST-0156,North,F,Usual method,72.0,72.1,76.0,12/03/2025,Strongly agree,Agree,Agree,Agree,Neutral
+ST-0157,East,F,New method,66.2,66.5,81.0,27/04/2025,Strongly agree,Agree,Neutral,Agree,Disagree
+ST-0158,East,F,New method,49.4,60.4,85.0,24/04/2025,Strongly agree,Strongly agree,Agree,Strongly agree,Neutral
+ST-0159,South,M,New method,60.7,65.3,93.0,07/04/2025,Agree,Agree,Neutral,Neutral,Strongly disagree
+ST-0160,East,M,Usual method,58.4,62.5,92.0,07/04/2025,Agree,Neutral,Agree,Neutral,Strongly disagree
+ST-0161,South,F,New method,65.3,74.6,82.0,28/03/2025,Agree,Agree,Neutral,Neutral,Agree
+ST-0162,East,M,Usual method,67.2,66.6,85.0,26/03/2025,Neutral,Neutral,Disagree,Disagree,Neutral
+ST-0163,North,F,Usual method,48.7,47.1,85.0,01/04/2025,Disagree,Neutral,Neutral,Disagree,Strongly disagree
+ST-0164,South,F,Usual method,78.5,76.7,92.0,27/03/2025,Agree,Agree,Agree,Agree,Disagree
+ST-0165,South,M,Usual method,38.4,39.4,87.0,22/04/2025,Neutral,Strongly agree,Strongly agree,Strongly agree,Agree
+ST-0166,South,F,Usual method,53.1,46.5,83.0,07/04/2025,Strongly agree,Agree,Neutral,Strongly agree,Neutral
+ST-0167,North,F,New method,83.1,88.6,85.0,07/04/2025,Strongly agree,Agree,Neutral,Strongly agree,Neutral
+ST-0168,East,M,Usual method,63.3,63.3,100.0,02/04/2025,Agree,Neutral,Neutral,Neutral,Strongly disagree
+ST-0169,North,M,Usual method,77.0,78.9,82.0,09/04/2025,Disagree,Neutral,Strongly disagree,Strongly disagree,Strongly disagree
+ST-0170,East,F,New method,55.1,62.9,91.0,25/04/2025,Neutral,Neutral,Neutral,Neutral,Disagree
+ST-0171,East,M,Usual method,54.1,54.1,84.0,03/04/2025,Disagree,Neutral,Neutral,Neutral,Neutral
+ST-0172,North,F,Usual method,66.5,71.6,96.0,18/03/2025,Agree,Neutral,Strongly agree,Neutral,Neutral
+ST-0173,South,M,Usual method,46.2,52.7,91.0,10/03/2025,Strongly agree,Strongly agree,Strongly agree,Strongly agree,Disagree
+ST-0174,East,F,New method,54.5,62.7,86.0,20/03/2025,Strongly agree,Agree,Neutral,Agree,Neutral
+ST-0175,South,M,Usual method,64.1,66.4,97.0,10/04/2025,Strongly agree,Agree,Strongly agree,Strongly agree,Strongly agree
+ST-0176,North,M,Usual method,57.7,56.3,,16/04/2025,Strongly agree,Strongly agree,Neutral,Agree,Strongly disagree
+ST-0177,North,F,Usual method,68.7,71.9,86.0,08/03/2025,Disagree,Strongly disagree,Disagree,Neutral,Disagree
+ST-0178,East,M,New method,53.2,61.9,100.0,31/03/2025,Neutral,Strongly agree,Agree,Strongly agree,Disagree
+ST-0179,North,M,New method,69.1,84.3,80.0,01/03/2025,Disagree,Disagree,Disagree,Neutral,Agree
+ST-0180,North,F,New method,73.3,79.0,93.0,11/03/2025,Strongly agree,Strongly agree,Agree,Strongly agree,Strongly disagree
+ST-0181,South,F,New method,47.2,55.2,79.0,04/03/2025,Neutral,Neutral,Neutral,Agree,Neutral
+ST-0182,South,F,New method,57.6,64.3,94.0,03/03/2025,Neutral,Disagree,Neutral,Disagree,Strongly disagree
+ST-0183,South,F,Usual method,51.7,50.0,90.0,04/04/2025,Neutral,Disagree,Disagree,Disagree,Disagree
+ST-0184,North,F,Usual method,62.9,65.1,83.0,10/04/2025,Neutral,Neutral,Disagree,Agree,Disagree
+ST-0185,South,M,New method,48.5,56.1,84.0,30/03/2025,Agree,Agree,Neutral,Agree,Disagree
+ST-0186,North,F,New method,69.1,85.3,78.0,12/04/2025,Strongly agree,Strongly agree,Agree,Agree,Disagree
+ST-0187,South,F,New method,59.8,57.6,82.0,02/03/2025,Strongly disagree,Neutral,Neutral,Disagree,Neutral
+ST-0188,East,F,New method,55.2,71.0,,28/03/2025,Agree,Strongly agree,Neutral,Strongly agree,Disagree
+ST-0189,East,F,New method,57.8,64.1,84.0,29/04/2025,Agree,Agree,Neutral,Neutral,Strongly disagree
+ST-0190,North,M,Usual method,64.5,65.9,91.0,09/04/2025,Agree,Agree,Strongly agree,Neutral,Disagree
+ST-0191,South,M,New method,38.5,41.6,83.0,20/04/2025,Strongly agree,Agree,Agree,Strongly agree,Agree
+ST-0192,North,M,New method,55.9,61.4,80.0,31/03/2025,Neutral,Agree,Neutral,Neutral,Disagree
+ST-0193,North,F,Usual method,49.8,47.2,81.0,07/04/2025,Agree,Agree,Agree,Neutral,Neutral
+ST-0194,South,F,Usual method,57.7,64.0,95.0,07/04/2025,Disagree,Neutral,Disagree,Disagree,Disagree
+ST-0195,North,M,Usual method,63.5,69.2,95.0,26/04/2025,Agree,Neutral,Agree,Strongly agree,Disagree
+ST-0196,North,M,Usual method,76.8,79.4,80.0,05/03/2025,Agree,Agree,Agree,Neutral,Neutral
+ST-0197,East,F,New method,57.7,66.5,89.0,30/03/2025,Neutral,Strongly disagree,Neutral,Neutral,Neutral
+ST-0198,North,F,New method,49.0,55.8,74.0,17/03/2025,Strongly agree,Strongly agree,Strongly agree,Agree,Agree
+ST-0199,North,F,New method,71.8,79.3,97.0,12/03/2025,Neutral,Strongly agree,Agree,Neutral,Neutral
+ST-0200,North,F,New method,58.1,65.9,94.0,29/04/2025,Strongly agree,Agree,Agree,Agree,Neutral
+ST-0201,South,M,New method,60.9,74.7,85.0,12/03/2025,Neutral,Neutral,Neutral,Agree,Disagree
+ST-0202,South,M,New method,72.2,80.8,100.0,28/04/2025,Strongly agree,Strongly agree,Strongly agree,Strongly agree,Disagree
+ST-0203,North,F,New method,54.2,65.4,78.0,12/03/2025,Agree,Agree,Disagree,Agree,Strongly disagree
+ST-0204,North,F,New method,51.7,61.4,83.0,07/03/2025,Strongly agree,Strongly agree,Agree,Strongly agree,Neutral
+ST-0205,North,M,Usual method,65.3,65.1,92.0,30/03/2025,Strongly disagree,Strongly disagree,Strongly disagree,Strongly disagree,Neutral
+ST-0206,South,F,Usual method,63.5,66.1,68.0,09/04/2025,Strongly agree,Strongly agree,Strongly agree,Strongly agree,Disagree
+ST-0207,South,F,Usual method,53.6,53.3,85.0,05/03/2025,Strongly agree,Strongly agree,Strongly agree,Agree,Agree
+ST-0208,East,F,Usual method,44.9,42.3,79.0,17/03/2025,Agree,Strongly agree,Neutral,Neutral,Disagree
+ST-0209,North,F,New method,55.9,64.5,92.0,13/03/2025,Agree,Neutral,Neutral,Neutral,Strongly disagree
+ST-0210,South,M,Usual method,73.0,76.2,85.0,09/04/2025,Neutral,Agree,Agree,Agree,Agree
+ST-0211,North,M,New method,56.9,64.2,84.0,17/04/2025,Strongly agree,Agree,Agree,Neutral,Neutral
+ST-0212,South,M,New method,56.2,57.6,79.0,25/04/2025,Agree,Agree,Neutral,Agree,Disagree
+ST-0213,North,M,New method,53.0,68.0,69.0,08/03/2025,Disagree,Disagree,Neutral,Disagree,Disagree
+ST-0214,South,F,Usual method,66.8,63.8,92.0,18/03/2025,Agree,Strongly agree,Strongly agree,Strongly agree,Neutral
+ST-0215,East,M,New method,49.4,51.9,100.0,26/03/2025,Disagree,Neutral,Neutral,Neutral,Disagree
+ST-0216,East,F,Usual method,51.5,50.1,67.0,24/04/2025,Strongly disagree,Strongly disagree,Strongly disagree,Strongly disagree,Strongly disagree
+ST-0217,North,F,Usual method,72.0,70.5,90.0,24/03/2025,Disagree,Agree,Strongly disagree,Agree,Neutral
+ST-0218,East,M,Usual method,43.6,48.1,91.0,12/03/2025,Agree,Disagree,Strongly agree,Agree,Strongly disagree
+ST-0219,South,M,Usual method,61.1,69.6,87.0,02/04/2025,Neutral,Disagree,Neutral,Agree,Strongly disagree
+ST-0220,South,F,New method,63.5,71.5,91.0,12/03/2025,Agree,Strongly agree,Strongly agree,Agree,Strongly disagree
+ST-0221,North,M,New method,74.7,82.0,,28/04/2025,Agree,Agree,Agree,Agree,Disagree
+ST-0222,East,F,New method,53.6,65.8,91.0,07/03/2025,Strongly agree,Agree,Strongly agree,Strongly agree,Agree
+ST-0223,South,F,New method,52.3,58.7,86.0,04/03/2025,Strongly agree,Strongly agree,Strongly agree,Strongly agree,Disagree
+ST-0224,East,F,New method,57.4,66.3,95.0,20/04/2025,Agree,Strongly agree,Strongly agree,Agree,Neutral
+ST-0225,East,F,Usual method,71.1,73.4,87.0,09/03/2025,Neutral,Neutral,Agree,Agree,Neutral
+ST-0226,East,F,Usual method,68.1,65.3,100.0,20/04/2025,Neutral,Neutral,Agree,Neutral,Strongly disagree
+ST-0227,North,M,New method,55.9,61.6,92.0,23/03/2025,Neutral,Disagree,Strongly disagree,Neutral,Strongly disagree
+ST-0228,East,M,Usual method,58.0,66.1,76.0,26/04/2025,Strongly agree,Agree,Neutral,Strongly agree,Neutral
+ST-0229,East,M,Usual method,49.5,43.7,,07/03/2025,Neutral,Disagree,Disagree,Strongly disagree,Neutral
+ST-0230,South,F,New method,45.2,55.0,83.0,29/03/2025,Agree,Strongly agree,Neutral,Neutral,Neutral
+ST-0231,East,F,Usual method,79.1,85.3,80.0,29/04/2025,Disagree,Neutral,Neutral,Disagree,Neutral
+ST-0232,East,F,Usual method,53.4,58.0,,11/03/2025,Strongly agree,Agree,Neutral,Agree,Disagree
+ST-0233,East,M,New method,62.9,67.2,91.0,28/03/2025,Agree,Neutral,Strongly agree,Agree,Neutral
+ST-0234,North,F,New method,64.8,76.7,85.0,17/04/2025,Neutral,Neutral,Neutral,Strongly disagree,Disagree
+ST-0235,East,M,Usual method,70.3,76.3,96.0,19/04/2025,Disagree,Neutral,Neutral,Neutral,Disagree
+ST-0236,South,F,Usual method,65.2,66.3,83.0,15/03/2025,Neutral,Agree,Neutral,Neutral,Strongly disagree
+ST-0237,South,F,New method,75.3,81.4,71.0,01/04/2025,Agree,Agree,Agree,Neutral,Agree
+ST-0238,East,F,Usual method,48.9,53.0,74.0,09/04/2025,Neutral,Agree,Agree,Neutral,Disagree
+ST-0239,East,F,New method,50.2,56.3,89.0,26/04/2025,Agree,Neutral,Agree,Neutral,Agree
+ST-0240,North,M,New method,48.2,53.2,82.0,19/03/2025,Agree,Agree,Agree,Strongly agree,Disagree
+ST-0241,East,F,Usual method,50.0,54.2,74.0,03/03/2025,Agree,Disagree,Agree,Neutral,Strongly disagree
+ST-0242,South,F,Usual method,52.3,55.6,90.0,26/03/2025,Agree,Neutral,Disagree,Agree,Neutral
+ST-0243,North,F,New method,43.8,48.0,77.0,07/04/2025,Neutral,Agree,Neutral,Agree,Disagree
+ST-0244,North,F,New method,45.9,51.5,85.0,12/03/2025,Disagree,Neutral,Disagree,Disagree,Neutral
+ST-0245,East,M,Usual method,60.9,64.4,96.0,19/03/2025,Strongly agree,Strongly agree,Agree,Strongly agree,Neutral
+ST-0246,North,M,New method,59.2,61.5,89.0,02/04/2025,Strongly agree,Agree,Agree,Strongly agree,Strongly disagree
+ST-0247,East,F,Usual method,67.4,68.7,94.0,02/04/2025,Neutral,Neutral,Disagree,Neutral,Disagree
+ST-0248,North,M,Usual method,46.7,47.0,92.0,30/03/2025,Strongly agree,Strongly agree,Agree,Strongly agree,Disagree
+ST-0249,North,M,Usual method,62.7,63.5,94.0,15/04/2025,Agree,Disagree,Agree,Neutral,Disagree
+ST-0250,East,M,Usual method,48.8,56.4,93.0,05/03/2025,Neutral,Disagree,Disagree,Neutral,Strongly disagree
+ST-0251,North,F,Usual method,64.7,69.3,85.0,25/04/2025,Strongly agree,Strongly agree,Agree,Agree,Disagree
+ST-0252,South,M,New method,38.4,46.2,81.0,08/03/2025,Agree,Strongly agree,Strongly agree,Neutral,Neutral
+ST-0253,North,M,New method,76.6,81.9,93.0,17/03/2025,Agree,Strongly agree,Neutral,Agree,Strongly disagree
+ST-0254,East,M,Usual method,56.3,58.8,91.0,20/04/2025,Strongly agree,Strongly agree,Neutral,Neutral,Agree
+ST-0255,East,M,Usual method,77.3,82.1,87.0,04/03/2025,Strongly agree,Strongly agree,Strongly agree,Strongly agree,Neutral
+ST-0256,North,M,Usual method,67.2,72.6,97.0,02/04/2025,Neutral,Disagree,Neutral,Neutral,Agree
+ST-0257,North,F,Usual method,72.8,76.4,100.0,11/04/2025,Neutral,Neutral,Strongly disagree,Disagree,Neutral
+ST-0258,South,F,New method,69.1,71.8,80.0,16/04/2025,Strongly agree,Neutral,Agree,Agree,Neutral
+ST-0259,South,M,Usual method,62.8,66.9,79.0,26/03/2025,Agree,Neutral,Agree,Agree,Disagree
+ST-0260,East,F,Usual method,60.1,67.2,100.0,21/04/2025,Neutral,Disagree,Disagree,Disagree,Disagree
+ST-0261,North,M,New method,57.0,71.2,75.0,02/04/2025,Strongly agree,Strongly agree,Agree,Strongly agree,Neutral
+ST-0262,North,M,Usual method,69.7,76.2,84.0,24/04/2025,Agree,Strongly agree,Agree,Neutral,Strongly disagree
+ST-0263,North,M,New method,50.2,59.1,95.0,24/03/2025,Agree,Strongly agree,Agree,Agree,Disagree
+ST-0264,East,M,New method,49.3,56.8,72.0,11/04/2025,Neutral,Agree,Agree,Neutral,Disagree
+ST-0265,South,M,Usual method,61.5,63.3,88.0,01/04/2025,Disagree,Disagree,Neutral,Neutral,Disagree
+ST-0266,South,M,New method,56.3,72.1,86.0,04/04/2025,Agree,Agree,Strongly agree,Agree,Strongly disagree
+ST-0267,North,F,Usual method,57.3,56.4,100.0,21/04/2025,Strongly agree,Strongly agree,Agree,Strongly agree,Agree
+ST-0268,South,F,New method,56.5,62.8,89.0,19/03/2025,Neutral,Disagree,Neutral,Neutral,Neutral
+ST-0269,East,M,New method,64.4,69.7,64.0,24/04/2025,Disagree,Neutral,Neutral,Neutral,Strongly disagree
+ST-0270,North,M,New method,53.5,57.7,83.0,05/04/2025,Strongly agree,Strongly agree,Strongly agree,Strongly agree,Strongly disagree
+ST-0271,North,F,New method,71.8,78.1,83.0,27/03/2025,Agree,Agree,Neutral,Neutral,Neutral
+ST-0272,South,M,Usual method,55.2,57.1,90.0,02/03/2025,Strongly agree,Strongly agree,Neutral,Neutral,Agree
+ST-0273,South,M,Usual method,61.3,58.1,74.0,24/04/2025,Strongly agree,Agree,Neutral,Agree,Neutral
+ST-0274,East,F,New method,68.8,75.8,93.0,19/03/2025,Strongly agree,Strongly agree,Strongly agree,Strongly agree,Disagree
+ST-0275,South,M,New method,55.8,64.2,89.0,01/04/2025,Disagree,Disagree,Neutral,Neutral,Disagree
+ST-0276,East,F,Usual method,66.7,63.6,93.0,16/04/2025,Disagree,Neutral,Neutral,Neutral,Neutral
+ST-0277,South,F,New method,62.2,71.1,90.0,11/03/2025,Agree,Neutral,Agree,Agree,Neutral
+ST-0278,North,F,New method,56.8,65.6,91.0,21/04/2025,Neutral,Disagree,Neutral,Neutral,Disagree
+ST-0279,East,F,New method,64.3,76.6,96.0,27/04/2025,Disagree,Neutral,Disagree,Disagree,Agree
+ST-0280,North,F,Usual method,69.3,72.0,86.0,11/04/2025,Agree,Disagree,Neutral,Agree,Neutral
+ST-0281,North,F,Usual method,67.8,68.3,90.0,10/03/2025,Disagree,Neutral,Disagree,Strongly disagree,Strongly disagree
+ST-0282,East,M,New method,79.7,86.7,75.0,28/04/2025,Strongly disagree,Disagree,Disagree,Disagree,Disagree
+ST-0283,North,F,New method,75.6,86.3,88.0,23/04/2025,Agree,Agree,Strongly agree,Strongly agree,Agree
+ST-0284,East,F,New method,62.4,74.2,97.0,07/03/2025,Strongly agree,Agree,Agree,Strongly agree,Disagree
+ST-0285,East,F,Usual method,52.3,54.3,97.0,10/03/2025,Agree,Disagree,Strongly disagree,Neutral,Disagree
+ST-0286,East,F,Usual method,51.1,51.2,86.0,02/03/2025,Neutral,Neutral,Agree,Agree,Agree
+ST-0287,South,M,New method,56.6,64.8,96.0,24/03/2025,Neutral,Neutral,Neutral,Agree,Neutral
+ST-0288,East,F,New method,48.1,49.4,90.0,17/04/2025,Agree,Neutral,Strongly agree,Neutral,Disagree
+ST-0289,East,F,New method,51.8,55.6,65.0,14/03/2025,Strongly disagree,Strongly disagree,Neutral,Neutral,Disagree
+ST-0290,North,F,New method,58.0,68.0,89.0,20/04/2025,Neutral,Neutral,Neutral,Agree,Strongly disagree
+ST-0291,North,M,Usual method,56.3,65.1,73.0,25/04/2025,Neutral,Disagree,Disagree,Neutral,Neutral
+ST-0292,North,F,New method,66.1,76.6,90.0,02/03/2025,Disagree,Strongly disagree,Disagree,Neutral,Neutral
+ST-0293,East,M,Usual method,57.0,62.9,84.0,29/03/2025,Neutral,Agree,Agree,Agree,Strongly disagree
+ST-0294,South,M,Usual method,54.3,64.8,76.0,20/04/2025,Agree,Strongly agree,Agree,Agree,Strongly disagree
+ST-0295,South,F,New method,71.3,82.7,100.0,06/03/2025,Strongly agree,Agree,Agree,Neutral,Disagree
+ST-0296,North,M,Usual method,72.8,80.6,89.0,18/04/2025,Disagree,Disagree,Neutral,Strongly disagree,Neutral
+ST-0297,South,F,New method,49.1,58.1,83.0,24/04/2025,Strongly agree,Strongly agree,Strongly agree,Strongly agree,Disagree
+ST-0298,North,M,Usual method,61.5,66.5,76.0,13/04/2025,Agree,Neutral,Neutral,Agree,Disagree
+ST-0299,North,F,New method,53.2,62.3,94.0,01/04/2025,Neutral,Disagree,Strongly disagree,Strongly disagree,Neutral
+ST-0300,East,F,New method,41.1,49.1,95.0,03/03/2025,Disagree,Disagree,Disagree,Neutral,Disagree
+ST-0301,North,F,Usual method,63.5,62.3,80.0,22/04/2025,Strongly agree,Neutral,Strongly agree,Strongly agree,Strongly disagree
+ST-0302,North,F,Usual method,58.4,68.2,87.0,08/04/2025,Strongly agree,Agree,Strongly agree,Agree,Agree
+ST-0303,North,M,New method,74.1,92.0,82.0,04/03/2025,Neutral,Agree,Agree,Agree,Neutral
+ST-0304,South,M,Usual method,57.7,59.5,97.0,26/04/2025,Agree,Strongly agree,Strongly agree,Agree,Neutral
+ST-0305,North,F,New method,66.1,66.0,90.0,29/03/2025,Neutral,Neutral,Disagree,Disagree,Disagree
+ST-0306,East,F,Usual method,59.9,59.3,89.0,04/04/2025,Agree,Agree,Neutral,Neutral,Disagree
+ST-0307,North,F,New method,58.8,67.6,98.0,12/04/2025,Agree,Neutral,Neutral,Neutral,Neutral
+ST-0308,East,F,Usual method,58.4,66.6,100.0,17/04/2025,Neutral,Agree,Neutral,Neutral,Strongly disagree
+ST-0309,East,M,Usual method,56.6,58.8,96.0,12/03/2025,Neutral,Neutral,Disagree,Neutral,Neutral
+ST-0310,East,M,New method,56.2,64.8,98.0,08/03/2025,Strongly agree,Agree,Agree,Strongly agree,Agree
+ST-0311,North,F,Usual method,63.3,69.7,84.0,29/03/2025,Disagree,Neutral,Disagree,Disagree,Disagree
+ST-0312,North,F,New method,64.2,70.0,92.0,22/03/2025,Disagree,Disagree,Strongly disagree,Disagree,Strongly disagree
+ST-0313,North,F,Usual method,59.7,62.4,86.0,05/04/2025,Disagree,Agree,Agree,Agree,Neutral
+ST-0314,South,M,Usual method,47.0,49.5,100.0,24/03/2025,Strongly agree,Strongly agree,Strongly agree,Strongly agree,Disagree
+ST-0315,East,F,New method,59.4,73.7,74.0,12/04/2025,Disagree,Neutral,Disagree,Neutral,Disagree
+ST-0316,North,F,New method,58.6,68.1,86.0,22/03/2025,Neutral,Strongly disagree,Neutral,Neutral,Strongly agree
+ST-0317,South,M,Usual method,57.9,62.5,86.0,14/03/2025,Neutral,Neutral,Neutral,Disagree,Disagree
+ST-0318,East,M,Usual method,75.6,75.2,100.0,11/04/2025,Disagree,Neutral,Strongly disagree,Neutral,Disagree
+ST-0319,North,F,Usual method,59.6,59.9,88.0,03/04/2025,Neutral,Disagree,Agree,Agree,Disagree
+ST-0320,South,F,New method,54.3,59.4,94.0,27/04/2025,Agree,Neutral,Neutral,Neutral,Disagree
+ST-0321,South,M,New method,65.7,70.3,87.0,29/04/2025,Disagree,Strongly disagree,Disagree,Neutral,Disagree
+ST-0322,South,F,New method,67.5,77.7,90.0,20/04/2025,Neutral,Neutral,Disagree,Neutral,Disagree
+ST-0323,South,F,New method,62.6,73.5,77.0,08/03/2025,Disagree,Disagree,Disagree,Strongly disagree,Disagree
+ST-0324,East,F,Usual method,61.0,57.2,94.0,19/04/2025,Agree,Strongly agree,Agree,Strongly agree,Agree
+ST-0325,North,F,New method,71.9,85.3,96.0,26/03/2025,Strongly agree,Agree,Agree,Agree,Neutral
+ST-0326,East,M,New method,59.0,61.8,87.0,06/04/2025,Agree,Strongly agree,Strongly agree,Strongly agree,Neutral
+ST-0327,East,F,New method,56.5,67.1,81.0,31/03/2025,Agree,Agree,Neutral,Agree,Strongly disagree
+ST-0328,East,M,New method,70.7,78.6,94.0,05/03/2025,Agree,Strongly agree,Agree,Agree,Disagree
+ST-0329,North,F,New method,46.8,57.3,86.0,16/03/2025,Agree,Agree,Agree,Disagree,Strongly disagree
+ST-0330,South,F,New method,52.9,58.3,89.0,02/03/2025,Neutral,Neutral,Neutral,Neutral,Disagree
+ST-0331,South,F,Usual method,58.5,63.7,97.0,24/04/2025,Neutral,Disagree,Disagree,Neutral,Neutral
+ST-0332,South,M,Usual method,54.7,58.9,92.0,03/03/2025,Strongly agree,Neutral,Neutral,Neutral,Neutral
+ST-0333,South,F,New method,45.9,55.8,82.0,09/03/2025,Agree,Agree,Agree,Agree,Strongly agree
+ST-0334,North,F,Usual method,57.4,59.0,100.0,18/03/2025,Agree,Neutral,Agree,Agree,Agree
+ST-0335,East,F,Usual method,65.9,67.6,73.0,08/03/2025,Disagree,Strongly disagree,Disagree,Disagree,Disagree
+ST-0336,South,M,Usual method,44.2,43.5,89.0,26/04/2025,Strongly agree,Strongly agree,Neutral,Strongly agree,Disagree
+ST-0337,South,F,Usual method,26.0,19.8,97.0,09/03/2025,Disagree,Disagree,Disagree,Neutral,Strongly disagree
+ST-0338,South,F,New method,59.3,63.8,71.0,16/03/2025,Disagree,Disagree,Strongly disagree,Disagree,Neutral
+ST-0339,South,F,New method,57.2,69.6,96.0,27/04/2025,Agree,Agree,Neutral,Agree,Neutral
+ST-0340,North,M,New method,52.9,65.2,95.0,06/04/2025,Strongly agree,Agree,Strongly agree,Strongly agree,Neutral
+ST-0341,South,F,New method,43.2,47.6,73.0,01/03/2025,Agree,Strongly agree,Agree,Strongly agree,Strongly disagree
+ST-0342,North,F,New method,56.9,60.2,86.0,03/03/2025,Neutral,Neutral,Agree,Neutral,Disagree
+ST-0343,North,F,Usual method,55.6,52.7,82.0,27/04/2025,Disagree,Neutral,Disagree,Disagree,Neutral
+ST-0344,South,F,Usual method,68.5,70.8,81.0,01/03/2025,Neutral,Neutral,Neutral,Neutral,Strongly disagree
+ST-0345,North,F,New method,56.1,55.6,87.0,20/03/2025,Agree,Neutral,Neutral,Strongly agree,Agree
+ST-0346,North,M,New method,58.5,72.1,88.0,30/03/2025,Disagree,Disagree,Strongly disagree,Strongly disagree,Neutral
+ST-0347,North,M,New method,60.1,65.4,99.0,08/04/2025,Agree,Agree,Agree,Strongly agree,Agree
+ST-0348,East,F,New method,60.2,66.4,79.0,08/03/2025,Disagree,Agree,Neutral,Neutral,Neutral
+ST-0349,East,M,New method,59.4,67.9,94.0,04/03/2025,Strongly disagree,Neutral,Disagree,Disagree,Disagree
+ST-0350,North,F,Usual method,64.6,75.3,93.0,21/03/2025,Agree,Strongly agree,Agree,Neutral,Strongly disagree
+ST-0351,South,F,New method,58.8,71.4,82.0,15/04/2025,Agree,Agree,Agree,Agree,Disagree
+ST-0352,North,F,New method,67.7,76.7,86.0,27/03/2025,Neutral,Agree,Neutral,Neutral,Strongly disagree
+ST-0353,South,F,Usual method,66.2,72.1,85.0,01/03/2025,Agree,Strongly agree,Strongly agree,Strongly agree,Neutral
+ST-0354,South,M,New method,60.9,75.4,97.0,04/03/2025,Disagree,Neutral,Disagree,Agree,Strongly disagree
+ST-0355,East,M,Usual method,51.2,49.8,89.0,26/04/2025,Strongly agree,Strongly agree,Strongly agree,Neutral,Neutral
+ST-0356,South,M,New method,59.5,69.4,87.0,02/03/2025,Neutral,Agree,Neutral,Neutral,Neutral
+ST-0357,South,F,New method,53.2,62.7,95.0,28/03/2025,Strongly agree,Neutral,Neutral,Neutral,Disagree
+ST-0358,East,F,New method,77.1,87.6,92.0,26/04/2025,Disagree,Neutral,Neutral,Neutral,Neutral
+ST-0359,South,M,Usual method,44.7,46.9,95.0,31/03/2025,Strongly disagree,Disagree,Strongly disagree,Disagree,Agree
+ST-0360,East,M,New method,70.6,77.3,83.0,01/03/2025,Strongly disagree,Strongly disagree,Strongly disagree,Neutral,Neutral
+ST-0361,North,M,New method,70.5,72.2,90.0,23/04/2025,Disagree,Agree,Strongly agree,Neutral,Disagree
+ST-0362,East,M,Usual method,57.1,58.3,81.0,05/04/2025,Disagree,Disagree,Disagree,Disagree,Disagree
+ST-0363,South,F,New method,71.1,80.4,100.0,10/03/2025,Strongly disagree,Disagree,Strongly disagree,Strongly disagree,Disagree
+ST-0364,North,F,Usual method,76.7,76.1,98.0,09/03/2025,Neutral,Neutral,Strongly disagree,Disagree,Neutral
+ST-0365,North,M,New method,64.2,75.5,100.0,12/03/2025,Disagree,Disagree,Neutral,Neutral,Disagree
+ST-0366,East,M,Usual method,80.2,85.0,74.0,19/04/2025,Disagree,Disagree,Agree,Agree,Strongly disagree
+ST-0367,South,F,New method,67.2,76.3,79.0,08/03/2025,Disagree,Disagree,Neutral,Neutral,Disagree
+ST-0368,East,M,Usual method,42.3,41.5,95.0,16/04/2025,Neutral,Disagree,Disagree,Neutral,Strongly disagree
+ST-0369,East,M,New method,48.2,53.1,95.0,06/04/2025,Neutral,Neutral,Neutral,Agree,Disagree
+ST-0370,East,F,Usual method,63.0,69.0,83.0,01/04/2025,Neutral,Neutral,Strongly disagree,Neutral,Strongly disagree
+ST-0371,South,F,Usual method,57.3,53.7,85.0,30/03/2025,Strongly disagree,Strongly disagree,Disagree,Disagree,Disagree
+ST-0372,South,M,New method,64.1,72.9,79.0,04/04/2025,Disagree,Agree,Neutral,Neutral,Disagree
+ST-0373,East,F,New method,56.6,63.6,94.0,06/04/2025,Neutral,Neutral,Neutral,Neutral,Neutral
+ST-0374,North,M,Usual method,55.6,55.9,96.0,21/04/2025,Disagree,Strongly disagree,Neutral,Disagree,Disagree
+ST-0375,North,F,New method,68.3,78.3,90.0,10/03/2025,Disagree,Agree,Agree,Neutral,Neutral
+ST-0376,South,M,Usual method,65.0,70.5,90.0,26/04/2025,Agree,Strongly agree,Strongly agree,Strongly agree,Disagree
+ST-0377,South,F,Usual method,62.9,58.5,54.0,11/04/2025,Neutral,Disagree,Disagree,Agree,Neutral
+ST-0378,North,M,Usual method,60.9,55.2,89.0,02/04/2025,Agree,Agree,Neutral,Agree,Agree
+ST-0379,South,F,Usual method,70.9,75.1,67.0,28/04/2025,Agree,Agree,Agree,Disagree,Agree
+ST-0380,East,M,Usual method,62.1,65.9,96.0,08/03/2025,Strongly agree,Strongly agree,Neutral,Strongly agree,Agree
+ST-0381,South,F,Usual method,61.4,61.7,88.0,08/04/2025,Neutral,Disagree,Agree,Agree,Disagree
+ST-0382,East,M,New method,90.0,88.5,87.0,12/03/2025,Strongly agree,Strongly agree,Strongly agree,Strongly agree,Strongly agree
+ST-0383,East,F,New method,36.8,46.5,76.0,14/04/2025,Neutral,Neutral,Neutral,Agree,Strongly disagree
+ST-0384,South,M,New method,46.5,57.0,87.0,29/03/2025,Strongly agree,Strongly agree,Strongly agree,Strongly agree,Disagree
+ST-0385,East,M,Usual method,36.7,36.2,94.0,18/03/2025,Agree,Neutral,Agree,Agree,Neutral
+ST-0386,East,M,New method,60.2,75.2,83.0,01/03/2025,Strongly agree,Neutral,Neutral,Agree,Neutral
+ST-0387,South,F,New method,40.4,49.0,80.0,23/04/2025,Agree,Agree,Strongly agree,Strongly agree,Strongly disagree
+ST-0388,East,M,Usual method,57.5,53.4,94.0,24/04/2025,Neutral,Disagree,Agree,Neutral,Neutral
+ST-0389,North,F,New method,76.5,90.6,77.0,06/04/2025,Strongly agree,Agree,Agree,Strongly agree,Disagree
+ST-0390,North,M,New method,72.6,73.2,,22/04/2025,Neutral,Agree,Agree,Strongly agree,Disagree
+ST-0391,North,F,Usual method,57.4,58.4,97.0,23/03/2025,Neutral,Neutral,Neutral,Agree,Agree
+ST-0392,East,F,New method,53.4,60.5,88.0,27/03/2025,Strongly agree,Agree,Neutral,Strongly agree,Strongly disagree
+ST-0393,North,M,New method,62.1,68.4,78.0,07/04/2025,Agree,Agree,Disagree,Neutral,Strongly disagree
+ST-0394,North,M,Usual method,71.4,82.0,82.0,26/04/2025,Neutral,Neutral,Disagree,Neutral,Neutral
+ST-0395,North,F,New method,64.4,71.0,92.0,14/03/2025,Agree,Disagree,Agree,Neutral,Strongly disagree
+ST-0396,South,F,New method,66.4,82.3,87.0,13/03/2025,Strongly agree,Strongly agree,Agree,Agree,Agree
+ST-0397,North,F,New method,73.3,83.3,84.0,08/04/2025,Agree,Agree,Neutral,Strongly agree,Strongly agree
+ST-0398,East,M,New method,51.7,50.8,82.0,07/03/2025,Strongly disagree,Neutral,Strongly disagree,Disagree,Agree
+ST-0399,South,M,Usual method,66.0,65.2,86.0,16/04/2025,Neutral,Disagree,Disagree,Disagree,Disagree
+ST-0400,South,F,New method,67.5,78.0,91.0,25/03/2025,Neutral,Agree,Neutral,Neutral,Disagree
+ST-0401,North,F,Usual method,59.6,56.8,74.0,13/04/2025,Disagree,Agree,Strongly agree,Neutral,Strongly disagree
+ST-0402,East,F,New method,72.1,73.1,100.0,18/03/2025,Strongly agree,Agree,Agree,Strongly agree,Neutral
+ST-0403,South,F,New method,60.0,73.6,96.0,29/04/2025,Agree,Agree,Strongly agree,Agree,Disagree
+ST-0404,South,M,New method,63.7,73.2,91.0,27/04/2025,Neutral,Disagree,Agree,Neutral,Neutral
+ST-0405,South,M,Usual method,60.2,55.0,,16/04/2025,Agree,Agree,Agree,Neutral,Strongly agree
+ST-0406,North,M,Usual method,68.1,64.8,,18/03/2025,Strongly agree,Strongly agree,Strongly agree,Strongly agree,Disagree
+ST-0407,North,M,Usual method,57.3,66.6,87.0,03/03/2025,Agree,Disagree,Neutral,Neutral,Disagree
+ST-0408,South,M,New method,49.8,55.4,92.0,28/03/2025,Agree,Strongly agree,Agree,Strongly agree,Neutral
+ST-0409,North,F,New method,61.1,68.8,87.0,18/03/2025,Disagree,Neutral,Agree,Agree,Disagree
+ST-0410,East,M,Usual method,53.7,52.1,97.0,05/03/2025,Agree,Disagree,Disagree,Strongly disagree,Neutral
+ST-0411,East,F,Usual method,54.7,55.4,86.0,16/03/2025,Strongly agree,Disagree,Disagree,Neutral,Agree
+ST-0412,South,M,Usual method,62.6,63.1,93.0,03/04/2025,Neutral,Neutral,Neutral,Neutral,Strongly agree
+ST-0413,North,F,New method,71.1,76.8,91.0,12/04/2025,Agree,Neutral,Agree,Agree,Disagree
+ST-0414,South,F,Usual method,63.0,63.8,94.0,17/03/2025,Strongly disagree,Strongly disagree,Disagree,Strongly disagree,Strongly agree
+ST-0415,North,M,Usual method,51.7,60.2,94.0,10/03/2025,Strongly agree,Agree,Neutral,Strongly agree,Disagree
+ST-0416,South,M,Usual method,60.2,65.3,89.0,13/04/2025,Strongly agree,Strongly agree,Strongly agree,Agree,Strongly disagree
+ST-0417,North,M,New method,72.3,81.3,85.0,27/03/2025,Strongly agree,Strongly agree,Neutral,Agree,Agree
+ST-0418,South,F,Usual method,62.7,64.7,87.0,18/04/2025,Disagree,Neutral,Agree,Neutral,Disagree
+ST-0419,North,F,Usual method,62.8,81.0,100.0,19/03/2025,Agree,Agree,Disagree,Neutral,Strongly agree
+ST-0420,East,M,New method,57.2,68.0,79.0,30/03/2025,Strongly disagree,Strongly disagree,Strongly disagree,Disagree,Neutral
+ST-0421,North,M,Usual method,71.8,77.3,80.0,22/03/2025,Disagree,Agree,Neutral,Neutral,Strongly agree
+ST-0422,South,F,Usual method,55.2,59.1,78.0,21/04/2025,Disagree,Neutral,Disagree,Agree,Strongly disagree
+ST-0423,East,F,Usual method,55.4,60.4,84.0,05/04/2025,Strongly disagree,Disagree,Disagree,Neutral,Neutral
+ST-0424,East,M,Usual method,64.5,72.2,92.0,01/03/2025,Agree,Neutral,Neutral,Neutral,Strongly agree
+ST-0425,East,M,Usual method,71.6,75.5,81.0,06/03/2025,Agree,Neutral,Disagree,Neutral,Disagree
+ST-0426,South,F,New method,47.6,52.8,97.0,22/04/2025,Agree,Neutral,Neutral,Agree,Strongly disagree
+ST-0427,East,M,New method,63.1,65.8,93.0,14/04/2025,Agree,Strongly agree,Strongly agree,Strongly agree,Strongly disagree
+ST-0428,North,F,Usual method,73.4,77.1,100.0,06/04/2025,Disagree,Neutral,Neutral,Neutral,Disagree
+ST-0429,South,F,New method,51.4,62.4,85.0,30/03/2025,Neutral,Strongly disagree,Neutral,Disagree,Agree
+ST-0430,East,F,New method,54.2,54.4,91.0,18/03/2025,Neutral,Neutral,Disagree,Neutral,Disagree
+ST-0431,South,F,Usual method,63.1,66.2,89.0,11/03/2025,Neutral,Agree,Neutral,Neutral,Strongly disagree
+ST-0432,South,F,New method,57.0,65.3,96.0,20/04/2025,Agree,Neutral,Neutral,Neutral,Strongly disagree
+ST-0433,North,F,New method,51.3,60.2,73.0,29/03/2025,Agree,Strongly agree,Neutral,Agree,Neutral
+ST-0434,East,M,New method,47.5,49.7,85.0,05/04/2025,Neutral,Neutral,Neutral,Agree,Strongly disagree
+ST-0435,East,M,Usual method,54.8,62.3,83.0,19/04/2025,Agree,Strongly agree,Strongly agree,Agree,Disagree
+ST-0436,East,F,Usual method,58.4,61.4,88.0,09/04/2025,Agree,Agree,Agree,Agree,Strongly disagree
+ST-0437,North,F,Usual method,63.5,66.1,94.0,11/04/2025,Strongly agree,Strongly agree,Neutral,Strongly agree,Neutral
+ST-0438,South,F,Usual method,54.0,55.7,83.0,14/03/2025,Agree,Strongly agree,Strongly agree,Strongly agree,Agree
+ST-0439,East,F,New method,46.3,52.8,83.0,08/04/2025,Neutral,Neutral,Agree,Strongly agree,Agree
+ST-0440,South,M,Usual method,51.2,50.3,89.0,13/04/2025,Neutral,Agree,Neutral,Agree,Disagree
+ST-0441,East,F,New method,65.6,81.9,92.0,26/04/2025,Neutral,Agree,Agree,Agree,Neutral
+ST-0442,North,M,Usual method,61.7,69.8,81.0,25/03/2025,Neutral,Neutral,Neutral,Disagree,Neutral
+ST-0443,North,M,New method,50.2,68.6,100.0,11/04/2025,Agree,Disagree,Neutral,Neutral,Disagree
+ST-0444,North,F,New method,65.5,80.1,77.0,29/03/2025,Agree,Neutral,Agree,Agree,Strongly disagree
+ST-0445,East,F,New method,52.4,59.6,89.0,07/03/2025,Strongly agree,Agree,Agree,Agree,Neutral
+ST-0446,East,F,New method,61.8,71.0,78.0,28/03/2025,Agree,Neutral,Neutral,Neutral,Strongly disagree
+ST-0447,East,M,Usual method,57.2,61.7,76.0,08/04/2025,Strongly agree,Agree,Disagree,Agree,Strongly disagree
+ST-0448,East,M,New method,52.8,68.0,95.0,05/03/2025,Agree,Agree,Neutral,Agree,Agree
+ST-0449,East,F,Usual method,68.2,68.7,87.0,19/03/2025,Strongly agree,Neutral,Neutral,Agree,Neutral
+ST-0450,North,F,New method,66.4,70.3,82.0,13/04/2025,Disagree,Agree,Neutral,Neutral,Neutral
+ST-0451,East,M,New method,73.7,77.5,89.0,13/03/2025,Agree,Neutral,Agree,Neutral,Agree
+ST-0452,North,M,Usual method,59.1,59.2,100.0,27/04/2025,Strongly agree,Agree,Neutral,Agree,Strongly disagree
+ST-0453,East,F,New method,54.8,61.4,94.0,27/03/2025,Strongly agree,Strongly agree,Strongly agree,Agree,Neutral
+ST-0454,North,M,New method,70.7,78.9,97.0,04/04/2025,Strongly agree,Strongly agree,Strongly agree,Agree,Disagree
+ST-0455,North,F,New method,64.2,67.6,100.0,08/04/2025,Neutral,Neutral,Disagree,Neutral,Disagree
+ST-0456,North,M,Usual method,61.1,59.2,100.0,18/04/2025,Disagree,Neutral,Neutral,Disagree,Strongly agree
+ST-0457,North,M,New method,67.5,78.4,82.0,01/04/2025,Disagree,Disagree,Disagree,Disagree,Neutral
+ST-0458,East,F,New method,50.5,61.7,91.0,16/03/2025,Strongly agree,Strongly agree,Agree,Agree,Disagree
+ST-0459,East,M,Usual method,67.9,67.6,75.0,23/03/2025,Agree,Neutral,Neutral,Neutral,Agree
+ST-0460,South,F,Usual method,77.9,79.2,91.0,21/03/2025,Agree,Strongly agree,Agree,Agree,Strongly disagree
+ST-0461,North,F,Usual method,57.3,63.7,87.0,08/04/2025,Disagree,Strongly disagree,Strongly disagree,Disagree,Agree
+ST-0462,South,M,Usual method,46.9,46.3,85.0,11/04/2025,Agree,Agree,Neutral,Neutral,Strongly disagree
+ST-0463,North,F,Usual method,51.3,50.1,92.0,12/03/2025,Agree,Neutral,Agree,Neutral,Strongly disagree
+ST-0464,East,F,New method,65.5,77.1,,22/03/2025,Strongly agree,Agree,Agree,Strongly agree,Disagree
+ST-0465,South,M,Usual method,50.1,51.0,84.0,03/04/2025,Agree,Strongly agree,Agree,Strongly agree,Neutral
+ST-0466,North,F,New method,75.0,81.0,89.0,05/03/2025,Strongly agree,Strongly agree,Agree,Strongly agree,Disagree
+ST-0467,North,M,New method,61.1,63.0,86.0,10/03/2025,Neutral,Disagree,Neutral,Disagree,Disagree
+ST-0468,South,M,Usual method,70.2,74.4,79.0,16/03/2025,Agree,Agree,Disagree,Neutral,Neutral
+ST-0469,North,F,New method,56.4,62.5,77.0,15/03/2025,Neutral,Strongly agree,Disagree,Agree,Agree
+ST-0470,East,M,New method,60.8,71.8,84.0,22/04/2025,Agree,Strongly agree,Strongly agree,Strongly agree,Strongly disagree
+ST-0471,South,M,Usual method,68.3,61.6,86.0,06/04/2025,Neutral,Neutral,Neutral,Agree,Agree
+ST-0472,East,M,New method,62.3,67.2,91.0,03/04/2025,Strongly agree,Agree,Strongly agree,Agree,Strongly disagree
+ST-0473,East,M,Usual method,66.8,72.1,77.0,19/03/2025,Neutral,Agree,Agree,Neutral,Neutral
+ST-0474,South,F,Usual method,54.4,54.5,92.0,29/03/2025,Strongly agree,Agree,Strongly agree,Neutral,Disagree
+ST-0475,East,M,Usual method,75.6,72.8,68.0,15/03/2025,Strongly agree,Agree,Agree,Agree,Strongly disagree
+ST-0476,South,F,Usual method,45.5,50.4,83.0,11/03/2025,Strongly disagree,Disagree,Disagree,Disagree,Neutral
+ST-0477,North,F,Usual method,75.2,75.6,80.0,01/03/2025,Neutral,Neutral,Neutral,Disagree,Strongly disagree
+ST-0478,North,M,Usual method,57.7,58.6,78.0,03/03/2025,Neutral,Disagree,Neutral,Neutral,Disagree
+ST-0479,South,F,Usual method,71.2,64.8,98.0,06/04/2025,Disagree,Agree,Neutral,Neutral,Disagree
+ST-0480,East,M,New method,78.0,89.6,72.0,15/03/2025,Disagree,Disagree,Strongly disagree,Strongly disagree,Disagree

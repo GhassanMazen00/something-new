@@ -132,6 +132,38 @@ export const examples: Record<string, T> = {
     en: 'In the base case, inflation trims your margin from 35% to 31% next year; in a currency shock it falls to 17%.',
     ar: 'في السيناريو الأساسي يخفض التضخم هامشك من 35% إلى 31% العام القادم؛ وفي صدمة العملة ينخفض إلى 17%.',
   },
+  'Data profile': {
+    en: 'A hospital’s 18-column admissions export: 94% of cells filled, “discharge date” blank for 11% of patients, and 23 weights typed in grams instead of kilograms.',
+    ar: 'ملف دخول مستشفى من 18 عمودًا: 94% من الخانات ممتلئة، و«تاريخ الخروج» فارغ لـ11% من المرضى، و23 وزنًا مكتوبًا بالجرام بدل الكيلوجرام.',
+  },
+  'Group comparison': {
+    en: 'Three schools’ maths results: School B scored 6.8 points higher than School A, a medium-sized gap that is very unlikely to be chance (Welch ANOVA, p < 0.001).',
+    ar: 'نتائج الرياضيات في ثلاث مدارس: سجلت المدرسة ب 6.8 درجة أعلى من المدرسة أ، فرق متوسط الحجم يُستبعد أن يكون صدفة (Welch ANOVA، p < 0.001).',
+  },
+  'What drives an outcome': {
+    en: 'Of nine factors recorded for 2,400 loan applicants, three explain most repayments: income stability, prior loans and a guarantor; age has no clear link once the others are allowed for.',
+    ar: 'من بين تسعة عوامل مسجلة لـ2,400 متقدم لقرض، ثلاثة تفسر معظم السداد: استقرار الدخل والقروض السابقة ووجود ضامن؛ والعمر بلا علاقة واضحة بعد احتساب البقية.',
+  },
+  'Trend and forecast for any measure': {
+    en: 'A clinic’s weekly visits rise about 9% a year, peak every January, and should reach 1,150 a week next winter (off by 6% on the weeks held back).',
+    ar: 'زيارات عيادة أسبوعيًا ترتفع نحو 9% سنويًا، وتبلغ ذروتها كل يناير، ومن المتوقع أن تصل إلى 1,150 زيارة أسبوعيًا الشتاء القادم (بخطأ 6% على الأسابيع المحجوبة).',
+  },
+  'Survey and questionnaire analysis': {
+    en: '612 parents answered 14 questions: 81% rate the teachers highly but only 38% the communication; the 6 satisfaction questions hang together well (alpha 0.86).',
+    ar: 'أجاب 612 وليّ أمر على 14 سؤالًا: 81% يقيّمون المعلمين عاليًا لكن 38% فقط يقيّمون التواصل؛ وأسئلة الرضا الستة متسقة جيدًا (ألفا 0.86).',
+  },
+  'Before-and-after impact': {
+    en: 'A savings programme: participants’ monthly savings rose EGP 340 against EGP 90 for the comparison villages, an effect of EGP 250 a month (difference-in-differences).',
+    ar: 'برنامج ادخار: ارتفع ادخار المشاركين الشهري 340 جنيهًا مقابل 90 جنيهًا في قرى المقارنة، أي أثر قدره 250 جنيهًا شهريًا (الفرق في الفروق).',
+  },
+  'Quality and process control': {
+    en: 'A bottling line: fill volume stable for 11 weeks, then 9 bottles in a row ran high after a nozzle change; Cpk 1.12 against the label limits.',
+    ar: 'خط تعبئة: حجم التعبئة مستقر 11 أسبوعًا، ثم 9 زجاجات متتالية أعلى من المعتاد بعد تغيير فوهة؛ ومؤشر Cpk يبلغ 1.12 مقابل حدود الملصق.',
+  },
+  'Natural groups': {
+    en: '3,100 students fall into four clear groups by attendance, homework and test results; one group (14%) attends well but struggles in tests, and needs a different kind of help.',
+    ar: 'ينقسم 3,100 طالب إلى أربع مجموعات واضحة حسب الحضور والواجبات والاختبارات؛ مجموعة منها (14%) تحضر جيدًا لكنها تتعثر في الاختبارات وتحتاج نوعًا مختلفًا من الدعم.',
+  },
 }
 
 // The six shown on the home page.

@@ -30,11 +30,12 @@ const MEANING: Record<L, { title: T; text: T }> = {
   none: { title: { en: 'Not yet', ar: 'ليس بعد' }, text: { en: 'Needs a file you haven’t ticked.', ar: 'تحتاج ملفًا لم تختره بعد.' } },
 }
 
-// The files, in three even groups of four.
+// The files, in four even groups of four.
 const GROUPS: { title: T; ids: string[] }[] = [
   { title: { en: 'Sales', ar: 'المبيعات' }, ids: ['sales', 'einv', 'cost', 'stock'] },
   { title: { en: 'Money', ar: 'المال' }, ids: ['bank', 'ledger', 'unpaid', 'pnl'] },
   { title: { en: 'People and customers', ar: 'الموظفون والعملاء' }, ids: ['payroll', 'staff', 'customers', 'ads'] },
+  { title: { en: 'Research and other data', ar: 'الأبحاث وبيانات أخرى' }, ids: ['survey', 'research', 'records', 'readings'] },
 ]
 
 function Gauge({ level }: { level: L }) {

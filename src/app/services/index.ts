@@ -25,9 +25,12 @@ const slug = (s: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
 
-export const DEPTS = departments.map((d) => ({ id: d.id, name: d.name.en }))
+// The demo runs the business departments; the any-data services need the real workspace.
+const demo = departments.filter((d) => d.id in byDept)
 
-export const SERVICES: ServiceDef[] = departments.flatMap((d) =>
+export const DEPTS = demo.map((d) => ({ id: d.id, name: d.name.en }))
+
+export const SERVICES: ServiceDef[] = demo.flatMap((d) =>
   d.services.map((svc) => {
     const impl = byDept[d.id].find((x) => x.name === svc.name.en)
     if (!impl) throw new Error(`No engine for service "${svc.name.en}"`)

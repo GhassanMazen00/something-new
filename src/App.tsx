@@ -1,3 +1,4 @@
+import { AnyData } from './components/AnyData'
 import { Checker } from './components/Checker'
 import { Contact, Faq, Footer } from './components/Closing'
 import { ContactDialog } from './components/ContactDialog'
@@ -30,6 +31,7 @@ export default function App() {
             <Hero />
             <About />
             <Services />
+            <AnyData />
             <Checker />
             <Faq />
             <Contact />

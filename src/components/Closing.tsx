@@ -217,6 +217,39 @@ function Price() {
   )
 }
 
+// Who we work with: businesses first, and anyone with a table of data.
+function Anyone() {
+  const { t } = useLang()
+  const who: [T, T][] = [
+    [{ en: 'Businesses', ar: 'الشركات' }, { en: 'Sales, accounts, staff, marketing', ar: 'المبيعات والحسابات والموظفون والتسويق' }],
+    [{ en: 'Researchers and students', ar: 'الباحثون والطلاب' }, { en: 'Theses, papers, experiments', ar: 'رسائل وأبحاث وتجارب' }],
+    [{ en: 'NGOs and public projects', ar: 'المنظمات والمشروعات العامة' }, { en: 'Programme impact, beneficiary surveys', ar: 'أثر البرامج واستبيانات المستفيدين' }],
+    [{ en: 'Clinics and schools', ar: 'العيادات والمدارس' }, { en: 'Records, waiting times, results', ar: 'السجلات ومدد الانتظار والنتائج' }],
+    [{ en: 'Factories and operations', ar: 'المصانع والتشغيل' }, { en: 'Quality control, machine readings', ar: 'ضبط الجودة وقراءات الآلات' }],
+  ]
+  return (
+    <ul className="qv qv-anyone">
+      {who.map(([a, b], n) => (
+        <li key={n} style={order(n)}>
+          <Check />
+          <span>
+            <b>{t(a)}</b>
+            {t(b)}
+          </span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+const ANYONE = {
+  q: { en: 'Do you only work with businesses?', ar: 'هل تعملون مع الشركات فقط؟' },
+  a: {
+    en: 'No. Businesses are most of our work, but we analyse any table of data: research and thesis data, surveys, programme data, patient or student records, and production or sensor readings. Same rules: proven methods, a person checks every number, and your files are encrypted and deleted after the report.',
+    ar: 'لا. الشركات أغلب عملنا، لكننا نحلل أي جدول بيانات: بيانات الأبحاث والرسائل، والاستبيانات، وبيانات البرامج، وسجلات المرضى أو الطلاب، وقراءات الإنتاج أو الحساسات. بالقواعد نفسها: طرق مثبتة، وشخص يراجع كل رقم، وملفاتك مشفّرة وتُحذف بعد التقرير.',
+  },
+}
+
 const SAFE = {
   q: { en: 'Are my files safe with you?', ar: 'هل ملفاتي في أمان معكم؟' },
   a: {
@@ -228,6 +261,7 @@ const SAFE = {
 // The questions in the order people ask them, each with its picture.
 const QUESTIONS: { q: T; a: T; Vis: () => ReactNode }[] = [
   { ...faq.items[0], Vis: StandIns },
+  { ...ANYONE, Vis: Anyone },
   { ...SAFE, Vis: Journey },
   { ...faq.items[1], Vis: Accuracy },
   { ...faq.items[2], Vis: Contest },

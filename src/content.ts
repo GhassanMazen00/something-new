@@ -33,27 +33,27 @@ export const nav = {
 }
 
 export const hero = {
-  title: { en: ['Clarity for every', 'business decision'], ar: ['وضوح في كل', 'قرار تجاري'] },
+  title: { en: ['Clear answers', 'from any data'], ar: ['إجابات واضحة', 'من أي بيانات'] },
   short: {
-    en: 'Business analysis and forecasting, built on proven models.',
-    ar: 'تحليل الأعمال والتوقعات، مبني على نماذج مثبتة.',
+    en: 'Business analysis and forecasting, plus research, survey and operations data, on proven models.',
+    ar: 'تحليل الأعمال والتوقعات، وكذلك بيانات الأبحاث والاستبيانات والتشغيل، بنماذج مثبتة.',
   },
   standfirst: {
-    en: 'Clearline Analytics is a business analysis firm in Cairo. We find the errors in your books, forecast what comes next and show what each decision will do, using proven statistical models and AI, with your files encrypted from start to finish.',
-    ar: 'Clearline Analytics شركة تحليل أعمال في القاهرة. نكتشف الأخطاء في حساباتك، ونتوقع ما هو قادم، ونوضح أثر كل قرار، باستخدام نماذج إحصائية مثبتة والذكاء الاصطناعي، مع تشفير ملفاتك من البداية إلى النهاية.',
+    en: 'Clearline Analytics is a data analysis firm in Cairo. For businesses we find the errors in your books, forecast what comes next and show what each decision will do. For researchers, NGOs, clinics, schools and factories we analyse any table of data the same way: proven statistical models, checked by a person, with your files encrypted from start to finish.',
+    ar: 'Clearline Analytics شركة تحليل بيانات في القاهرة. للشركات نكتشف الأخطاء في حساباتك ونتوقع ما هو قادم ونوضح أثر كل قرار. وللباحثين والمنظمات والعيادات والمدارس والمصانع نحلل أي جدول بيانات بالطريقة نفسها: نماذج إحصائية مثبتة، يراجعها شخص، مع تشفير ملفاتك من البداية إلى النهاية.',
   },
 }
 
 export const about = {
-  heading: { en: ['We turn your business files into', 'clear decisions.'], ar: ['نحوّل ملفات شركتك إلى', 'قرارات واضحة.'] },
+  heading: { en: ['We turn your files into', 'clear decisions.'], ar: ['نحوّل ملفاتك إلى', 'قرارات واضحة.'] },
   text: {
-    en: 'Clearline is an analysis firm for small and medium companies. You send the files you already keep. We study them with proven models and tell you, in plain words, what is happening and what to do next.',
-    ar: 'Clearline شركة تحليل للشركات الصغيرة والمتوسطة. ترسل الملفات الموجودة لديك بالفعل، فندرسها بنماذج مثبتة ونخبرك بكلمات واضحة بما يحدث وما يجب أن تفعله بعد ذلك.',
+    en: 'Clearline is an analysis firm for companies, researchers and organisations. You send the files you already keep. We study them with proven models and tell you, in plain words, what is happening and what to do next.',
+    ar: 'Clearline شركة تحليل للشركات والباحثين والمؤسسات. ترسل الملفات الموجودة لديك بالفعل، فندرسها بنماذج مثبتة ونخبرك بكلمات واضحة بما يحدث وما يجب أن تفعله بعد ذلك.',
   },
   steps: [
     {
       title: { en: 'You send your files', ar: 'ترسل ملفاتك' },
-      text: { en: 'Sales, accounts, invoices or staff lists, as they are. Encrypted the moment they arrive.', ar: 'المبيعات أو الحسابات أو الفواتير أو قوائم الموظفين، كما هي. تُشفَّر لحظة وصولها.' },
+      text: { en: 'Sales, accounts, surveys, research data or records, as they are. Encrypted the moment they arrive.', ar: 'المبيعات أو الحسابات أو الاستبيانات أو بيانات الأبحاث أو السجلات، كما هي. تُشفَّر لحظة وصولها.' },
     },
     {
       title: { en: 'We analyse them', ar: 'نحللها' },
@@ -452,6 +452,67 @@ export const departments: Department[] = [
         { en: 'Public data covers it fully', ar: 'البيانات العامة تكفي تمامًا' },
       ),
     ],
+  },  {
+    id: 'general',
+    name: { en: 'Any data', ar: 'أي بيانات' },
+    services: [
+      s(
+        { en: 'Data profile', ar: 'ملف تعريف البيانات' },
+        { en: 'Every column summarised: what it holds, what is missing, what looks wrong and what moves together', ar: 'ملخص لكل عمود: ماذا يحتوي، وما الناقص، وما يبدو خاطئًا، وما يتحرك معًا' },
+        { en: 'Descriptive statistics, robust outlier tests and correlation', ar: 'الإحصاءات الوصفية، واختبارات القيم الشاذة، والارتباط' },
+        { en: 'Any table: Excel, CSV, a system export or a survey download', ar: 'أي جدول: Excel أو CSV أو تصدير من نظام أو نتائج استبيان' },
+        { en: 'Nothing extra: it works on any table', ar: 'لا شيء إضافي: يعمل على أي جدول' },
+      ),
+      s(
+        { en: 'Group comparison', ar: 'مقارنة المجموعات' },
+        { en: 'Whether groups really differ (schools, clinics, machines, treatments) or it is just chance', ar: 'هل تختلف المجموعات فعلًا (مدارس، عيادات، آلات، علاجات) أم أنها مجرد صدفة' },
+        { en: 'Welch t-test, ANOVA or rank tests chosen to fit the data, with effect sizes', ar: 'اختبار ويلش t أو ANOVA أو اختبارات الرتب حسب طبيعة البيانات، مع حجم الأثر' },
+        { en: 'One measure and one column naming the group', ar: 'مقياس واحد وعمود يحدد المجموعة' },
+        { en: 'Small groups: we say how big a difference could still be missed', ar: 'مجموعات صغيرة: نوضح حجم الفرق الذي قد لا يظهر' },
+      ),
+      s(
+        { en: 'What drives an outcome', ar: 'ما الذي يؤثر في النتيجة' },
+        { en: 'Which factors are linked to a result, by how much, and how sure we are', ar: 'أي العوامل ترتبط بالنتيجة، وبأي قدر، وما مدى ثقتنا' },
+        { en: 'Multiple or logistic regression with robust errors, tested on rows it did not see', ar: 'الانحدار المتعدد أو اللوجستي بأخطاء متينة، مع اختباره على صفوف لم يرها' },
+        { en: 'The outcome and the factors you recorded', ar: 'النتيجة والعوامل التي سجلتها' },
+        { en: 'Few rows: we test fewer factors and say so', ar: 'صفوف قليلة: نختبر عوامل أقل ونوضح ذلك' },
+      ),
+      s(
+        { en: 'Trend and forecast for any measure', ar: 'الاتجاه والتوقع لأي مقياس' },
+        { en: 'Whether it is rising or falling, its seasonal pattern, and the next months', ar: 'هل يرتفع أم ينخفض، ونمطه الموسمي، والأشهر القادمة' },
+        { en: 'Mann–Kendall trend test, seasonal decomposition and an ETS, ARIMA and Theta forecast contest', ar: 'اختبار مان-كندال للاتجاه، والتحليل الموسمي، ومنافسة توقع بين ETS وARIMA وTheta' },
+        { en: 'A date and a measure: visits, readings, admissions, output', ar: 'تاريخ ومقياس: زيارات، قراءات، حالات دخول، إنتاج' },
+        { en: 'Short history: the trend only, no forecast', ar: 'تاريخ قصير: الاتجاه فقط بلا توقع' },
+      ),
+      s(
+        { en: 'Survey and questionnaire analysis', ar: 'تحليل الاستبيانات' },
+        { en: 'Results per question, how reliable the scales are, and how groups answered differently', ar: 'نتائج كل سؤال، ومدى ثبات المقاييس، وكيف اختلفت إجابات المجموعات' },
+        { en: 'Response distributions, Cronbach’s alpha, cross-tabs with chi-square and rank tests', ar: 'توزيع الإجابات، ومعامل كرونباخ ألفا، والجداول المتقاطعة مع كاي تربيع واختبارات الرتب' },
+        { en: 'One row per respondent, as exported from Google Forms, KoboToolbox or SurveyMonkey', ar: 'صف لكل مشارك، كما يُصدَّر من Google Forms أو KoboToolbox أو SurveyMonkey' },
+        { en: 'We can design and run the survey for you', ar: 'يمكننا تصميم الاستبيان وتنفيذه لك' },
+      ),
+      s(
+        { en: 'Before-and-after impact', ar: 'الأثر قبل وبعد' },
+        { en: 'Whether a programme, training or change actually worked, and by how much', ar: 'هل نجح البرنامج أو التدريب أو التغيير فعلًا، وبأي قدر' },
+        { en: 'Paired tests and difference-in-differences against a comparison group', ar: 'الاختبارات المزدوجة وطريقة الفرق في الفروق مقارنة بمجموعة ضابطة' },
+        { en: 'The same measure before and after, per person or site', ar: 'المقياس نفسه قبل وبعد، لكل شخص أو موقع' },
+        { en: 'No comparison group: we show the change and say what else could explain it', ar: 'بدون مجموعة مقارنة: نعرض التغيير ونوضح ما قد يفسره غير ذلك' },
+      ),
+      s(
+        { en: 'Quality and process control', ar: 'ضبط الجودة والعمليات' },
+        { en: 'Whether a process is stable, the points that broke its limits, and whether it meets the specification', ar: 'هل العملية مستقرة، وأي النقاط تجاوزت الحدود، وهل تحقق المواصفات' },
+        { en: 'Shewhart control charts with the Western Electric rules, and Cp/Cpk capability', ar: 'خرائط شيوهارت للتحكم مع قواعد Western Electric، ومؤشرات القدرة Cp وCpk' },
+        { en: 'Measurements in time order, with specification limits if you have them', ar: 'قياسات بترتيبها الزمني، مع حدود المواصفات إن وجدت' },
+        { en: 'No specification limits: stability only', ar: 'بدون حدود مواصفات: الاستقرار فقط' },
+      ),
+      s(
+        { en: 'Natural groups', ar: 'المجموعات الطبيعية' },
+        { en: 'Groups that occur naturally in your records (patients, students, sites) and what sets each apart', ar: 'مجموعات تظهر طبيعيًا في سجلاتك (مرضى، طلاب، مواقع) وما يميز كلًا منها' },
+        { en: 'k-means clustering on standardised columns, with the number of groups chosen by silhouette score', ar: 'تجميع k-means على أعمدة موحّدة المقياس، مع اختيار عدد المجموعات بمؤشر silhouette' },
+        { en: 'A table with several number columns per row', ar: 'جدول به عدة أعمدة رقمية لكل صف' },
+        { en: 'Few columns: we group on what there is and say how clear the groups are', ar: 'أعمدة قليلة: نجمع بما هو متاح ونوضح مدى وضوح المجموعات' },
+      ),
+    ],
   },
 ]
 
@@ -642,8 +703,8 @@ export const heroExtra = {
   badge: { en: 'Encrypted · never shared · deleted after 30 days', ar: 'مشفّرة · لا تُشارك · تُحذف بعد 30 يومًا' },
   try: { en: 'Try the live demo', ar: 'جرّب العرض الحي' },
   stats: [
-    { value: 6, suffix: '', label: { en: 'departments', ar: 'أقسام' } },
-    { value: 32, suffix: '', label: { en: 'services', ar: 'خدمة' } },
+    { value: departments.length, suffix: '', label: { en: 'departments', ar: 'أقسام' } },
+    { value: departments.reduce((n, d) => n + d.services.length, 0), suffix: '', label: { en: 'services', ar: 'خدمة' } },
     { value: 256, suffix: '', label: { en: 'encryption, start to finish', ar: 'تشفير من البداية للنهاية' } },
     { value: 30, suffix: '', label: { en: 'days, then deleted', ar: 'يومًا ثم الحذف' } },
   ],
@@ -659,6 +720,7 @@ export const heroExtra = {
 export const methods = [
   'ETS', 'ARIMA', 'Prophet', 'Chronos', 'Benford’s law', 'Isolation Forest', 'RFM', 'BG/NBD',
   'Monte Carlo', 'Pareto 80/20', 'Van Westendorp', 'PESTEL', 'Google Meridian', 'Meta Robyn', 'eNPS', 'Survival analysis',
+  'Difference-in-differences', 'Cronbach’s alpha', 'Control charts', 'k-means', 'Mann–Kendall',
 ]
 
 export interface CheckerService {
@@ -702,6 +764,10 @@ export const checker = {
     { id: 'payroll', label: { en: 'Payroll', ar: 'الرواتب' } },
     { id: 'staff', label: { en: 'Staff list', ar: 'قائمة الموظفين' } },
     { id: 'customers', label: { en: 'Customer list', ar: 'قائمة العملاء' } },
+    { id: 'survey', label: { en: 'Survey answers', ar: 'إجابات استبيان' } },
+    { id: 'research', label: { en: 'Research or study data', ar: 'بيانات بحث أو دراسة' } },
+    { id: 'records', label: { en: 'Patient, student or member records', ar: 'سجلات مرضى أو طلاب أو أعضاء' } },
+    { id: 'readings', label: { en: 'Measurements or sensor readings', ar: 'قياسات أو قراءات حساسات' } },
   ],
   services: [
     { name: { en: 'Sales forecast', ar: 'توقع المبيعات' }, dept: 'sales', high: [['sales'], ['einv']], medium: [['bank']] },
@@ -716,6 +782,11 @@ export const checker = {
     { name: { en: 'Payroll error scan', ar: 'فحص أخطاء الرواتب' }, dept: 'people', high: [['payroll']], medium: [['bank']] },
     { name: { en: 'Staff turnover', ar: 'تحليل دوران الموظفين' }, dept: 'people', high: [['staff']], medium: [['payroll']] },
     { name: { en: 'Market size & demand trends', ar: 'حجم السوق واتجاهات الطلب' }, dept: 'market', high: [], medium: [], publicData: true },
+    { name: { en: 'Survey analysis', ar: 'تحليل الاستبيانات' }, dept: 'general', high: [['survey']], medium: [] },
+    { name: { en: 'Group comparison & drivers', ar: 'مقارنة المجموعات والعوامل المؤثرة' }, dept: 'general', high: [['research'], ['records'], ['survey']], medium: [] },
+    { name: { en: 'Before-and-after impact', ar: 'الأثر قبل وبعد' }, dept: 'general', high: [['research'], ['records']], medium: [['survey']] },
+    { name: { en: 'Trend & forecast for any measure', ar: 'الاتجاه والتوقع لأي مقياس' }, dept: 'general', high: [['records'], ['readings']], medium: [['research']] },
+    { name: { en: 'Quality & process control', ar: 'ضبط الجودة والعمليات' }, dept: 'general', high: [['readings']], medium: [] },
   ] as CheckerService[],
 }
 

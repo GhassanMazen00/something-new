@@ -9,6 +9,7 @@ import { useLang } from '../lang'
 import { Arrow } from './Icons'
 
 const all = depts.flatMap((d) => d.services.map((s) => ({ s, dept: d })))
+const TOTAL = all.length
 
 function ServiceCard({ s, deptName, full }: { s: Service; deptName: string; full?: boolean }) {
   const { t } = useLang()
@@ -59,12 +60,12 @@ export function Services() {
       <div className="wrap">
         <header className="sec-head wide">
           <h2 id="services-h" data-reveal style={order(1)}>
-            {t({ en: 'What we do most.', ar: 'أكثر ما نقدمه.' })} <span className="accent">{t({ en: 'And 26 more.', ar: 'و26 خدمة أخرى.' })}</span>
+            {t({ en: 'What we do most.', ar: 'أكثر ما نقدمه.' })} <span className="accent">{t({ en: `And ${TOTAL - 6} more.`, ar: `و${TOTAL - 6} خدمة أخرى.` })}</span>
           </h2>
           <p className="sec-lead" data-reveal style={order(2)}>
             {t({
-              en: 'Six of our 32 services, each with the kind of answer it gives. Every one runs on proven methods and is checked by a person.',
-              ar: 'ست من خدماتنا الـ32، ومع كل منها نوع الإجابة التي تقدمها. وكلها مبنية على طرق مثبتة ويراجعها شخص.',
+              en: `Six of our ${TOTAL} services, each with the kind of answer it gives. Every one runs on proven methods and is checked by a person.`,
+              ar: `ست من خدماتنا الـ${TOTAL}، ومع كل منها نوع الإجابة التي تقدمها. وكلها مبنية على طرق مثبتة ويراجعها شخص.`,
             })}
           </p>
         </header>
@@ -75,7 +76,7 @@ export function Services() {
         </div>
         <div className="explore" data-reveal>
           <a className="btn btn-primary btn-lg" href="./services.html">
-            {t({ en: 'Explore all 32 services', ar: 'استكشف الخدمات الـ32' })} <Arrow />
+            {t({ en: `Explore all ${TOTAL} services`, ar: `استكشف الخدمات الـ${TOTAL}` })} <Arrow />
           </a>
         </div>
       </div>
@@ -109,7 +110,7 @@ export function AllServices() {
             <Arrow /> {t({ en: 'Back to home', ar: 'العودة للرئيسية' })}
           </a>
           <h1 className="page-title" data-reveal>
-            {t({ en: 'All 32 services,', ar: 'كل الخدمات الـ32،' })} <span className="accent">{t({ en: 'explained.', ar: 'بالتفصيل.' })}</span>
+            {t({ en: `All ${TOTAL} services,`, ar: `كل الخدمات الـ${TOTAL}،` })} <span className="accent">{t({ en: 'explained.', ar: 'بالتفصيل.' })}</span>
           </h1>
           <p className="sec-lead" data-reveal style={order(1)}>
             {t({

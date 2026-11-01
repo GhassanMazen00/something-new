@@ -413,4 +413,111 @@ export const serviceCharts: Record<string, ReactNode> = {
       ]}
     />
   ),
+
+  // Any data
+  'Data profile': (
+    <HBars
+      label="How complete each column is"
+      max={100}
+      items={[
+        { label: 'Patient ID', value: 100, text: '100%' },
+        { label: 'Admission date', value: 100, text: '100%' },
+        { label: 'Ward', value: 97, text: '97%' },
+        { label: 'Weight', value: 92, text: '92%', tone: 'soft' },
+        { label: 'Discharge date', value: 89, text: '89%', tone: 'bad' },
+      ]}
+    />
+  ),
+  'Group comparison': (
+    <Bells
+      label="Spread of test scores in two schools"
+      a={0.42}
+      b={0.55}
+      legend={[
+        ['ink', 'School A'],
+        ['main', 'School B · difference very unlikely to be chance'],
+      ]}
+    />
+  ),
+  'What drives an outcome': (
+    <HBars
+      label="Link of each factor with on-time repayment"
+      max={100}
+      items={[
+        { label: 'Stable income', value: 88, text: 'Strong' },
+        { label: 'Prior loans repaid', value: 64, text: 'Strong' },
+        { label: 'Guarantor', value: 41, text: 'Medium' },
+        { label: 'Age', value: 8, text: 'None clear', tone: 'soft' },
+      ]}
+    />
+  ),
+  'Trend and forecast for any measure': (
+    <Line
+      label="Weekly clinic visits with a forecast and a likely range"
+      series={[
+        { values: [62, 66, 71, 64, 60, 63, 68, 74, 80, 72, 69, 73], area: true },
+        { values: [73, 77, 84, 90, 86, 80], start: 11, dashed: true },
+      ]}
+      band={{ start: 11, lo: [73, 74, 79, 83, 78, 71], hi: [73, 80, 89, 97, 94, 89] }}
+      xLabels={['Last year', 'Next 6 months']}
+      legend={[
+        ['main', 'Actual'],
+        ['band', 'Likely range'],
+      ]}
+    />
+  ),
+  'Survey and questionnaire analysis': (
+    <HBars
+      label="Share of parents giving a top answer, by question"
+      max={100}
+      items={[
+        { label: 'Teachers', value: 81, text: '81%' },
+        { label: 'Safety', value: 74, text: '74%' },
+        { label: 'Homework', value: 55, text: '55%', tone: 'soft' },
+        { label: 'Communication', value: 38, text: '38%', tone: 'bad' },
+      ]}
+    />
+  ),
+  'Before-and-after impact': (
+    <Grouped
+      label="Monthly savings before and after, for participants and comparison villages"
+      pairs={[
+        [410, 750],
+        [400, 490],
+      ]}
+      labels={['Took part', 'Comparison']}
+      legend={[
+        ['main', 'Before'],
+        ['soft', 'After'],
+      ]}
+    />
+  ),
+  'Quality and process control': (
+    <Line
+      label="Fill volume against its control limits, with a run of high readings"
+      series={[{ values: [500, 501, 499, 500, 502, 499, 500, 501, 503, 503, 504, 503, 504] }]}
+      min={494}
+      max={507}
+      threshold={{ value: 505, text: 'Upper limit', tone: 'bad' }}
+      marks={[
+        { series: 0, at: 9, tone: 'bad' },
+        { series: 0, at: 10, tone: 'bad' },
+        { series: 0, at: 12, tone: 'bad' },
+      ]}
+      xLabels={['Week 1', 'Week 13']}
+    />
+  ),
+  'Natural groups': (
+    <Donut
+      label="Students by group"
+      center="3,100"
+      sub="students"
+      segments={[
+        { label: 'Steady', value: 41, tone: 'main' },
+        { label: 'Coasting', value: 27, tone: 'mid' },
+        { label: 'Struggling in tests', value: 14, tone: 'soft' },
+        { label: 'Often absent', value: 18, tone: 'grey' },
+      ]}
+    />
+  ),
 }

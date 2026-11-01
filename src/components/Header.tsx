@@ -8,6 +8,7 @@ import { Chat, Check, Close, Gear, Menu, Moon, Sun } from './Icons'
 const LINKS: [string, T][] = [
   ['about', { en: 'About', ar: 'من نحن' }],
   ['services', nav.services],
+  ['any-data', { en: 'Any data', ar: 'أي بيانات' }],
   ['checker', { en: 'Your files', ar: 'ملفاتك' }],
   ['faq', nav.faq],
   ['contact', { en: 'Contact', ar: 'تواصل' }],

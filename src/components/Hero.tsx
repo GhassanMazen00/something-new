@@ -228,7 +228,7 @@ export function About() {
             {a} <span className="accent">{b}</span>
           </h2>
           <p className="sec-lead" data-reveal style={order(1)}>
-            {t({ en: 'A business analysis firm in Cairo for small and medium companies.', ar: 'شركة تحليل أعمال في القاهرة للشركات الصغيرة والمتوسطة.' })}
+            {t({ en: 'A data analysis firm in Cairo for companies, researchers and organisations.', ar: 'شركة تحليل بيانات في القاهرة للشركات والباحثين والمؤسسات.' })}
           </p>
         </header>
 

@@ -441,3 +441,10 @@ details.hint code {
 .sec-chk.warn {
   color: var(--amber);
 }
+
+.side-version {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.72rem;
+  opacity: 0.75;
+}

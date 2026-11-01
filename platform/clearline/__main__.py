@@ -18,7 +18,7 @@ def serve() -> None:
     from .app import create_app
 
     url = f'http://{config.HOST}:{config.PORT}'
-    print(f'\n  Clearline workspace is running at {url}\n  Data folder: {config.DATA_DIR}\n  Keep this window open. Press Ctrl+C to stop.\n')
+    print(f'\n  Clearline workspace (version {config.VERSION}) is running at {url}\n  Data folder: {config.DATA_DIR}\n  Keep this window open. Press Ctrl+C to stop.\n')
     threading.Timer(1.5, lambda: webbrowser.open(url)).start()
     uvicorn.run(create_app(), host=config.HOST, port=config.PORT, log_level='warning')
 

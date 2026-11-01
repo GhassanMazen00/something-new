@@ -160,7 +160,7 @@ def user_out(u: User) -> dict:
 
 @api.get('/me')
 def me(user: User = Depends(current_user)):
-    return {**user_out(user), 'ai': config.AI_ENABLED}
+    return {**user_out(user), 'ai': config.AI_ENABLED, 'version': config.VERSION}
 
 
 class PasswordIn(BaseModel):

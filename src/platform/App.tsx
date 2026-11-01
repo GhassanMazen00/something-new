@@ -76,6 +76,7 @@ export function Shell({ crumbs, children }: { crumbs: ReactNode; children: React
         <div className="side-foot">
           <strong>On this computer only</strong>
           Client files are encrypted here and deleted on schedule. The AI step is off.
+          {me.version && <span className="side-version">Version {me.version} · updates itself on start</span>}
         </div>
       </aside>
       <div className="main">

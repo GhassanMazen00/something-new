@@ -52,7 +52,7 @@ export const api = {
 }
 
 export type Role = 'admin' | 'analyst' | 'reviewer'
-export type Me = { id: number; name: string; email: string; role: Role; active: boolean; must_change_password: boolean; two_step: boolean; ai: boolean }
+export type Me = { id: number; name: string; email: string; role: Role; active: boolean; must_change_password: boolean; two_step: boolean; ai: boolean; version?: string }
 export type Person = { id: number; name: string; role: Role; email?: string; active?: boolean; two_step?: boolean; temp_password?: string }
 export type Ref = { id: number; name: string } | null
 

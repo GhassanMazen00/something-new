@@ -10,6 +10,10 @@ DB_PATH = DATA_DIR / 'clearline.db'
 MASTER_KEY_PATH = DATA_DIR / 'master.key'
 STATIC_DIR = APP_DIR / 'static'
 
+# Written by update.ps1 when start.bat fetches a new version from GitHub.
+_VERSION_FILE = APP_DIR.parent / 'version.txt'
+VERSION = _VERSION_FILE.read_text().strip()[:7] if _VERSION_FILE.exists() else 'dev'
+
 # Only this computer can reach the app until it moves to a server.
 HOST = os.environ.get('CLEARLINE_HOST', '127.0.0.1')
 PORT = int(os.environ.get('CLEARLINE_PORT', '8000'))

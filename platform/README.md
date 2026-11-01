@@ -29,6 +29,11 @@ You don't need Node.js: the screens are already built into `clearline/static`.
 Double-click **`start.bat`**. The workspace opens in your browser at <http://127.0.0.1:8000>. Keep the black
 window open while you work, and close it to stop.
 
+**Updates install themselves.** Each time `start.bat` runs, it checks GitHub for a newer version, downloads it
+and replaces the program. If the new version needs new libraries, it installs those too. It never touches the
+`data` folder (accounts, clients, files) or the Python environment. Without internet, the version you have starts as
+usual. The version number is shown at the bottom of the side menu.
+
 On Mac or Linux, run `./start.sh` instead. It sets itself up on first run.
 
 ### First time

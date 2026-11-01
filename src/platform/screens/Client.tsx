@@ -467,7 +467,9 @@ function RunService({ client, svc }: { client: ClientT; svc: ServiceT }) {
   }
   // Open straight on a result: the last one, or a fresh run if this service hasn't been run yet.
   const autoRan = useRef(false)
-  const autoRun = canEdit && !!r && r.level !== 'none' && !!runs.data && !runs.data.length
+  // Services where the analyst picks columns never run on their own: a guessed column gives a confident-looking wrong answer.
+  const picksColumns = svc.params.some((x) => x.format === 'column')
+  const autoRun = canEdit && !picksColumns && !!r && r.level !== 'none' && !!runs.data && !runs.data.length
   useEffect(() => {
     if (autoRun && !autoRan.current) {
       autoRan.current = true
@@ -555,7 +557,15 @@ function RunService({ client, svc }: { client: ClientT; svc: ServiceT }) {
             </div>
           )}
           {latest && <RunChecks checks={latest.result.checks} />}
-          {latest ? <ResultView r={latest.result} /> : !failure && <div className="empty panel">{a.busy || canEdit ? 'Running the models…' : 'No result yet. The analyst runs it.'}</div>}
+          {latest ? (
+            <ResultView r={latest.result} />
+          ) : (
+            !failure && (
+              <div className="empty panel">
+                {a.busy ? 'Running the models…' : picksColumns && canEdit ? 'Choose the columns above, check they answer the client’s question, then press Run.' : canEdit ? 'Running the models…' : 'No result yet. The analyst runs it.'}
+              </div>
+            )
+          )}
         </>
       )}
     </>

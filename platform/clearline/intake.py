@@ -425,6 +425,13 @@ def to_number(s: pd.Series) -> pd.Series:
     t = t.str.replace(r'[^\d.,\-]', '', regex=True).where(~sci, t)
     # 1.234,56 (European) vs 1,234.56: if the last separator is a comma followed by 1-2 digits, it is the decimal mark.
     euro = t.str.match(r'^-?\d{1,3}(\.\d{3})+(,\d{1,2})?$') | t.str.match(r'^-?\d+,\d{1,2}$')
+    # "10.035" fits both a decimal (ten point zero three five) and European thousands (ten thousand and thirty-five).
+    # Settle it for the whole column: thousands only if other values in it are clearly European (a decimal comma, or
+    # two dot groups such as 1.234.567); otherwise the dot is a decimal point, as in 9.87 or 10.1 next to it.
+    ambiguous = t.str.match(r'^-?\d{1,3}\.\d{3}$')
+    clearly_euro = (euro & ~ambiguous).any()
+    if not clearly_euro:
+        euro = euro & ~ambiguous
     t = t.where(~euro, t.str.replace('.', '', regex=False).str.replace(',', '.', regex=False))
     t = t.str.replace(',', '', regex=False).str.rstrip('-')
     out = pd.to_numeric(t, errors='coerce')

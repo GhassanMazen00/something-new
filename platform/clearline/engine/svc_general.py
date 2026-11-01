@@ -56,6 +56,8 @@ FITS = {
     'category': {'category', 'binary'},
     'date': {'date'},
     'any': {'number', 'binary', 'category', 'date'},
+    'batch': {'category', 'binary'},
+    'binary': {'binary'},
 }
 
 
@@ -68,6 +70,9 @@ def _fits(name: str, s: pd.Series, fits: str) -> bool:
     k = kind_of(name, s)
     if fits == 'category' and k == 'number' and _small_ints(s):
         return True  # a group coded 1, 2, 3
+    if fits == 'batch' and k == 'number':
+        v = s.dropna()
+        return bool((v == v.round()).all() and 2 <= v.nunique() <= len(v) / 2)  # sample numbers that repeat: 1,1,1,2,2,2
     return k in FITS.get(fits, FITS['any'])
 
 
@@ -114,24 +119,27 @@ def pick(c: Ctx, need: dict[str, str]) -> tuple[pd.DataFrame, dict[str, str | No
     return d.files[file], cols
 
 
+# Column names that suggest a role, strongest hint first. The first pattern any column matches wins.
 _PREFER = {
-    'measure': r'score|result|value|level|total|amount|time|rate|weight|height|count|mark|grade|reading|output|درجة|نتيجة|قيمة',
-    'group': r'group|arm|treat|condition|school|clinic|site|branch|class|type|region|area|machine|line|shift|ward|gender|sex|مجموعة|مدرسة|فرع|نوع',
-    'before': r'before|pre|baseline|start|initial|قبل',
-    'after': r'after|post|endline|end|final|follow|بعد',
-    'date': r'date|day|time|month|week|تاريخ',
+    'outcome': [r'after|post|endline|final|follow.?up|بعد', r'outcome|result|repaid|passed|success|نتيجة', r'score|grade|mark|درجة'],
+    'measure': [r'after|post|endline|final|بعد', r'outcome|result|score|grade|mark|value|level|total|amount|minutes|time|rate|weight|height|reading|output|درجة|نتيجة|قيمة'],
+    'arm': [r'^(group|arm|treatment|treated|condition|cohort|intervention)$', r'took.?part|participa|treat|arm|programme|program|intervention|control|مجموعة|مشارك'],
+    'group': [r'^(group|arm|treatment|condition)$', r'took.?part|participa|treat|arm|programme|program', r'school|clinic|site|branch|class|region|area|village|machine|line|shift|ward|department|type|مدرسة|فرع|نوع', r'gender|sex'],
+    'before': [r'before|pre|baseline|start|initial|قبل'],
+    'after': [r'after|post|endline|end|final|follow|بعد'],
+    'date': [r'date|day|month|week|time|تاريخ'],
 }
 
 
-def _guess(d: Data, fits: str, prefer: str | None = None, avoid: set[str] = frozenset()) -> str | None:
+def _guess(d: Data, fits: str, prefer: list[str] | None = None, avoid: set[str] = frozenset(), fallback: bool = True) -> str | None:
     options = [o for o in column_choices(d, fits) if o not in avoid]
     if not options:
         return None
-    if prefer:
+    for pat in prefer or []:
         for o in options:
-            if re.search(prefer, o.split(SEP)[0], re.I):
+            if re.search(pat, o.split(SEP)[0], re.I):
                 return o
-    return options[0]
+    return options[0] if fallback else None
 
 
 def _needs(fits_list: list[tuple[str, int]], msg: str):
@@ -230,9 +238,9 @@ def profile(c: Ctx) -> dict:
                 summ = 'always the same value' if len(v) else 'empty'
             else:
                 summ = 'identifier' if _id_like(str(col), s) else f'free text, e.g. “{str(v.iloc[0])[:30]}”'
-            rows.append([str(col), {'number': 'Number', 'binary': 'Yes / no', 'category': 'Category', 'date': 'Date', 'text': 'Text', 'empty': '–'}[k], f'{share:.0%}', f'{v.nunique():,}', summ, odd or '–'])
-            if share < 0.8 and len(s):
-                gappy.append(f'{col} ({share:.0%} filled)')
+            rows.append([str(col), {'number': 'Number', 'binary': 'Two values', 'category': 'Category', 'date': 'Date', 'text': 'Text', 'empty': '–'}[k], f'{share:.0%}', f'{v.nunique():,}', summ, odd or '–'])
+            if share < 1 and len(s):
+                gappy.append((share, f'{col} ({int(s.isna().sum()):,} blank, {share:.0%} filled)'))
             if odd:
                 findings.append(finding(f'“{col}” has {odd}: check they are real and not typing mistakes.', 'high', 'Look at those rows before using this column in a comparison.'))
         label = f' · {name}' if len(d.files) > 1 else ''
@@ -250,11 +258,14 @@ def profile(c: Ctx) -> dict:
         dupes = int(df.duplicated().sum())
         if dupes:
             findings.append(finding(f'{dupes:,} rows in {name} appear twice.', 'high', 'Confirm whether they are repeated entries or genuinely identical cases.'))
+    gappy = [g for _, g in sorted(gappy)]
     if gappy:
         findings.insert(0, finding(f'Columns with gaps: {", ".join(gappy[:6])}.', 'high', 'Results using these columns rest on the filled rows only; ask whether blanks mean zero, not asked, or unknown.'))
-    findings.insert(0, finding(f'{kpis_rows:,} rows across {len(d.files)} table{"s" if len(d.files) > 1 else ""}, {filled_cells / max(total_cells, 1):.0%} of cells filled.', 'high'))
+    share = filled_cells / max(total_cells, 1)
+    filled_text = '100%' if filled_cells == total_cells else f'{min(share, 0.999):.1%}' if share > 0.99 else f'{share:.0%}'
+    findings.insert(0, finding(f'{kpis_rows:,} rows across {len(d.files)} table{"s" if len(d.files) > 1 else ""}, {filled_text} of cells filled.', 'high'))
     return result(
-        [kpi('Rows', f'{kpis_rows:,}'), kpi('Columns', f'{sum(df.shape[1] for df in d.files.values()):,}'), kpi('Cells filled', f'{filled_cells / max(total_cells, 1):.0%}', tone='good' if filled_cells / max(total_cells, 1) >= 0.9 else 'bad'), kpi('Columns with gaps', str(len(gappy)))],
+        [kpi('Rows', f'{kpis_rows:,}'), kpi('Columns', f'{sum(df.shape[1] for df in d.files.values()):,}'), kpi('Cells filled', filled_text, tone='good' if filled_cells / max(total_cells, 1) >= 0.9 else 'bad'), kpi('Columns with gaps', str(len(gappy)))],
         charts,
         findings[:10],
         notes=notes,
@@ -392,6 +403,11 @@ def _design(x: pd.DataFrame, factors: list[str]) -> tuple[pd.DataFrame, dict[str
     parts, labels = [], {}
     for col in factors:
         s = x[col]
+        rating = None if pd.api.types.is_numeric_dtype(s) else _likert(s)
+        if rating is not None:  # Strongly disagree … Strongly agree: one ordered score, not five separate answers
+            parts.append((rating - rating.mean()).rename(col))  # centred, in scale steps
+            labels[col] = f'{col} (one step up the scale)'
+            continue
         if pd.api.types.is_numeric_dtype(s) and s.nunique() > 2:
             sd = s.std()
             parts.append(((s - s.mean()) / sd).rename(col))
@@ -422,7 +438,7 @@ def drivers(c: Ctx) -> dict:
     if not o:
         raise NeedsData('Choose the outcome to explain.')
     binary = kind_of(o, df[o]) == 'binary'
-    cand = [col for col in df.columns if col != o and kind_of(str(col), df[col]) in ('number', 'binary', 'category') and df[col].notna().mean() >= 0.7]
+    cand = [col for col in df.columns if col != o and (kind_of(str(col), df[col]) in ('number', 'binary', 'category') or _likert(df[col]) is not None) and df[col].notna().mean() >= 0.7]
     x = df[[o] + cand].dropna(subset=[o]).copy()
     if binary:
         x[o], one = _binary01(x[o])
@@ -466,8 +482,21 @@ def drivers(c: Ctx) -> dict:
             rows.append((name, np.exp(b), np.exp(lo), np.exp(hi), p, b / max(float(fit.bse[name]), 1e-12)))
         else:
             rows.append((name, b, lo, hi, p, b / max(float(fit.bse[name]), 1e-12)))
-    lost = [labels[r[0]] for r in rows if not np.isfinite(r[4])]
-    rows = [r for r in rows if np.isfinite(r[4])]
+    # A factor that splits the outcome perfectly (everyone with it passed) has no finite effect: name it instead.
+    usable = [r for r in rows if all(np.isfinite(v) for v in r[1:5]) and (not binary or 1e-6 < r[1] < 1e6)]
+    lost = [labels[r[0]] for r in rows if r not in usable]
+    rows = usable
+    # Testing many factors at once, a few look real by luck: adjust each p-value for how many were tested
+    # (Benjamini–Hochberg), so "clear" means clear after allowing for that.
+    if rows:
+        raw_p = np.array([r[4] for r in rows])
+        order_ = np.argsort(raw_p)
+        adj = np.empty_like(raw_p)
+        running = 1.0
+        for rank, idx in reversed(list(enumerate(order_, 1))):
+            running = min(running, raw_p[idx] * len(raw_p) / rank)
+            adj[idx] = running
+        rows = [(r[0], r[1], r[2], r[3], float(a), r[5]) for r, a in zip(rows, adj)]
     if not rows:
         raise NeedsData('The factors repeat each other too closely to be separated. Try fewer columns.')
     rows.sort(key=lambda r: -abs(r[5]))
@@ -485,7 +514,7 @@ def drivers(c: Ctx) -> dict:
         findings.insert(0, finding('None of the factors shows a clear link with the outcome on these rows.', 'medium', 'More rows, or other factors, may be needed.'))
     findings.append(finding('These are links in the data, not proof of cause: something not recorded may drive both.', 'high', 'For a firm answer, an experiment or a before-and-after with a comparison group is needed.'))
     if lost:
-        findings.append(finding(f'Couldn’t be separated from the other factors (they carry the same information): {", ".join(lost[:4])}.', 'low'))
+        findings.append(finding(f'Left out, because they repeat other factors or split the outcome perfectly: {", ".join(lost[:4])}.', 'low', 'Look at these columns directly: a perfect split is often a column recorded after the outcome.'))
     if len(cand) > len(factors):
         findings.append(finding(f'{len(cand) - len(factors)} weaker columns weren’t tested, to keep about ten rows per factor.', 'low'))
     fit_label, fit_value = ('Prediction quality (AUC)', f'{score:.2f}') if binary else ('Explained on unseen rows (R²)', f'{max(score, 0):.0%}')
@@ -499,7 +528,7 @@ def drivers(c: Ctx) -> dict:
             chart('Every factor', table(['Factor', 'Effect', '95% range', 'Sure it’s real?'], [[labels[r[0]], nf(r[1]), f'{nf(r[2])} to {nf(r[3])}', f'{sure(r[4]).capitalize()} ({pv(r[4])})'] for r in rows], numeric=[1]), wide=True),
         ],
         findings,
-        accuracy=(f'Logistic regression; tested by 5-fold cross-validation: AUC {score:.2f} (0.5 is a coin toss, 1 is perfect).' if binary else f'Multiple regression with robust (HC3) errors; tested by 5-fold cross-validation: R² {score:.2f} on rows the model did not see.'),
+        accuracy=(f'Logistic regression; tested by 5-fold cross-validation: AUC {score:.2f} (0.5 is a coin toss, 1 is perfect).' if binary else f'Multiple regression with robust (HC3) errors; tested by 5-fold cross-validation: R² {score:.2f} on rows the model did not see.') + f' p-values adjusted for testing {len(rows)} effects at once (Benjamini–Hochberg).',
         notes=['Green: a clear link that raises the outcome. Orange: a clear link that lowers it. Grey: not clear.'],
     ) | {'level': level}
 
@@ -605,22 +634,40 @@ def trend_forecast(c: Ctx) -> dict:
     tau, p_trend = stats.kendalltau(t, base)
     slope = float(stats.theilslopes(base, t)[0])
     level_now = float(np.median(y.values)) or 1.0
+    span_days = (y.index[-1] - y.index[0]).days + {'MS': 30, 'W-MON': 7, 'D': 1}[freq]
+    # Under a year of data, say how much it changed over the period seen; don't stretch it to a yearly rate.
     per_year = slope * {'MS': 12, 'W-MON': 52, 'D': 365}[freq]
+    short = span_days < 330
+    change = slope * (n - 1) if short else per_year
+    over = f'over the {span_days} days covered' if short else 'a year'
     trend_word = ('Rising' if slope > 0 else 'Falling') if p_trend < 0.05 else 'No clear trend'
-    findings = [finding(f'{trend_word}: the {what} {"changes" if p_trend < 0.05 else "moves"} by about {snf(per_year)} a year ({snf(per_year / abs(level_now) * 100)}% of its usual level); the trend is {sure(p_trend)} (Mann–Kendall{", after taking out the seasonal pattern" if seasonal_fit is not None else ""}, {pv(p_trend)}).', 'high' if n >= 24 else 'medium')]
+    findings = [finding(f'{trend_word}: the {what} {"changes" if p_trend < 0.05 else "moves"} by about {snf(change)} {over} ({snf(change / abs(level_now) * 100)}% of its usual level); the trend is {sure(p_trend)} (Mann–Kendall{", after taking out the seasonal pattern" if seasonal_fit is not None else ""}, {pv(p_trend)}).', 'high' if n >= 24 and not short else 'medium')]
+    if short and freq == 'D':
+        findings.append(finding(f'Only {span_days} days of data: enough to see the level, too short for a lasting trend or a forecast to plan on.', 'high', 'For a trend, use at least a year of data.'))
     charts = []
     seas_strength = 0.0
     if seasonal_fit is not None:
         st = seasonal_fit
         seas_strength = max(0.0, 1 - np.var(st.resid) / max(np.var(st.seasonal + st.resid), 1e-12))
-        if seas_strength > 0.3:
+        # Claim a repeating pattern only if it is strong and the values really differ by month or weekday.
+        pos = y.index.month if freq == 'MS' else y.index.dayofweek if freq == 'D' else None
+        p_seas = 1.0
+        if pos is not None:
+            detr = y.values - (st.trend.values if hasattr(st.trend, 'values') else st.trend)
+            parts = [detr[pos == k] for k in np.unique(pos)]
+            parts = [q for q in parts if len(q) >= 2]
+            if len(parts) >= 2:
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore')
+                    p_seas = float(stats.kruskal(*parts).pvalue)
+        if seas_strength > 0.3 and p_seas < 0.01:
             prof = pd.Series(st.seasonal.values, index=y.index)
             key = prof.index.month if freq == 'MS' else prof.index.dayofweek if freq == 'D' else prof.index.isocalendar().week.values
             prof = prof.groupby(key).mean()
             names = {'MS': lambda k: pd.Timestamp(2001, int(k), 1).strftime('%b'), 'D': lambda k: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][int(k)], 'W-MON': lambda k: f'W{int(k)}'}[freq]
             if freq != 'W-MON':
                 charts.append(chart(f'Usual effect of each {"month" if freq == "MS" else "weekday"}', bars([names(k) for k in prof.index], list(prof.values), 'num', tones=['green' if v == prof.max() else 'orange' if v == prof.min() else 'accent' for v in prof.values])))
-            findings.append(finding(f'A strong repeating pattern: {names(prof.idxmax())} is usually highest and {names(prof.idxmin())} lowest.', 'high'))
+            findings.append(finding(f'A strong repeating pattern: {names(prof.idxmax())} is usually highest and {names(prof.idxmin())} lowest ({pv(p_seas)}).', 'high'))
     labels = [_label(ts, freq) for ts in y.index]
     fc_kpi = kpi('Forecast', '–', 'needs a longer history')
     acc = None
@@ -634,19 +681,21 @@ def trend_forecast(c: Ctx) -> dict:
         charts.insert(0, chart(f'{what[0].upper()}{what[1:]} by {unit}, with a forecast', line(labels, [series('Actual', list(y.values) + [None] * h), series(f'Forecast ({best})', [None] * (n - 1) + [float(y.values[-1])] + list(point), dashed=True)], band={'lo': [None] * n + list(lo), 'hi': [None] * n + list(hi), 'name': '80% range'}, fmt='num'), wide=True))
         agg = point.sum() if how != 'Average' else point.mean()
         fc_kpi = kpi(f'Next {h} {unit}s', nf(agg), 'total' if how != 'Average' else 'average')
-        findings.append(finding(f'Next {h} {unit}s: about {nf(agg)} {"in total" if how != "Average" else "on average"}; {best} won the test on the last {unit}s it hadn’t seen, off by {err:.1%} on average.', 'high' if err < 0.1 else 'medium' if err < 0.2 else 'low'))
+        findings.append(finding(f'Next {h} {unit}s: about {nf(agg)} {"in total" if how != "Average" else "on average"}; {best} won the test on the last {unit}s it hadn’t seen, off by {err:.1%} on average.', 'low' if short else 'high' if err < 0.1 else 'medium' if err < 0.2 else 'low'))
         if err >= naive:
             findings.append(finding(f'The model was no better than repeating the last value (off by {naive:.1%}): read the forecast as a rough guide.', 'high'))
         acc = f'Each model was fitted without the last {unit}s, then compared with what happened: {best} was off by {err:.1%}; repeating the last value was off by {naive:.1%}.'
         level = 'high' if err < 0.1 and n >= 2 * season else 'medium' if err < 0.2 else 'low'
+        if short:
+            level = 'low'
     else:
         charts.insert(0, chart(f'{what[0].upper()}{what[1:]} by {unit}', line(labels, [series('Actual', list(y.values))], fmt='num'), wide=True))
     return result(
-        [kpi('Trend', trend_word, pv(p_trend), 'good' if p_trend < 0.05 else None), kpi('Change a year', snf(per_year), f'{snf(per_year / abs(level_now) * 100)}% of the usual level'), fc_kpi, kpi(f'{unit.capitalize()}s of data', str(n))],
+        [kpi('Trend', trend_word, pv(p_trend), 'good' if p_trend < 0.05 else None), kpi(f'Change over {span_days} days' if short else 'Change a year', snf(change), f'{snf(change / abs(level_now) * 100)}% of the usual level'), fc_kpi, kpi(f'{unit.capitalize()}s of data', str(n))],
         charts,
         findings,
         accuracy=acc,
-        notes=[f'Grouped by {unit}; {"the first or last " + unit + " was left out where only partly covered" if freq != "D" else "days without rows count as zero"}.'],
+        notes=[f'Grouped by {unit}; ' + ('the first or last ' + unit + ' was left out where only partly covered.' if freq != 'D' else 'days without rows count as zero.' if how != 'Average' else 'days without rows are filled in from the days around them.')],
     ) | {'level': level}
 
 
@@ -931,12 +980,26 @@ def quality(c: Ctx) -> dict:
     n_pts = len(plot) - off
     charts = [chart(chart_name, line(labels[show], [series(str(m), list(np.asarray(plot, float)[show])), series('Centre', [centre] * n_pts, 'muted', True), series('Upper limit', [ucl] * n_pts, 'orange', True), series('Lower limit', [lcl] * n_pts, 'orange', True)], marks=marks, fmt='num'), wide=True)]
     stable = not broken
-    findings = [finding(('The process is stable: no point breaks the control-chart rules, so the variation is the normal kind.' if stable else f'{len(broken)} point{"s" if len(broken) > 1 else ""} break the control-chart rules, so something unusual happened.'), 'high' if len(plot) >= 25 else 'medium', None if stable else 'Look at what changed at those points (materials, shift, machine settings) before changing the process.')]
+    # Even a steady process breaks one of these rules now and then: in simulations of steady processes, about 1.6% of
+    # points. In a long series some breaks are expected by luck alone, so call it unstable only when there are more
+    # than a steady process gives 99 times in 100 (checked against simulations for 80, 480 and 2,000 points).
+    expected = 0.016 * len(plot)
+    beyond = sum(1 for r in broken.values() if r == 'beyond the limits')
+    exp_beyond = 0.0027 * len(plot)
+    by_chance = bool(broken) and len(broken) <= expected + 3.75 * np.sqrt(expected) + 1.5 and beyond <= exp_beyond + 3 * np.sqrt(exp_beyond) + 2
+    stable = stable or by_chance
+    if by_chance:
+        lead = f'The process is stable: {len(broken)} point{"s" if len(broken) > 1 else ""} break a rule, within what a steady process shows by chance in {len(plot):,} points (around {max(1, round(expected))}).'
+    elif stable:
+        lead = 'The process is stable: no point breaks the control-chart rules, so the variation is the normal kind.'
+    else:
+        lead = f'{len(broken)} point{"s" if len(broken) > 1 else ""} break the control-chart rules, where a steady process would show about {max(1, round(expected))} in {len(plot):,} points, so something unusual happened.'
+    findings = [finding(lead, 'high' if len(plot) >= 25 else 'medium', None if stable else 'Look at what changed at those points (materials, shift, machine settings) before changing the process.')]
     start = _first_signal(broken, labels)
-    if broken and start is not None and len(broken) >= 5:
+    if broken and not by_chance and start is not None and len(broken) >= 5:
         later = np.asarray(plot, float)[min(broken):]
         findings.insert(1, finding(f'The change starts around {"sample " if xbar else "point "}{start}: since then the average is {nf(later.mean())} against a usual {nf(centre)}.', 'high', 'Find what changed at that point: a new batch of material, a setting, a shift or a machine.'))
-    if broken:
+    if broken and not by_chance:
         kinds_ = pd.Series(list(broken.values())).value_counts()
         findings.append(finding('Rules broken: ' + ', '.join(f'{k} ({n})' for k, n in kinds_.items()) + '.', 'high'))
     cap_kpi = kpi('Capability (Cpk)', '–', 'add specification limits')
@@ -1035,33 +1098,44 @@ def natural_groups(c: Ctx) -> dict:
 # ---------- The services ----------
 
 
+def _arm(d: Data, avoid: set[str] = frozenset()) -> str | None:
+    """A two-value column that marks who took part (New method / Usual method, Yes / No), if the table has one."""
+    return _guess(d, 'category', _PREFER['arm'], avoid, fallback=False)
+
+
+# Settings start filled in only where a column's name says what it is; otherwise the analyst chooses.
+
+
 def _d_compare(d: Data, client: dict) -> dict:
-    m = _guess(d, 'outcome', _PREFER['measure'])
-    return {'measure': m, 'group': _guess(d, 'category', _PREFER['group'], {m} if m else set())}
+    m = _guess(d, 'outcome', _PREFER['measure'], fallback=False)
+    avoid = {m} if m else set()
+    return {'measure': m, 'group': _arm(d, avoid) or _guess(d, 'category', _PREFER['group'], avoid, fallback=False)}
 
 
 def _d_drivers(d: Data, client: dict) -> dict:
-    return {'outcome': _guess(d, 'outcome', _PREFER['measure'])}
+    yes_no = _guess(d, 'binary', [r'^(repaid|passed|success|outcome|result|converted|churned|left|default)', r'repaid|passed|success|outcome|result|converted|churn|default'], fallback=False)
+    return {'outcome': yes_no or _guess(d, 'outcome', _PREFER['outcome'], fallback=False)}
 
 
 def _d_trend(d: Data, client: dict) -> dict:
-    m = _guess(d, 'number', _PREFER['measure'])
+    m = _guess(d, 'number', _PREFER['measure'], fallback=False)
     adds_up = bool(m and re.search(r'amount|total|sales|revenue|count|visits|admissions|cases|output|units|orders|calls|عدد|مبلغ', m.split(SEP)[0], re.I))
-    return {'date': _guess(d, 'date', _PREFER['date']), 'measure': m, 'how': 'Total' if adds_up or not m else 'Average'}
+    return {'date': _guess(d, 'date', _PREFER['date']), 'measure': m, 'how': 'Total' if adds_up else 'Average' if m else 'Count of rows'}
 
 
 def _d_survey(d: Data, client: dict) -> dict:
-    return {'group': None}
+    return {'group': _arm(d)}
 
 
 def _d_before(d: Data, client: dict) -> dict:
-    b = _guess(d, 'number', _PREFER['before'])
-    a = _guess(d, 'number', _PREFER['after'], {b} if b else set())
-    return {'before': b, 'after': a, 'group': None}
+    b = _guess(d, 'number', _PREFER['before'], fallback=False)
+    a = _guess(d, 'number', _PREFER['after'], {b} if b else set(), fallback=False)
+    return {'before': b, 'after': a, 'group': _arm(d)}
 
 
 def _d_quality(d: Data, client: dict) -> dict:
-    return {'measure': _guess(d, 'number', _PREFER['measure']), 'order': _guess(d, 'date', _PREFER['date'])}
+    m = _guess(d, 'number', [r'reading|measure|fill|weight|thickness|diameter|length|temperature|pressure|volume|\bml\b|\bmm\b|\bkg\b|قياس'], fallback=False)
+    return {'measure': m, 'order': _guess(d, 'date', _PREFER['date'], fallback=False), 'sample': _guess(d, 'batch', [r'^(sample|batch|subgroup|lot)\b', r'sample|batch|subgroup|lot|دفعة'], {m} if m else set(), fallback=False)}
 
 
 def _p_limit(key: str, label: str) -> Param:
@@ -1077,6 +1151,6 @@ SERVICES = [
     Service('trend-and-forecast-for-any-measure', 'general', 'Trend and forecast for any measure', ANY, trend_forecast, params=[column_param('date', 'Date column', 'date'), column_param('measure', 'Measure', 'number', optional=True), choice_param('how', 'Add up by', ['Total', 'Average', 'Count of rows'])], defaults=_d_trend, adjust=_needs([('date', 1)], 'Needs a date column.')),
     Service('survey-and-questionnaire-analysis', 'general', 'Survey and questionnaire analysis', ANY, survey, params=[column_param('group', 'Compare answers by (optional)', 'category', optional=True)], defaults=_d_survey),
     Service('before-and-after-impact', 'general', 'Before-and-after impact', ANY, before_after, params=[column_param('before', 'Measure before', 'number'), column_param('after', 'The same measure after', 'number'), column_param('group', 'Took part or not (optional)', 'category', optional=True)], defaults=_d_before, adjust=_needs([('number', 2)], 'Needs two number columns: the measure before and after.')),
-    Service('quality-and-process-control', 'general', 'Quality and process control', ANY, quality, params=[column_param('measure', 'Measurement', 'number'), column_param('order', 'Time order (optional)', 'date', optional=True), column_param('sample', 'Sample or batch (optional)', 'category', optional=True), _p_limit('lsl', 'Lower specification limit (optional)'), _p_limit('usl', 'Upper specification limit (optional)')], defaults=_d_quality, adjust=_needs([('number', 1)], 'Needs a number column of measurements.')),
+    Service('quality-and-process-control', 'general', 'Quality and process control', ANY, quality, params=[column_param('measure', 'Measurement', 'number'), column_param('order', 'Time order (optional)', 'date', optional=True), column_param('sample', 'Sample or batch (optional)', 'batch', optional=True), _p_limit('lsl', 'Lower specification limit (optional)'), _p_limit('usl', 'Upper specification limit (optional)')], defaults=_d_quality, adjust=_needs([('number', 1)], 'Needs a number column of measurements.')),
     Service('natural-groups', 'general', 'Natural groups', ANY, natural_groups, params=[Param('k', 'Number of groups (0 = choose automatically)', 0, 8, 1, 0), column_param('label', 'Compare with (optional)', 'category', optional=True)], adjust=_needs([('number', 2)], 'Needs at least two number columns.')),
 ]

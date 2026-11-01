@@ -3,6 +3,8 @@
 Six made-up files with answers planted in them. Make one test client (for example "Test pack"), upload all six on
 the **Files** page, and confirm each one. Files 1 to 5 are read as **Any other table**, and file 6 as a **Sales list**.
 Then open each service below, choose the columns shown, press **Run**, and compare with the planted answer.
+The any-data services don't run by themselves: the app suggests columns only when their names make the role clear
+(“Score after”, “Group”), and waits for you to check them and press **Run**.
 
 Small differences from the planted numbers are normal: the files include random noise, as real data does.
 

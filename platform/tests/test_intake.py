@@ -74,3 +74,13 @@ def test_cancelled_orders_and_postage_are_not_products():
     assert 'Vase' not in set(data.sales['product'])
     assert data.cancelled['lines'] == 1
     assert 'POSTAGE' in set(data.sales['product']) and 'POSTAGE' not in set(data.goods(data.sales)['product'])
+
+
+def test_dot_is_a_decimal_unless_the_column_is_clearly_european():
+    import pandas as pd
+
+    from clearline.intake import to_number
+
+    assert to_number(pd.Series(['10.035', '9.87', '10.1'])).tolist() == [10.035, 9.87, 10.1]  # measurements
+    assert to_number(pd.Series(['1.250', '3.400,50', '12,5'])).tolist() == [1250, 3400.5, 12.5]  # European money
+    assert to_number(pd.Series(['1.234.567', '1.250'])).tolist() == [1234567, 1250]

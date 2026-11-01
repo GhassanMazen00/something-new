@@ -81,7 +81,30 @@ def test_every_any_data_service_runs():
     d, _ = data_of(study())
     for s in engine.SERVICES:
         if s.dept == 'general':
-            run(d, s.id)
+            run(d, s.id, **({'measure': 'Score after'} if s.id == 'quality-and-process-control' else {}))
+
+
+def test_columns_are_only_guessed_from_their_names():
+    d, _ = data_of(study())
+    p = engine.start_params(engine.BY_ID['group-comparison'], d, INFO)
+    assert p == {'measure': 'Score after', 'group': 'Arm'}  # the after score, by the arm that took part
+    assert engine.start_params(engine.BY_ID['what-drives-an-outcome'], d, INFO)['outcome'] == 'Score after'
+    assert engine.start_params(engine.BY_ID['quality-and-process-control'], d, INFO)['measure'] is None  # nothing looks like a measurement
+    out = engine.run('quality-and-process-control', d, None, INFO)
+    assert out['error'] == 'Choose the measurement.'
+
+
+def test_short_daily_data_is_not_stretched_to_a_year():
+    d, _ = data_of(study().assign(**{'Test date': pd.Timestamp('2025-03-01') + pd.to_timedelta(np.arange(300) % 60, unit='D')}))
+    out = run(d, 'trend-and-forecast-for-any-measure', date='Test date', measure='Score before', how='Average')
+    assert out['level'] == 'low'
+    assert any(k['label'].startswith('Change over') for k in out['result']['kpis'])
+
+
+def test_a_steady_series_is_called_stable():
+    d, _ = data_of(pd.DataFrame({'Reading': np.random.default_rng(4).normal(10, 0.1, 480).round(3)}), 'steady.csv')
+    out = run(d, 'quality-and-process-control', measure='Reading')
+    assert next(k for k in out['result']['kpis'] if k['label'] == 'Stable?')['value'] == 'Yes'
 
 
 def test_quality_control_flags_a_shift():

@@ -290,5 +290,75 @@
         "missing": "Public data covers it fully"
       }
     ]
+  },
+  {
+    "id": "general",
+    "name": "Any data",
+    "services": [
+      {
+        "id": "data-profile",
+        "name": "Data profile",
+        "get": "Every column summarised: what it holds, what is missing, what looks wrong and what moves together",
+        "method": "Descriptive statistics, robust outlier tests and correlation",
+        "data": "Any table: Excel, CSV, a system export or a survey download",
+        "missing": "Nothing extra: it works on any table"
+      },
+      {
+        "id": "group-comparison",
+        "name": "Group comparison",
+        "get": "Whether groups really differ (schools, clinics, machines, treatments) or it is just chance",
+        "method": "Welch t-test, ANOVA or rank tests chosen to fit the data, with effect sizes",
+        "data": "One measure and one column naming the group",
+        "missing": "Small groups: we say how big a difference could still be missed"
+      },
+      {
+        "id": "what-drives-an-outcome",
+        "name": "What drives an outcome",
+        "get": "Which factors are linked to a result, by how much, and how sure we are",
+        "method": "Multiple or logistic regression with robust errors, tested on rows it did not see",
+        "data": "The outcome and the factors you recorded",
+        "missing": "Few rows: we test fewer factors and say so"
+      },
+      {
+        "id": "trend-and-forecast-for-any-measure",
+        "name": "Trend and forecast for any measure",
+        "get": "Whether it is rising or falling, its seasonal pattern, and the next months",
+        "method": "Mann–Kendall trend test, seasonal decomposition and an ETS, ARIMA and Theta forecast contest",
+        "data": "A date and a measure: visits, readings, admissions, output",
+        "missing": "Short history: the trend only, no forecast"
+      },
+      {
+        "id": "survey-and-questionnaire-analysis",
+        "name": "Survey and questionnaire analysis",
+        "get": "Results per question, how reliable the scales are, and how groups answered differently",
+        "method": "Response distributions, Cronbach’s alpha, cross-tabs with chi-square and rank tests",
+        "data": "One row per respondent, as exported from Google Forms, KoboToolbox or SurveyMonkey",
+        "missing": "We can design and run the survey for you"
+      },
+      {
+        "id": "before-and-after-impact",
+        "name": "Before-and-after impact",
+        "get": "Whether a programme, training or change actually worked, and by how much",
+        "method": "Paired tests and difference-in-differences against a comparison group",
+        "data": "The same measure before and after, per person or site",
+        "missing": "No comparison group: we show the change and say what else could explain it"
+      },
+      {
+        "id": "quality-and-process-control",
+        "name": "Quality and process control",
+        "get": "Whether a process is stable, the points that broke its limits, and whether it meets the specification",
+        "method": "Shewhart control charts with the Western Electric rules, and Cp/Cpk capability",
+        "data": "Measurements in time order, with specification limits if you have them",
+        "missing": "No specification limits: stability only"
+      },
+      {
+        "id": "natural-groups",
+        "name": "Natural groups",
+        "get": "Groups that occur naturally in your records (patients, students, sites) and what sets each apart",
+        "method": "k-means clustering on standardised columns, with the number of groups chosen by silhouette score",
+        "data": "A table with several number columns per row",
+        "missing": "Few columns: we group on what there is and say how clear the groups are"
+      }
+    ]
   }
 ]

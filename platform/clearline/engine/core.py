@@ -180,6 +180,7 @@ NOT_GOODS_NAMES = {'MANUAL', 'DISCOUNT', 'ADJUSTMENT', 'ADJUST BAD DEBT', 'SAMPL
 class Data:
     tables: dict[str, pd.DataFrame]
     settings: dict = field(default_factory=dict)
+    files: dict[str, pd.DataFrame] = field(default_factory=dict)  # 'any other table' files, by file name, kept apart
 
     @property
     def kinds(self) -> set[str]:
@@ -337,8 +338,18 @@ class Param:
     min: float
     max: float
     step: float
-    value: float
-    format: str = 'num'  # num, pct, rate, money
+    value: float | str | None
+    format: str = 'num'  # num, pct, rate, money; 'column' (pick a column of the client's table) or 'choice'
+    options: str | list[str] | None = None  # for 'column': which columns fit ('number', 'category', 'date', 'any'); for 'choice': the list
+    optional: bool = False  # a column that can be left out
+
+
+def column_param(key: str, label: str, fits: str, optional: bool = False) -> Param:
+    return Param(key, label, 0, 0, 0, None, 'column', fits, optional)
+
+
+def choice_param(key: str, label: str, options: list[str]) -> Param:
+    return Param(key, label, 0, 0, 0, options[0], 'choice', options)
 
 
 @dataclass

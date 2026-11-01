@@ -1,4 +1,4 @@
-// Everything Clearline offers: 32 services in six departments, with the method behind each.
+// Everything Clearline offers: every service in every department, with the method behind each.
 
 import { useSession } from '../session'
 
@@ -9,7 +9,7 @@ export function CatalogPage() {
       <div className="page-head">
         <div>
           <h1>Services</h1>
-          <p>All 32 services, the method each one runs, and the files it needs. Open a client to run them.</p>
+          <p>All {catalog.services.length} services, the method each one runs, and the files it needs. Open a client to run them.</p>
         </div>
       </div>
       {catalog.departments.map((d) => {

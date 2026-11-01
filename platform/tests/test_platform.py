@@ -5,6 +5,8 @@ import os
 import time
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
 import pyotp
 import pytest
 from docx import Document
@@ -124,7 +126,7 @@ def test_upload_map_and_run_everything(app):
             assert r2.status_code == 200, (f['name'], r2.text)
             assert r2.json()['ready'] and r2.json()['rows'] > 0
         svcs = c.get(f'/api/clients/{cid}/services').json()['services']
-        assert len(svcs) == 32
+        assert len(svcs) == 40
         done = []
         for s in svcs:
             if s['level'] == 'none':
@@ -179,11 +181,27 @@ def test_report_review_and_export(app):
         (Path(out_dir) / 'sample_report.xlsx').write_bytes(xlsx.content)
 
 
+def test_any_table_through_the_app(app):
+    sara = STATE['Sara']
+    cid = STATE['clients']['lotus-beauty']
+    rng = np.random.default_rng(5)
+    df = pd.DataFrame({'Clinic': rng.choice(['A', 'B', 'C'], 120), 'Waiting minutes': rng.gamma(4, 6, 120).round(), 'Visit date': pd.date_range('2024-01-01', periods=120, freq='3D').strftime('%d/%m/%Y')})
+    up = sara.post(f'/api/clients/{cid}/files', files=[('files', ('clinic_visits.csv', df.to_csv(index=False).encode(), 'text/csv'))], headers=H).json()[0]
+    assert up['kind'] == 'table'
+    ok = sara.put(f'/api/files/{up["id"]}/mapping', json={'kind': 'table', 'mapping': {}, 'options': {}}, headers=H).json()
+    assert ok['ready'] and ok['health']['types']['Visit date'] == 'date'
+    svc = next(s for s in sara.get(f'/api/clients/{cid}/services').json()['services'] if s['id'] == 'group-comparison')
+    assert svc['level'] == 'high' and 'Waiting minutes' in svc['choices']['measure'] and 'Clinic' in svc['choices']['group']
+    r = sara.post(f'/api/clients/{cid}/runs', json={'service_id': 'group-comparison', 'params': {'measure': 'Waiting minutes', 'group': 'Clinic'}}, headers=H).json()
+    assert r['result']['kpis'][0]['value'] == '3' and r['params']['group'] == 'Clinic'
+
+
 def test_failed_check_blocks_until_explained(app, monkeypatch):
     from clearline.engine import checks
 
     sara, admin = STATE['Sara'], STATE['admin']
     cid = STATE['clients']['lotus-beauty']
+    sara.post(f'/api/clients/{cid}/runs', json={'service_id': 'business-snapshot', 'params': {}}, headers=H)  # files changed in the test before
     again = sara.post(f'/api/clients/{cid}/runs', json={'service_id': 'business-snapshot', 'params': {}}, headers=H).json()
     assert next(k for k in again['result']['checks'] if k['id'] == 'stability')['detail'].startswith('Re-run on the same files')
     monkeypatch.setattr(checks, 'integrity', lambda res: checks.check('integrity', 'Result is complete', checks.FAIL, 'Planted failure.'))

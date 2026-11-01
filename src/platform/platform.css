@@ -448,3 +448,7 @@ details.hint code {
   font-size: 0.72rem;
   opacity: 0.75;
 }
+
+.param select {
+  width: 100%;
+}

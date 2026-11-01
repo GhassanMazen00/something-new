@@ -543,7 +543,9 @@ def client_data(db: Session, c: Client) -> tuple[engine.Data, dict]:
     tables: dict[str, list[pd.DataFrame]] = {}
     for f in files:
         # Our own encrypted, authenticated blob: only this app could have written it.
-        tables.setdefault(intake.KINDS[f.kind].store_as or f.kind, []).append(pickle.loads(storage.load(c.data_key, f.options['std'])))  # noqa: S301
+        std = pickle.loads(storage.load(c.data_key, f.options['std']))  # noqa: S301
+        std.attrs['file'] = f.name
+        tables.setdefault(intake.KINDS[f.kind].store_as or f.kind, []).append(std)
     info = {'files': [{'name': f.name, 'kind': f.kind, 'store_as': intake.KINDS[f.kind].store_as, 'kind_label': intake.KINDS[f.kind].label, 'rows': f.rows, 'health': f.health} for f in files], 'sector': c.sector, 'currency': c.settings.get('currency', 'EGP')}
     out = (engine.build_data(tables, market_settings(info['currency'], c.settings)), info)
     with _cache_lock:
@@ -568,7 +570,7 @@ def client_services(cid: int, user: User = Depends(current_user), db: Session = 
     out = []
     for s in engine.SERVICES:
         r = engine.readiness(s, data)
-        out.append({'id': s.id, **r, 'last_run': latest.get(s.id), 'params': engine.start_params(s, data, info) if s.params else {}})
+        out.append({'id': s.id, **r, 'last_run': latest.get(s.id), 'params': engine.start_params(s, data, info) if s.params else {}, 'choices': engine.choices(s, data) if r['level'] != 'none' else {}})
     return {'kinds': sorted(data.kinds), 'services': out}
 
 

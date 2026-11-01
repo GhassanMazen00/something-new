@@ -118,6 +118,26 @@ No. The workspace makes the Word and Excel files and a printable PDF view itself
 Word only to open those files, and the client can open them in anything. Power BI or Looker Studio are only
 worth adding later, if clients want a live dashboard they can click around in.
 
+## Any data: research, surveys, records, readings
+
+Not every client is a business. A file that isn't sales, accounts or staff (a thesis dataset, a survey download, an
+NGO's beneficiary list, a clinic's visits, a production line's readings) is read as **Any other table**. Every
+column is kept under its own name, and numbers, dates and text are recognised automatically. Eight services work on
+any such table, and you choose the columns when you run them:
+
+| Service | Answers |
+|---|---|
+| Data profile | What each column holds, the gaps, odd values, and what moves together |
+| Group comparison | Whether groups really differ (Welch t-test or ANOVA, or rank tests on skewed data), with effect sizes |
+| What drives an outcome | Which factors are linked to a result (multiple or logistic regression, tested on rows it didn't see) |
+| Trend and forecast for any measure | Rising or falling (Mann–Kendall), the seasonal pattern, and a forecast contest |
+| Survey and questionnaire analysis | Results per question, reliability (Cronbach's alpha), and differences between groups |
+| Before-and-after impact | Paired tests, and difference-in-differences against a comparison group |
+| Quality and process control | Control charts with the Western Electric rules, and Cp/Cpk against the specification |
+| Natural groups | k-means clusters, the number chosen by silhouette score, and what sets each group apart |
+
+`python -m tests.stress.general --tables 200` runs them on hundreds of random messy tables with planted effects.
+
 ## Built-in checks
 
 Every time a service runs, the workspace tests the result before you see it. The checks appear under the result

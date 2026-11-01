@@ -6,7 +6,7 @@ import { setCurrency } from '../../app/lib/format'
 import type { Level as L } from '../../app/services/types'
 import { icons, Level, LEVEL_TEXT } from '../../app/ui/bits'
 import { ResultView } from '../../app/ui/ResultView'
-import { api, type ClientT, type ParamT, type Person, type Readiness, type ReportT, type RunT, type ServiceT } from '../api'
+import { api, type ClientT, type ParamT, type ParamValue, type Person, type Readiness, type ReportT, type RunT, type ServiceT } from '../api'
 import { Shell } from '../App'
 import { daysLeft, fmtDate, fmtTime, useAction, useLoad } from '../hooks'
 import { useSession } from '../session'
@@ -166,7 +166,7 @@ function Overview({ client, changed }: { client: ClientT; changed: () => void })
         )}
         <div className="panel pad">
           <div className="panel-title">
-            {client.files ? `${ready.length} of 32 services can run` : 'Start here'}
+            {client.files ? `${ready.length} of ${catalog.services.length} services can run` : 'Start here'}
             <a className="btn btn-sm" href={`#/client/${client.id}/${client.files ? 'services' : 'files'}`}>
               {client.files ? 'All services' : 'Upload files'}
             </a>
@@ -390,9 +390,33 @@ function ServicesTab({ client }: { client: ClientT }) {
   )
 }
 
-function ParamControl({ p, value, currency, onChange }: { p: ParamT; value: number; currency: string; onChange: (v: number) => void }) {
-  const n = (v: number) => v.toLocaleString('en-US', { maximumFractionDigits: p.step < 1 ? 2 : 0 })
-  const show = p.format === 'pct' ? `${value > 0 ? '+' : ''}${n(value)}%` : p.format === 'share' ? `${n(value)}%` : p.format === 'money' ? `${currency} ${n(value)}` : p.format === 'rate' ? `${n(value)} per $` : n(value)
+function ParamControl({ p, value, currency, choices, onChange }: { p: ParamT; value: ParamValue; currency: string; choices?: string[]; onChange: (v: ParamValue) => void }) {
+  // A column of the client's table, or one of a fixed list.
+  if (p.format === 'column' || p.format === 'choice')
+    return (
+      <label className="param">
+        <span className="spread">{p.label}</span>
+        <select className="mini" value={value ?? ''} onChange={(e) => onChange(e.target.value || null)}>
+          {(p.optional || !value) && <option value="">{p.optional ? 'None' : 'Choose a column'}</option>}
+          {(choices ?? []).map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </label>
+    )
+  // An optional number, such as a specification limit: blank means not set.
+  if (p.format === 'limit')
+    return (
+      <label className="param">
+        <span className="spread">{p.label}</span>
+        <input className="num-input" type="number" step="any" placeholder="Not set" value={value ?? ''} onChange={(e) => onChange(e.target.value === '' ? null : Number(e.target.value))} />
+      </label>
+    )
+  const v = Number(value ?? 0)
+  const n = (x: number) => x.toLocaleString('en-US', { maximumFractionDigits: p.step < 1 ? 2 : 0 })
+  const show = p.format === 'pct' ? `${v > 0 ? '+' : ''}${n(v)}%` : p.format === 'share' ? `${n(v)}%` : p.format === 'money' ? `${currency} ${n(v)}` : p.format === 'rate' ? `${n(v)} per $` : n(v)
   const span = p.max - p.min
   // Money inputs (an opening balance, a market size) can be far outside a slider's reach: type them.
   if (p.format === 'money' || span / p.step > 2000)
@@ -402,7 +426,7 @@ function ParamControl({ p, value, currency, onChange }: { p: ParamT; value: numb
           {p.label}
           <b>{show}</b>
         </span>
-        <input className="num-input" type="number" step={p.step} value={value} onChange={(e) => e.target.value !== '' && onChange(Number(e.target.value))} />
+        <input className="num-input" type="number" step={p.step} value={v} onChange={(e) => e.target.value !== '' && onChange(Number(e.target.value))} />
       </label>
     )
   return (
@@ -411,7 +435,7 @@ function ParamControl({ p, value, currency, onChange }: { p: ParamT; value: numb
         {p.label}
         <b>{show}</b>
       </span>
-      <input type="range" min={p.min} max={p.max} step={p.step} value={Math.min(p.max, Math.max(p.min, value))} onChange={(e) => onChange(Number(e.target.value))} />
+      <input type="range" min={p.min} max={p.max} step={p.step} value={Math.min(p.max, Math.max(p.min, v))} onChange={(e) => onChange(Number(e.target.value))} />
     </label>
   )
 }
@@ -422,7 +446,7 @@ function RunService({ client, svc }: { client: ClientT; svc: ServiceT }) {
   const runs = useLoad(() => api.get<RunT[]>(`/clients/${client.id}/runs?service_id=${svc.id}`), [client.id, svc.id])
   const report = useLoad(() => api.get<ReportT>(`/clients/${client.id}/report`), [client.id])
   const r = svcs.data?.services.find((s) => s.id === svc.id)
-  const [p, setP] = useState<Record<string, number> | null>(null)
+  const [p, setP] = useState<Record<string, ParamValue> | null>(null)
   const [current, setCurrent] = useState<RunT | null>(null)
   const [failure, setFailure] = useState('')
   const a = useAction()
@@ -507,7 +531,7 @@ function RunService({ client, svc }: { client: ClientT; svc: ServiceT }) {
           {(svc.params.length > 0 || canEdit) && (
             <div className="params panel">
               {svc.params.map((x) => (
-                <ParamControl key={x.key} p={x} value={params[x.key] ?? x.value} currency={client.currency} onChange={(v) => setP({ ...params, [x.key]: v })} />
+                <ParamControl key={x.key} p={x} value={x.key in params ? params[x.key] : x.value} currency={client.currency} choices={r.choices?.[x.key]} onChange={(v) => setP({ ...params, [x.key]: v })} />
               ))}
               {canEdit && (
                 <div className="run-bar">

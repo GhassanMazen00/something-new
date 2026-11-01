@@ -261,7 +261,7 @@ KINDS: dict[str, Kind] = {
             'Search interest (Google Trends)',
             [
                 F('date', 'Week or month', 'date', 'week|month|date|day', True),
-                F('interest', 'Interest (0–100)', 'number', 'interest|value|score|egypt|search', True),
+                F('interest', 'Interest (0–100)', 'number', 'interest|egypt|search|worldwide|: (', True),
             ],
             hints=['trends', 'multitimeline', 'google trends', 'search'],
         ),
@@ -288,8 +288,18 @@ KINDS: dict[str, Kind] = {
             ],
             hints=['price survey', 'van westendorp', 'pricing survey', 'استبيان الأسعار'],
         ),
+        # Anything else: research data, surveys, records, measurements. Every column is kept as it is.
+        Kind(
+            'table',
+            'Any other table (research, survey, records, measurements)',
+            [],
+            hints=['survey', 'study', 'research', 'experiment', 'results', 'measurement', 'questionnaire', 'responses', 'students', 'patients', 'grades', 'sensor', 'quality', 'readings', 'trial', 'evaluation', 'beneficiaries', 'استبيان', 'دراسة', 'نتائج'],
+        ),
     ]
 }
+
+# How sure the other types must be before a file is read as one of them rather than as an "any other table".
+TABLE_BASELINE = 0.5
 
 
 # ---------- Reading files ----------
@@ -591,12 +601,21 @@ def suggest_kind(name: str, df: pd.DataFrame) -> tuple[str, dict[str, str], floa
     best = ('sales', {}, -1.0)
     low = name.lower()
     for key, k in KINDS.items():
+        if key == 'table':
+            score = TABLE_BASELINE + (0.25 if any(h in low for h in k.hints) else 0)
+            if score > best[2]:
+                best = ('table', {}, score)
+            continue
         m = suggest_mapping(key, df)
         req = [f for f in k.fields if f.required]
         covered = sum(1 for f in req if f.key in m) / max(len(req), 1)
         groups_ok = not k.any_of or any(all(x in m for x in g) for g in k.any_of)
         extra = sum(1 for f in k.fields if not f.required and f.key in m) / max(len(k.fields), 1)
-        score = covered * (1 if groups_ok else 0.6) + 0.3 * extra + (0.25 if any(h in low for h in k.hints) else 0)
+        score = covered * (1 if groups_ok else 0.4) + 0.3 * extra + (0.25 if any(h in low for h in k.hints) else 0)
+        if covered < 1:
+            score *= 0.6  # a required column is missing: more likely another kind of table
+        if df.shape[1] >= 5 and len(m) / df.shape[1] < 0.34:
+            score *= max(0.3, 2 * len(m) / df.shape[1])  # explains only a small part of a wide file: probably something else
         if key == 'adswide':
             score = score if len(wide_spend_columns(df, m)) >= 2 else 0
         elif key == 'ads' and len(wide_spend_columns(df)) >= 2 and 'channel' not in m:
@@ -616,6 +635,8 @@ MONEY_KINDS = {'payroll', 'bank', 'ledger', 'einv', 'bills', 'unpaid'}
 def standardize(kind: str, df: pd.DataFrame, mapping: dict[str, str], options: dict | None = None) -> tuple[pd.DataFrame, dict]:
     """Returns the clean standard table and a health report of what was fixed or set aside."""
     options = options or {}
+    if kind == 'table':
+        return standardize_table(df, options)
     k = KINDS[kind]
     totals = int(df.attrs.get('totals', 0))
     out = pd.DataFrame(index=df.index)
@@ -672,6 +693,69 @@ def standardize(kind: str, df: pd.DataFrame, mapping: dict[str, str], options: d
     health['score'] = int(max(30, min(100, round(100 * kept - 2 * (len(health['issues']) - grouped_note) + (2 if len(health['issues']) == grouped_note else 0)))))
     if 'dayfirst_used' in options:
         health['dayfirst'] = options['dayfirst_used']
+    return out.reset_index(drop=True), health
+
+
+_BLANK = {'', 'nan', 'none', 'null', 'n/a', 'na', '-', '–', '#n/a'}
+
+
+def standardize_table(df: pd.DataFrame, options: dict) -> tuple[pd.DataFrame, dict]:
+    """Any other table: every column kept under its own name, read as numbers, dates or text, whichever fits."""
+    totals = int(df.attrs.get('totals', 0))
+    health: dict = {'rows_in': int(len(df)), 'issues': [], 'types': {}}
+    if totals:
+        health['issues'].append(f'{totals} total row{"s" if totals > 1 else ""} at the bottom left out')
+    out = pd.DataFrame(index=df.index)
+    names: dict[str, int] = {}
+    for col in df.columns:
+        raw = df[col]
+        text = raw.astype(str).str.strip()
+        filled = raw.notna() & ~text.str.lower().isin(_BLANK)
+        name = str(col).strip() or f'Column {len(out.columns) + 1}'
+        if name in names:  # two columns with the same heading
+            names[name] += 1
+            name = f'{name} ({names[name]})'
+        names.setdefault(name, 1)
+        if not filled.any():
+            health['issues'].append(f'Empty column “{name}” left out')
+            continue
+        # A number, maybe with a currency, a % sign, brackets or thousands separators, and nothing else: "S001" is a code.
+        plain = text[filled].str.translate(_AR_DIGITS).str.replace(r'(?i)^[(\s]*[-+]?\s*(?:[A-Z]{3}|[$€£])?\s*[-+]?\d[\d.,\s]*%?\s*(?:[A-Z]{3}|[$€£])?[)\s]*-?$', '', regex=True)
+        num = to_number(raw.where(filled))
+        n_ok = (num.notna() & (plain.reindex(raw.index).fillna('x') == '')).sum() / filled.sum()
+        looks_dateish = text[filled].str.contains(r'[/\-.]\d|\d{4}|[A-Za-z]{3}', regex=True).mean() > 0.8
+        if n_ok >= 0.9 and not (looks_dateish and text[filled].str.contains(r'\d[/\-.]\d{1,2}[/\-.]\d', regex=True).mean() > 0.8):
+            bad = int((filled & num.isna()).sum())
+            if bad:
+                health['issues'].append(f'{bad:,} values in “{name}” weren’t numbers and were left empty')
+            out[name] = num
+            health['types'][name] = 'number'
+            continue
+        if looks_dateish:
+            d, used = to_date(raw.where(filled), options.get('dayfirst'))
+            if d.notna().sum() / filled.sum() >= 0.9:
+                options.setdefault('dayfirst_used', used)
+                bad = int((filled & d.isna()).sum())
+                if bad:
+                    health['issues'].append(f'{bad:,} values in “{name}” weren’t dates and were left empty')
+                out[name] = d
+                health['types'][name] = 'date'
+                continue
+        out[name] = text.where(filled)
+        health['types'][name] = 'text'
+    out = out.dropna(how='all')
+    dropped = health['rows_in'] - len(out)
+    if dropped:
+        health['issues'].append(f'{dropped:,} empty rows left out')
+    dupes = int(out.duplicated().sum())
+    if dupes:
+        health['issues'].append(f'{dupes:,} rows appear twice; kept, since two identical answers or readings can be real')
+        health['repeats'] = dupes
+    health['rows_out'] = int(len(out))
+    if 'dayfirst_used' in options:
+        health['dayfirst'] = options['dayfirst_used']
+    kept = health['rows_out'] / max(health['rows_in'], 1)
+    health['score'] = int(max(30, min(100, round(100 * kept - 2 * len(health['issues']) + (2 if not health['issues'] else 0)))))
     return out.reset_index(drop=True), health
 
 

@@ -246,41 +246,45 @@ export function FileMapping({ client, fileId }: { client: ClientT; fileId: numbe
               </select>
             </label>
           </div>
-          <table className="tbl map-tbl">
-            <thead>
-              <tr>
-                <th>We need</th>
-                <th>Column in the file</th>
-                <th>First values</th>
-              </tr>
-            </thead>
-            <tbody>
-              {kind.fields.map((x) => {
-                const col = mapping[x.key] ?? ''
-                const i = cols.indexOf(col)
-                const sample = i >= 0 ? (f.preview ?? []).slice(0, 3).map((r) => r[i]).filter(Boolean).join(' · ') : ''
-                return (
-                  <tr key={x.key} className={x.required && !col ? 'need' : undefined}>
-                    <td>
-                      {x.label}
-                      {x.required && <span className="req"> required</span>}
-                    </td>
-                    <td>
-                      <select value={col} onChange={(e) => setMapping({ ...mapping, [x.key]: e.target.value })}>
-                        <option value="">{x.required ? 'Choose a column' : 'Not in this file'}</option>
-                        {cols.map((c) => (
-                          <option key={c} value={c} disabled={used.has(c) && c !== col}>
-                            {c}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="faint sample">{sample}</td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+          {kind.fields.length === 0 ? (
+            <p className="hint">Every column is kept under its own name. Numbers, dates and text are recognised automatically; you choose which columns to use when you run a service.</p>
+          ) : (
+            <table className="tbl map-tbl">
+              <thead>
+                <tr>
+                  <th>We need</th>
+                  <th>Column in the file</th>
+                  <th>First values</th>
+                </tr>
+              </thead>
+              <tbody>
+                {kind.fields.map((x) => {
+                  const col = mapping[x.key] ?? ''
+                  const i = cols.indexOf(col)
+                  const sample = i >= 0 ? (f.preview ?? []).slice(0, 3).map((r) => r[i]).filter(Boolean).join(' · ') : ''
+                  return (
+                    <tr key={x.key} className={x.required && !col ? 'need' : undefined}>
+                      <td>
+                        {x.label}
+                        {x.required && <span className="req"> required</span>}
+                      </td>
+                      <td>
+                        <select value={col} onChange={(e) => setMapping({ ...mapping, [x.key]: e.target.value })}>
+                          <option value="">{x.required ? 'Choose a column' : 'Not in this file'}</option>
+                          {cols.map((c) => (
+                            <option key={c} value={c} disabled={used.has(c) && c !== col}>
+                              {c}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="faint sample">{sample}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          )}
           {kind.key === 'adswide' && (
             <p className={f.spend_columns?.length ? 'hint' : 'error'}>
               {f.spend_columns?.length

@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from . import checks, svc_accounting, svc_data, svc_market, svc_marketing, svc_people, svc_sales
+from . import checks, svc_accounting, svc_data, svc_general, svc_market, svc_marketing, svc_people, svc_sales
 from .core import Ctx, Data, Fmt, NeedsData, Service, clean_json, level_for, missing_for
 
 _CATALOG = json.loads((Path(__file__).parent / 'catalog.json').read_text(encoding='utf-8'))
@@ -33,7 +33,7 @@ METHODS = {
     'pay-fairness-check': 'Regression of pay on role, tenure and gender',
 }
 
-SERVICES: list[Service] = [*svc_data.SERVICES, *svc_sales.SERVICES, *svc_marketing.SERVICES, *svc_accounting.SERVICES, *svc_people.SERVICES, *svc_market.SERVICES]
+SERVICES: list[Service] = [*svc_data.SERVICES, *svc_sales.SERVICES, *svc_marketing.SERVICES, *svc_accounting.SERVICES, *svc_people.SERVICES, *svc_market.SERVICES, *svc_general.SERVICES]
 BY_ID = {s.id: s for s in SERVICES}
 
 missing_text = set(_TEXT) - set(BY_ID)
@@ -140,6 +140,25 @@ def readiness(s: Service, data: Data) -> dict:
     return {'level': level, 'why': why, 'missing': missing_for(s, data.kinds)}
 
 
+def choices(s: Service, data: Data) -> dict[str, list[str]]:
+    """The options for each column or choice setting, for this client's files."""
+    out = {}
+    for x in s.params:
+        if x.format == 'column':
+            out[x.key] = svc_general.column_choices(data, x.options or 'any')
+        elif x.format == 'choice':
+            out[x.key] = list(x.options or [])
+    return out
+
+
+def _param_value(x, v):
+    if x.format in ('column', 'choice'):
+        return None if v in (None, '') else str(v)
+    if x.format == 'limit':  # an optional number, such as a specification limit
+        return None if v in (None, '') else float(v)
+    return float(v)
+
+
 def start_params(s: Service, data: Data, client: dict) -> dict:
     p = {x.key: x.value for x in s.params}
     if s.defaults:
@@ -173,7 +192,11 @@ def run(service_id: str, data: Data, params: dict | None, client: dict) -> dict:
     if r['level'] == 'none':
         return {'level': 'none', 'error': r['why'] or 'The files this needs haven’t been sent.'}
     p = start_params(s, data, client)
-    p.update({k: float(v) for k, v in (params or {}).items() if k in p})
+    kinds = {x.key: x for x in s.params}
+    try:
+        p.update({k: _param_value(kinds[k], v) for k, v in (params or {}).items() if k in p})
+    except (TypeError, ValueError):
+        return {'level': r['level'], 'error': 'One of the settings isn’t a valid number.', 'params': p}
     t0 = time.perf_counter()
     try:
         out = s.run(Ctx(data=data, level=r['level'], p=p, fmt=Fmt(client.get('currency', 'EGP')), client=client))
@@ -189,6 +212,14 @@ def run(service_id: str, data: Data, params: dict | None, client: dict) -> dict:
 
 
 def build_data(tables: dict[str, list[pd.DataFrame]], settings: dict | None = None) -> Data:
-    """One table per kind, joining several files of the same kind."""
-    joined = {k: pd.concat(v, ignore_index=True) for k, v in tables.items() if v}
-    return Data(joined, settings or {})
+    """One table per kind, joining several files of the same kind. 'Any other table' files stay apart, by name."""
+    joined = {k: pd.concat(v, ignore_index=True) for k, v in tables.items() if v and k != 'table'}
+    files: dict[str, pd.DataFrame] = {}
+    for i, df in enumerate(tables.get('table') or []):
+        name = str(df.attrs.get('file') or f'Table {i + 1}')
+        while name in files:
+            name += ' (2)'
+        files[name] = df
+    if files:
+        joined['table'] = max(files.values(), key=len)
+    return Data(joined, settings or {}, files)

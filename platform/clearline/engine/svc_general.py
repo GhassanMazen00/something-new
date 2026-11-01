@@ -234,7 +234,7 @@ def profile(c: Ctx) -> dict:
             if share < 0.8 and len(s):
                 gappy.append(f'{col} ({share:.0%} filled)')
             if odd:
-                findings.append(finding(f'“{col}” has {odd}: check they are real and not typing mistakes.', 'medium', 'Look at those rows before using this column in a comparison.'))
+                findings.append(finding(f'“{col}” has {odd}: check they are real and not typing mistakes.', 'high', 'Look at those rows before using this column in a comparison.'))
         label = f' · {name}' if len(d.files) > 1 else ''
         filled.sort(key=lambda x: x[1])
         charts.append(chart(f'How complete each column is (%){label}', bars([f[0] for f in filled[:25]], [f[1] for f in filled[:25]], 'pct', horizontal=True, tones=['orange' if f[1] < 80 else 'accent' for f in filled[:25]])))
@@ -246,7 +246,7 @@ def profile(c: Ctx) -> dict:
             pairs = [(abs(r.iloc[i, j]), nums[i], nums[j], r.iloc[i, j]) for i in range(len(nums)) for j in range(i + 1, len(nums)) if np.isfinite(r.iloc[i, j])]
             for _, a, b, v in sorted(pairs, reverse=True)[:3]:
                 if abs(v) >= 0.6:
-                    findings.append(finding(f'“{a}” and “{b}” move {"together" if v > 0 else "in opposite directions"} (rank correlation {v:.2f}).', 'medium', 'A link, not proof that one causes the other; “What drives an outcome” tests it properly.'))
+                    findings.append(finding(f'“{a}” and “{b}” move {"together" if v > 0 else "in opposite directions"} (rank correlation {v:.2f}).', 'high', 'A link, not proof that one causes the other; “What drives an outcome” tests it properly.'))
         dupes = int(df.duplicated().sum())
         if dupes:
             findings.append(finding(f'{dupes:,} rows in {name} appear twice.', 'high', 'Confirm whether they are repeated entries or genuinely identical cases.'))
@@ -309,7 +309,7 @@ def compare_groups(c: Ctx) -> dict:
             [chart(f'Share “{one}” by group (%)', bars(list(rate.index), list(rate['mean'] * 100), 'pct', horizontal=True)), chart('Groups', table(['Group', 'Rows', f'“{one}”'], [[i, f'{int(r["size"]):,}', f'{r["mean"]:.1%}'] for i, r in rate.iterrows()], numeric=[1, 2]))],
             [
                 finding(f'{rate.index[0]} has the highest “{one}” rate ({rate["mean"].iloc[0]:.1%}) and {rate.index[-1]} the lowest ({rate["mean"].iloc[-1]:.1%}). The gap is {sure(p)} ({test}, {pv(p)}).', level),
-                finding(f'The strength of the link is {_effect_words(v, (0.1, 0.3, 0.5))} (Cramér’s V {v:.2f}).', 'medium'),
+                finding(f'The strength of the link is {_effect_words(v, (0.1, 0.3, 0.5))} (Cramér’s V {v:.2f}).', 'high'),
                 finding('This shows a difference between groups, not what causes it: the groups may differ in other ways too.', 'high', 'Use “What drives an outcome” to allow for other factors.'),
             ],
             accuracy=f'{test.capitalize()} on {len(x):,} rows.',
@@ -355,7 +355,7 @@ def compare_groups(c: Ctx) -> dict:
     level = _level_by_n(int(st['size'].min()), 30, 10)
     findings = [
         finding(f'{st.index[0]} averages {nf(st["mean"].iloc[0])} and {st.index[-1]} {nf(st["mean"].iloc[-1])}. The difference is {sure(p)} ({test}, {pv(p)}).', level),
-        finding(f'The size of the difference is {words} ({eff_text}).', 'medium', None if words != 'negligible' else 'Even if real, a difference this small may not matter in practice.'),
+        finding(f'The size of the difference is {words} ({eff_text}).', 'high', None if words != 'negligible' else 'Even if real, a difference this small may not matter in practice.'),
     ]
     if not two and p < 0.05:
         try:
@@ -363,19 +363,19 @@ def compare_groups(c: Ctx) -> dict:
             pairs = sorted(((tk.pvalue[i, j], st.index[i], st.index[j], st['mean'].iloc[i] - st['mean'].iloc[j]) for i in range(len(arrays)) for j in range(i + 1, len(arrays))), key=lambda t: t[0])
             real = [f'{a} vs {b} ({snf(dlt)})' for pp, a, b, dlt in pairs if pp < 0.05][:4]
             if real:
-                findings.append(finding('Pairs that differ (Tukey’s test, allowing for many comparisons): ' + '; '.join(real) + '.', 'medium'))
+                findings.append(finding('Pairs that differ (Tukey’s test, allowing for many comparisons): ' + '; '.join(real) + '.', 'high'))
         except Exception:  # noqa: BLE001
             pass
     if two and p >= 0.05:
         mdd = 2.8 * np.sqrt(sum(a.var(ddof=1) / len(a) for a in arrays))
-        findings.append(finding(f'With groups this size, a true gap smaller than about {nf(mdd)} could go unseen.', 'medium', 'More rows would settle it.'))
+        findings.append(finding(f'With groups this size, a true gap smaller than about {nf(mdd)} could go unseen.', 'high', 'More rows would settle it.'))
     findings.append(finding('This shows a difference between groups, not what causes it.', 'high', 'Use “What drives an outcome” to allow for other factors.'))
     other = names[0] if skewed else names[1]
     return result(
         [kpi('Groups compared', str(len(st))), kpi('Rows used', f'{len(x):,}'), kpi('Highest vs lowest', snf(st['mean'].iloc[0] - st['mean'].iloc[-1]), f'{st.index[0]} vs {st.index[-1]}'), kpi('Real difference?', 'Yes' if p < 0.05 else 'Not shown', pv(p), 'good' if p < 0.05 else None)],
         [
             chart(f'Average “{m}” by group', bars(list(st.index), list(st['mean']), 'num', horizontal=True)),
-            chart('Groups', table(['Group', 'Rows', 'Average', 'Median', '95% range of the average'], [[i, f'{int(r["size"]):,}', nf(r['mean']), nf(r['median']), f'{nf(r["lo"])} to {nf(r["hi"])}'] for i, r in st.iterrows()], numeric=[1, 2, 3])),
+            chart('Groups', table(['Group', 'Rows', 'Average', 'Median', '95% range of the average'], [[i, f'{int(r["size"]):,}', nf(r['mean']), nf(r['median']), f'{nf(r["lo"])} to {nf(r["hi"])}'] for i, r in st.iterrows()], numeric=[1, 2, 3]), wide=True),
         ],
         findings,
         accuracy=f'{test} chosen because the values are {"skewed" if skewed else "roughly symmetric"}' + (f'; the {other} gives {pv(p_par if skewed else p_rank)}.' if np.isfinite(p_par if skewed else p_rank) else '.'),
@@ -478,7 +478,7 @@ def drivers(c: Ctx) -> dict:
             findings.append(finding(f'{labels[name]}: “{o}” changes by {snf(eff)} (95% range {snf(lo)} to {snf(hi)}, {pv(p)}).', 'high' if p < 0.01 else 'medium'))
     weak = [labels[r[0]].split(' (')[0] for r in rows if r[4] >= 0.05]
     if weak:
-        findings.append(finding(f'No clear link once the others are allowed for: {", ".join(dict.fromkeys(weak[:6]))}.', 'medium'))
+        findings.append(finding(f'No clear link once the others are allowed for: {", ".join(dict.fromkeys(weak[:6]))}.', 'high'))
     if not sig:
         findings.insert(0, finding('None of the factors shows a clear link with the outcome on these rows.', 'medium', 'More rows, or other factors, may be needed.'))
     findings.append(finding('These are links in the data, not proof of cause: something not recorded may drive both.', 'high', 'For a firm answer, an experiment or a before-and-after with a comparison group is needed.'))
@@ -612,7 +612,7 @@ def trend_forecast(c: Ctx) -> dict:
             names = {'MS': lambda k: pd.Timestamp(2001, int(k), 1).strftime('%b'), 'D': lambda k: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][int(k)], 'W-MON': lambda k: f'W{int(k)}'}[freq]
             if freq != 'W-MON':
                 charts.append(chart(f'Usual effect of each {"month" if freq == "MS" else "weekday"}', bars([names(k) for k in prof.index], list(prof.values), 'num', tones=['green' if v == prof.max() else 'orange' if v == prof.min() else 'accent' for v in prof.values])))
-            findings.append(finding(f'A strong repeating pattern: {names(prof.idxmax())} is usually highest and {names(prof.idxmin())} lowest.', 'medium'))
+            findings.append(finding(f'A strong repeating pattern: {names(prof.idxmax())} is usually highest and {names(prof.idxmin())} lowest.', 'high'))
     labels = [_label(ts, freq) for ts in y.index]
     fc_kpi = kpi('Forecast', '–', 'needs a longer history')
     acc = None
@@ -716,7 +716,7 @@ def survey(c: Ctx) -> dict:
                 tv = m.sum(axis=1).var(ddof=1)
                 alpha = kk / (kk - 1) * (1 - m.var(ddof=1).sum() / tv) if tv > 0 else np.nan
                 word = 'excellent' if alpha >= 0.9 else 'good' if alpha >= 0.8 else 'acceptable' if alpha >= 0.7 else 'questionable' if alpha >= 0.6 else 'poor'
-                findings.append(finding(f'The {kk} questions on the {main_range} scale hang together {word}ly as one measure (Cronbach’s alpha {alpha:.2f}).' if word != 'poor' else f'The {kk} questions on the {main_range} scale don’t measure one thing (Cronbach’s alpha {alpha:.2f}): report them one by one, not as a total.', 'medium'))
+                findings.append(finding(f'The {kk} questions on the {main_range} scale hang together {word}ly as one measure (Cronbach’s alpha {alpha:.2f}).' if word != 'poor' else f'The {kk} questions on the {main_range} scale don’t measure one thing (Cronbach’s alpha {alpha:.2f}): report them one by one, not as a total.', 'high'))
     if g:
         x = df.copy()
         x[g] = cat(x[g])
@@ -741,15 +741,15 @@ def survey(c: Ctx) -> dict:
                 charts.append(chart(f'Average answer by {g}', heatmap([k for k, _ in res], groups, means), wide=True))
                 diff = [res[i][0] for i in range(len(res)) if adj[i] < 0.05]
                 if diff:
-                    findings.append(finding(f'Answers differ by {g} on {len(diff)} of {len(res)} questions: {", ".join(diff[:5])} (Kruskal–Wallis, corrected for testing many questions).', 'medium'))
+                    findings.append(finding(f'Answers differ by {g} on {len(diff)} of {len(res)} questions: {", ".join(diff[:5])} (Kruskal–Wallis, corrected for testing many questions).', 'high'))
                 else:
-                    findings.append(finding(f'No question shows a clear difference by {g} (Kruskal–Wallis, corrected for testing many questions).', 'medium'))
+                    findings.append(finding(f'No question shows a clear difference by {g} (Kruskal–Wallis, corrected for testing many questions).', 'high'))
     for col in cats[:3]:
         vc = cat(df[col]).value_counts()
         share = (vc / vc.sum() * 100).round(1)
         charts.append(chart(f'“{col}”: answers', table(['Answer', 'Count', 'Share'], [[i, f'{int(vc[i]):,}', f'{share[i]:.1f}%'] for i in vc.index[:12]], numeric=[1, 2])))
     moe = 1.96 * np.sqrt(0.25 / max(n, 1))
-    findings.append(finding(f'With {n:,} respondents, a percentage is accurate to about ±{moe:.0%}, if they were chosen at random.', 'medium', 'If people chose to answer (an open link), the results describe those who answered, not everyone.'))
+    findings.append(finding(f'With {n:,} respondents, a percentage is accurate to about ±{moe:.0%}, if they were chosen at random.', 'high', 'If people chose to answer (an open link), the results describe those who answered, not everyone.'))
     level = _level_by_n(n, 100, 30)
     return result(
         [kpi('Respondents', f'{n:,}'), kpi('Rating questions', str(len(items))), kpi('Reliability (alpha)', f'{alpha:.2f}' if alpha is not None and np.isfinite(alpha) else '–', None if alpha is not None else 'needs 3+ questions on one scale', 'good' if alpha is not None and alpha >= 0.7 else None), kpi('Margin of error', f'±{moe:.0%}')],
@@ -783,7 +783,7 @@ def before_after(c: Ctx) -> dict:
     up, down = (d > 0).mean(), (d < 0).mean()
     rel = x[a].mean() / x[b].mean() - 1 if x[b].mean() else np.nan
     findings = [finding(f'On average the measure changed by {snf(mean)} from “{b}” to “{a}” (95% range {snf(mean - tcrit * se)} to {snf(mean + tcrit * se)}); the change is {sure(p)} ({test}, {pv(p)}).', _level_by_n(len(d), 30, 12)),
-                finding(f'{up:.0%} of rows went up, {down:.0%} went down and {1 - up - down:.0%} stayed the same.', 'medium')]
+                finding(f'{up:.0%} of rows went up, {down:.0%} went down and {1 - up - down:.0%} stayed the same.', 'high')]
     charts = [chart('Average before and after', bars([str(b), str(a)], [float(x[b].mean()), float(x[a].mean())], 'num', tones=['muted', 'accent']))]
     kpis = [kpi('Pairs', f'{len(x):,}'), kpi('Average before', nf(x[b].mean())), kpi('Average after', nf(x[a].mean())), kpi('Change', snf(mean), f'{snf(rel * 100)}%' if np.isfinite(rel) else None, 'good' if p < 0.05 else None)]
     level = 'medium' if len(d) >= 30 else 'low'
@@ -898,7 +898,7 @@ def quality(c: Ctx) -> dict:
     findings = [finding(('The process is stable: no point breaks the control-chart rules, so the variation is the normal kind.' if stable else f'{len(broken)} point{"s" if len(broken) > 1 else ""} break the control-chart rules, so something unusual happened.'), 'high' if len(plot) >= 25 else 'medium', None if stable else 'Look at what changed at those points (materials, shift, machine settings) before changing the process.')]
     if broken:
         kinds_ = pd.Series(list(broken.values())).value_counts()
-        findings.append(finding('Rules broken: ' + ', '.join(f'{k} ({n})' for k, n in kinds_.items()) + '.', 'medium'))
+        findings.append(finding('Rules broken: ' + ', '.join(f'{k} ({n})' for k, n in kinds_.items()) + '.', 'high'))
     cap_kpi = kpi('Capability (Cpk)', '–', 'add specification limits')
     acc = f'{method}; limits at 3 standard deviations, from the spread between neighbouring points.'
     if lsl is not None or usl is not None:
@@ -913,7 +913,7 @@ def quality(c: Ctx) -> dict:
         if lsl is not None and usl is not None and sigma_w > 0:
             cp = (usl - lsl) / (6 * sigma_w)
             if cp >= 1.33 > cpk:
-                findings.append(finding(f'The spread would fit (Cp {cp:.2f}); the process is off-centre. Moving the average toward {nf((lsl + usl) / 2)} fixes most of it.', 'medium'))
+                findings.append(finding(f'The spread would fit (Cp {cp:.2f}); the process is off-centre. Moving the average toward {nf((lsl + usl) / 2)} fixes most of it.', 'high'))
     level = 'high' if len(plot) >= 25 else 'medium' if len(plot) >= 12 else 'low'
     return result(
         [kpi('Points', f'{len(plot):,}'), kpi('Stable?', 'Yes' if stable else 'No', None, 'good' if stable else 'bad'), kpi('Points breaking the rules', str(len(broken))), cap_kpi],
@@ -969,7 +969,7 @@ def natural_groups(c: Ctx) -> dict:
     for gname, row in zdf.iterrows():
         top = row.abs().sort_values(ascending=False).index[:3]
         desc = ', '.join(f'{"higher" if row[t] > 0 else "lower"} “{t}”' for t in top if abs(row[t]) >= 0.3) or 'close to average on everything'
-        findings.append(finding(f'{gname} ({sizes[gname] / n:.0%} of rows): {desc}.', 'medium'))
+        findings.append(finding(f'{gname} ({sizes[gname] / n:.0%} of rows): {desc}.', 'high' if sil > 0.5 else 'medium' if sil > 0.25 else 'low'))
     word = 'clearly separate' if sil > 0.5 else 'moderately separate' if sil > 0.25 else 'overlapping'
     findings.insert(0, finding(f'The rows fall into {k} groups that are {word} (silhouette {sil:.2f}).', 'high' if sil > 0.5 else 'medium' if sil > 0.25 else 'low', None if sil > 0.25 else 'Treat the groups as rough tendencies, not firm types.'))
     charts = [

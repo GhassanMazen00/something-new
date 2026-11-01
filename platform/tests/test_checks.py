@@ -98,3 +98,9 @@ def test_recount_allows_display_rounding():
     assert checks.snapshot_recount(d, r, engine.Fmt('EGP'))[0]['status'] == 'pass'
     k['value'] = f'EGP {round(total / 1e3) + 2:.0f}K'  # genuinely off
     assert checks.snapshot_recount(d, r, engine.Fmt('EGP'))[0]['status'] == 'fail'
+
+
+def test_stability_ignores_a_change_of_columns():
+    a = {'result': res([('Highest vs lowest', '+0.76')]), 'params': {'measure': 'Score before'}, 'files': ['s.csv']}
+    b = {'result': res([('Highest vs lowest', '+5.27')]), 'params': {'measure': 'Score after'}, 'files': ['s.csv']}
+    assert checks.stability(a, b)['status'] == 'pass'

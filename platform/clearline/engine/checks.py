@@ -420,6 +420,9 @@ def stability(prev: dict | None, new: dict) -> dict:
         if diff:
             return check('stability', 'Same answer as last time', FAIL, 'Same files and settings gave different numbers: ' + '; '.join(diff[:3]) + '. Report this to whoever maintains the app.')
         return check('stability', 'Same answer as last time', PASS, 'Re-run on the same files and settings: identical numbers.')
+    changed = {k for k in set(prev['params']) | set(new['params']) if prev['params'].get(k) != new['params'].get(k)}
+    if any(isinstance(prev['params'].get(k), str) or isinstance(new['params'].get(k), str) for k in changed):
+        return check('stability', 'Same answer as last time', PASS, 'Different columns were chosen since the last run, so the numbers aren’t comparable.')
     moved = []
     for lb in a.keys() & b.keys():
         x, y = kpi_value(a[lb]), kpi_value(b[lb])

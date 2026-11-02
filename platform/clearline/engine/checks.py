@@ -414,13 +414,13 @@ def stability(prev: dict | None, new: dict) -> dict:
         return check('stability', 'Same answer as last time', PASS, 'First run of this service for this client.')
     a = {k['label']: k for k in prev['result'].get('kpis', [])}
     b = {k['label']: k for k in new['result'].get('kpis', [])}
-    same_inputs = sorted(prev['files']) == sorted(new['files']) and prev['params'] == new['params']
+    same_inputs = sorted(prev['files']) == sorted(new['files']) and {k: v for k, v in prev['params'].items() if k != 'question'} == {k: v for k, v in new['params'].items() if k != 'question'}
     if same_inputs:
         diff = [f'{lb}: {a[lb]["value"]} → {b[lb]["value"]}' for lb in a.keys() & b.keys() if a[lb]['value'] != b[lb]['value']]
         if diff:
             return check('stability', 'Same answer as last time', FAIL, 'Same files and settings gave different numbers: ' + '; '.join(diff[:3]) + '. Report this to whoever maintains the app.')
         return check('stability', 'Same answer as last time', PASS, 'Re-run on the same files and settings: identical numbers.')
-    changed = {k for k in set(prev['params']) | set(new['params']) if prev['params'].get(k) != new['params'].get(k)}
+    changed = {k for k in set(prev['params']) | set(new['params']) if k != 'question' and prev['params'].get(k) != new['params'].get(k)}
     if any(isinstance(prev['params'].get(k), str) or isinstance(new['params'].get(k), str) for k in changed):
         return check('stability', 'Same answer as last time', PASS, 'Different columns were chosen since the last run, so the numbers aren’t comparable.')
     moved = []

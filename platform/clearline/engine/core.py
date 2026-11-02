@@ -339,7 +339,7 @@ class Param:
     max: float
     step: float
     value: float | str | None
-    format: str = 'num'  # num, pct, rate, money; 'column' (pick a column of the client's table) or 'choice'
+    format: str = 'num'  # num, pct, rate, money; 'column' (pick a column of the client's table), 'choice', 'limit', 'text'
     options: str | list[str] | None = None  # for 'column': which columns fit ('number', 'category', 'date', 'any'); for 'choice': the list
     optional: bool = False  # a column that can be left out
 

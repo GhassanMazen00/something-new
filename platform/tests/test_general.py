@@ -38,7 +38,7 @@ INFO = {'currency': 'EGP', 'files': []}
 
 def run(d, sid, **p):
     s = engine.BY_ID[sid]
-    params = {**engine.start_params(s, d, INFO), **p}
+    params = {**engine.start_params(s, d, INFO), 'question': 'A test question', **p}
     out = engine.run(sid, d, params, INFO)
     assert 'error' not in out, out
     assert all(k['status'] != 'fail' for k in out['result']['checks']), out['result']['checks']
@@ -87,15 +87,15 @@ def test_every_any_data_service_runs():
 def test_columns_are_only_guessed_from_their_names():
     d, _ = data_of(study())
     p = engine.start_params(engine.BY_ID['group-comparison'], d, INFO)
-    assert p == {'measure': 'Score after', 'group': 'Arm'}  # the after score, by the arm that took part
+    assert p == {'question': None, 'measure': 'Score after', 'group': 'Arm'}  # the after score, by the arm that took part
     assert engine.start_params(engine.BY_ID['what-drives-an-outcome'], d, INFO)['outcome'] == 'Score after'
     assert engine.start_params(engine.BY_ID['quality-and-process-control'], d, INFO)['measure'] is None  # nothing looks like a measurement
-    out = engine.run('quality-and-process-control', d, None, INFO)
+    out = engine.run('quality-and-process-control', d, {'question': 'Is it stable?'}, INFO)
     assert out['error'] == 'Choose the measurement.'
 
 
 def test_short_daily_data_is_not_stretched_to_a_year():
-    d, _ = data_of(study().assign(**{'Test date': pd.Timestamp('2025-03-01') + pd.to_timedelta(np.arange(300) % 60, unit='D')}))
+    d, _ = data_of(study().assign(**{'Test date': pd.Timestamp('2025-03-01') + pd.to_timedelta(np.arange(300) % 120, unit='D')}))
     out = run(d, 'trend-and-forecast-for-any-measure', date='Test date', measure='Score before', how='Average')
     assert out['level'] == 'low'
     assert any(k['label'].startswith('Change over') for k in out['result']['kpis'])
@@ -117,7 +117,50 @@ def test_quality_control_flags_a_shift():
 
 def test_bad_settings_say_what_is_wrong():
     d, _ = data_of(study())
-    out = engine.run('before-and-after-impact', d, {'before': 'Score before', 'after': 'Score before'}, INFO)
-    assert 'chosen for two settings' in out['error']
-    out = engine.run('quality-and-process-control', d, {'measure': 'Score after', 'lsl': 'abc'}, INFO)
+    out = engine.run('before-and-after-impact', d, {'question': 'q', 'before': 'Score before', 'after': 'Score before'}, INFO)
+    assert 'chosen for both' in out['error']
+    out = engine.run('quality-and-process-control', d, {'question': 'q', 'measure': 'Score after', 'lsl': 'abc'}, INFO)
     assert 'valid number' in out['error']
+
+
+from clearline.engine import guides  # noqa: E402
+
+Q = {'question': 'Did the new method raise scores?'}
+
+
+def levels(sid, d, **p):
+    return [(f['level'], f['setting']) for f in guides.advise(sid, d, {**Q, **p})]
+
+
+def test_settings_that_cannot_answer_a_question_are_stopped():
+    d, _ = data_of(study())
+    assert ('stop', 'question') in [(f['level'], f['setting']) for f in guides.advise('group-comparison', d, {'measure': 'Score after', 'group': 'Arm'})]
+    assert ('stop', 'group') in levels('group-comparison', d, measure='Score after', group='Student ID')  # an ID as the group
+    assert ('stop', 'outcome') in levels('what-drives-an-outcome', d, outcome='Score before')  # the past explained by the future
+    assert ('stop', 'before') in levels('before-and-after-impact', d, before='Score after', after='Score before')  # swapped
+    out = engine.run('what-drives-an-outcome', d, {**Q, 'outcome': 'Score before'}, INFO)
+    assert 'comes before' in out['error'] and out['flags']
+
+
+def test_doubtful_settings_are_flagged_and_carried_into_the_result():
+    d, _ = data_of(study())
+    assert ('warn', 'group') in levels('before-and-after-impact', d, before='Score before', after='Score after')  # comparison group left out
+    assert ('warn', 'measure') in levels('group-comparison', d, measure='Score before', group='School')  # before score compared
+    out = run(d, 'before-and-after-impact', **Q, before='Score before', after='Score after', group=None)
+    assert any(k['id'].startswith('settings-') and k['status'] == 'warn' for k in out['result']['checks'])
+
+
+def test_good_settings_pass_and_the_result_says_what_was_done():
+    d, _ = data_of(study())
+    assert not [f for f in guides.advise('group-comparison', d, {**Q, 'measure': 'Score after', 'group': 'Arm'}) if f['level'] != 'tip']
+    out = run(d, 'group-comparison', **Q, measure='Score after', group='Arm')
+    assert out['result']['question'] == Q['question']
+    assert out['result']['setup'] == 'Compared “Score after” between the groups in “Arm”.'
+
+
+def test_every_any_data_service_has_a_guide_and_help():
+    for s in engine.SERVICES:
+        if s.dept == 'general':
+            info = engine.describe(s)
+            assert info['guide']['steps'] and info['guide']['avoid']
+            assert all(p['help'] for p in info['params']), s.id

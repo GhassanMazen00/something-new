@@ -6,7 +6,7 @@ import { setCurrency } from '../../app/lib/format'
 import type { Level as L } from '../../app/services/types'
 import { icons, Level, LEVEL_TEXT } from '../../app/ui/bits'
 import { ResultView } from '../../app/ui/ResultView'
-import { api, type ClientT, type ParamT, type ParamValue, type Person, type Readiness, type ReportT, type RunT, type ServiceT } from '../api'
+import { api, type ClientT, type Flag, type Guide, type ParamT, type ParamValue, type Person, type Readiness, type ReportT, type RunT, type ServiceT } from '../api'
 import { Shell } from '../App'
 import { daysLeft, fmtDate, fmtTime, useAction, useLoad } from '../hooks'
 import { useSession } from '../session'
@@ -390,11 +390,21 @@ function ServicesTab({ client }: { client: ClientT }) {
   )
 }
 
-function ParamControl({ p, value, currency, choices, onChange }: { p: ParamT; value: ParamValue; currency: string; choices?: string[]; onChange: (v: ParamValue) => void }) {
+function ParamControl({ p, value, currency, choices, flag, onChange }: { p: ParamT; value: ParamValue; currency: string; choices?: string[]; flag?: Flag['level']; onChange: (v: ParamValue) => void }) {
+  const help = p.help && <small className="param-help">{p.help}</small>
+  // The client's question, in their words: it goes above the result.
+  if (p.format === 'text')
+    return (
+      <label className={`param param-question${flag ? ` pflag-${flag}` : ''}`}>
+        <span className="spread">{p.label}</span>
+        <textarea rows={2} value={value ?? ''} placeholder="For example: Did the new teaching method raise test scores?" onChange={(e) => onChange(e.target.value)} />
+        {help}
+      </label>
+    )
   // A column of the client's table, or one of a fixed list.
   if (p.format === 'column' || p.format === 'choice')
     return (
-      <label className="param">
+      <label className={`param${flag ? ` pflag-${flag}` : ''}`}>
         <span className="spread">{p.label}</span>
         <select className="mini" value={value ?? ''} onChange={(e) => onChange(e.target.value || null)}>
           {(p.optional || !value) && <option value="">{p.optional ? 'None' : 'Choose a column'}</option>}
@@ -404,14 +414,16 @@ function ParamControl({ p, value, currency, choices, onChange }: { p: ParamT; va
             </option>
           ))}
         </select>
+        {help}
       </label>
     )
   // An optional number, such as a specification limit: blank means not set.
   if (p.format === 'limit')
     return (
-      <label className="param">
+      <label className={`param${flag ? ` pflag-${flag}` : ''}`}>
         <span className="spread">{p.label}</span>
         <input className="num-input" type="number" step="any" placeholder="Not set" value={value ?? ''} onChange={(e) => onChange(e.target.value === '' ? null : Number(e.target.value))} />
+        {help}
       </label>
     )
   const v = Number(value ?? 0)
@@ -437,6 +449,62 @@ function ParamControl({ p, value, currency, choices, onChange }: { p: ParamT; va
       </span>
       <input type="range" min={p.min} max={p.max} step={p.step} value={Math.min(p.max, Math.max(p.min, v))} onChange={(e) => onChange(Number(e.target.value))} />
     </label>
+  )
+}
+
+// How to set up an any-data service: the question it answers, each setting, an example and the usual mistakes.
+function GuidePanel({ guide, open }: { guide: Guide; open: boolean }) {
+  return (
+    <details className="guide panel" open={open}>
+      <summary>
+        <b>How to set this up</b>
+        <span className="muted">{guide.question}</span>
+      </summary>
+      <div className="guide-body">
+        <div>
+          <small>Steps</small>
+          <ol>
+            {guide.steps.map((x) => (
+              <li key={x}>{x}</li>
+            ))}
+          </ol>
+          {guide.example && (
+            <p className="guide-example">
+              <b>Example.</b> {guide.example}
+            </p>
+          )}
+        </div>
+        <div>
+          <small>Avoid</small>
+          <ul>
+            {guide.avoid.map((x) => (
+              <li key={x}>{x}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </details>
+  )
+}
+
+// What the chosen settings will do, and anything wrong with them, before Run.
+function Flags({ flags, setup }: { flags: Flag[]; setup: string | null }) {
+  const label = { stop: 'Fix', warn: 'Check', tip: 'Tip' }
+  return (
+    <div className="flags">
+      {setup && (
+        <p className="flag-setup">
+          <b>This will:</b> {setup}
+        </p>
+      )}
+      {flags.map((f) => (
+        <p key={f.text} className={`flag flag-${f.level}`}>
+          <b>{label[f.level]}</b>
+          {f.text}
+        </p>
+      ))}
+      {!flags.length && setup && <p className="flag flag-ok"><b>OK</b>The settings fit the question.</p>}
+    </div>
   )
 }
 
@@ -483,6 +551,28 @@ function RunService({ client, svc }: { client: ClientT; svc: ServiceT }) {
     if (out) report.reload()
   }
   const reportIsLatest = inReport && latest && inReport.run.id === latest.id
+  // Checks on the chosen settings, refreshed as they change: stops keep Run off, warnings and tips guide the choice.
+  const [advice, setAdvice] = useState<{ flags: Flag[]; setup: string | null } | null>(null)
+  const guided = !!svc.guide
+  const key = JSON.stringify(params)
+  useEffect(() => {
+    if (!guided || !r || r.level === 'none') return
+    let live = true
+    const t = setTimeout(() => {
+      api.post<{ flags: Flag[]; setup: string | null }>(`/clients/${client.id}/advise`, { service_id: svc.id, params }).then(
+        (out) => live && setAdvice(out),
+        () => live && setAdvice(null),
+      )
+    }, 250)
+    return () => {
+      live = false
+      clearTimeout(t)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, guided, svc.id, client.id, !!r])
+  const flags = advice?.flags ?? []
+  const stops = flags.filter((f) => f.level === 'stop')
+  const flagOf = (k: string) => (flags.find((f) => f.setting === k && f.level === 'stop') ?? flags.find((f) => f.setting === k && f.level === 'warn'))?.level
   if (!r) return <div className="empty panel">{svcs.error || 'Loading…'}</div>
   return (
     <>
@@ -504,6 +594,7 @@ function RunService({ client, svc }: { client: ClientT; svc: ServiceT }) {
           </button>
         )}
       </div>
+      {svc.guide && r.level !== 'none' && <GuidePanel guide={svc.guide} open={!latest} />}
       <div className="method panel pad">
         <div>
           <small>Method</small>
@@ -533,12 +624,13 @@ function RunService({ client, svc }: { client: ClientT; svc: ServiceT }) {
           {(svc.params.length > 0 || canEdit) && (
             <div className="params panel">
               {svc.params.map((x) => (
-                <ParamControl key={x.key} p={x} value={x.key in params ? params[x.key] : x.value} currency={client.currency} choices={r.choices?.[x.key]} onChange={(v) => setP({ ...params, [x.key]: v })} />
+                <ParamControl key={x.key} p={x} value={x.key in params ? params[x.key] : x.value} currency={client.currency} choices={r.choices?.[x.key]} flag={flagOf(x.key)} onChange={(v) => setP({ ...params, [x.key]: v })} />
               ))}
+              {guided && <Flags flags={flags} setup={advice?.setup ?? null} />}
               {canEdit && (
                 <div className="run-bar">
-                  <button className={`btn${dirty || !latest ? ' btn-primary' : ''}`} type="button" onClick={run} disabled={a.busy}>
-                    {a.busy ? 'Running the models…' : latest ? (dirty ? 'Run with these settings' : 'Run again') : 'Run'}
+                  <button className={`btn${dirty || !latest ? ' btn-primary' : ''}`} type="button" onClick={run} disabled={a.busy || stops.length > 0}>
+                    {a.busy ? 'Running the models…' : stops.length ? 'Fix the settings to run' : latest ? (dirty ? 'Run with these settings' : 'Run again') : 'Run'}
                   </button>
                   {latest && (
                     <span className="faint" style={{ fontSize: '0.78rem' }}>

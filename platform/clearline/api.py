@@ -593,7 +593,7 @@ def run_service(cid: int, body: RunIn, user: User = Depends(current_user), db: S
     name = engine.BY_ID[body.service_id].name
     if 'error' in out:
         audit.log(db, user, f'Ran “{name}”: could not complete ({out["error"][:120]})', c.id)
-        return {'error': out['error'], 'level': out['level'], 'params': out.get('params', {})}
+        return {'error': out['error'], 'level': out['level'], 'params': out.get('params', {}), 'flags': out.get('flags', [])}
     files = [f['name'] for f in info['files']]
     prev = db.scalar(select(Run).where(Run.client_id == c.id, Run.service_id == body.service_id).order_by(Run.created_at.desc(), Run.id.desc()).limit(1))
     before = {'result': json.loads(security.client_cipher(c.data_key).decrypt(prev.result)), 'params': prev.params, 'files': prev.files} if prev else None
@@ -603,6 +603,22 @@ def run_service(cid: int, body: RunIn, user: User = Depends(current_user), db: S
     db.commit()
     audit.log(db, user, f'Ran “{name}”', c.id)
     return {**run_out(r, c), 'why': out.get('why')}
+
+
+@api.post('/clients/{cid}/advise')
+def advise(cid: int, body: RunIn, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    """Checks on the chosen settings, before running: what would stop the run, what to look at, and tips."""
+    c = visible(db, user, cid)
+    if body.service_id not in engine.BY_ID:
+        raise HTTPException(404, 'No such service.')
+    data, info = client_data(db, c)
+    s = engine.BY_ID[body.service_id]
+    p = engine.start_params(s, data, info)
+    try:
+        p.update({x.key: engine._param_value(x, body.params[x.key]) for x in s.params if x.key in body.params})
+    except (TypeError, ValueError):
+        return {'flags': [{'level': 'stop', 'text': 'One of the settings isn’t a valid number.', 'setting': None}], 'setup': None}
+    return {'flags': engine.guides.advise(s.id, data, p), 'setup': engine.guides.plan(s.id, p)}
 
 
 @api.get('/clients/{cid}/runs')

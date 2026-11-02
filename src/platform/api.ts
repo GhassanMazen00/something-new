@@ -104,10 +104,13 @@ export type ParamT = {
   max: number
   step: number
   value: number | string | null
-  format: 'num' | 'pct' | 'share' | 'rate' | 'money' | 'column' | 'choice' | 'limit'
+  format: 'num' | 'pct' | 'share' | 'rate' | 'money' | 'column' | 'choice' | 'limit' | 'text'
   options?: string | string[] | null
   optional?: boolean
+  help?: string | null
 }
+export type Guide = { question: string; steps: string[]; example?: string; avoid: string[] }
+export type Flag = { level: 'stop' | 'warn' | 'tip'; text: string; setting: string | null }
 export type ParamValue = number | string | null
 export type ServiceT = {
   id: string
@@ -119,6 +122,7 @@ export type ServiceT = {
   missing: string
   preview?: string
   params: ParamT[]
+  guide?: Guide | null
   needs: { high: string[][]; medium: string[][] | null; low: string[][] | null; public: boolean }
 }
 export type Catalog = { departments: { id: string; name: string }[]; services: ServiceT[] }
@@ -127,7 +131,7 @@ export type Readiness = { id: string; level: Level; why: string | null; missing:
 export type CheckT = { id: string; title: string; status: 'pass' | 'warn' | 'fail'; detail: string }
 export type Ack = { reason: string; by: string; at: string }
 export type ReportCheck = CheckT & { section_id: number | null; service: string | null; ack: Ack | null }
-export type RunT = { id: number; service_id: string; level: Level; params: Record<string, ParamValue>; created_at: string; ms: number; result: Result & { currency?: string; checks?: CheckT[] }; why?: string | null }
+export type RunT = { id: number; service_id: string; level: Level; params: Record<string, ParamValue>; created_at: string; ms: number; result: Result & { currency?: string; checks?: CheckT[]; question?: string; setup?: string }; why?: string | null }
 export type Section = { id: number; position: number; note: string; run: RunT; files: string[]; acks: Record<string, Ack>; service: ServiceT }
 export type ReportT = { client: ClientT; summary: string; sections: Section[]; checks: { blocking: number; accepted: number; warnings: number; passed: number; items: ReportCheck[] } }
 export type ActivityT = { entries: { at: string; who: string; client: string | null; what: string }[]; chain_intact: boolean | null }

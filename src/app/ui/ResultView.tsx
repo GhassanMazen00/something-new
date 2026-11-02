@@ -52,6 +52,21 @@ export function ResultView({ r }: { r: Result }) {
   const stacked = r.charts.some((c) => c.chart.type === 'table' && c.chart.columns.length > 5)
   return (
     <>
+      {(r.question || r.setup) && (
+        <div className="question-line panel">
+          {r.question && (
+            <p>
+              <small>Question</small>“{r.question}”
+            </p>
+          )}
+          {r.setup && (
+            <p>
+              <small>What we did</small>
+              {r.setup}
+            </p>
+          )}
+        </div>
+      )}
       <Kpis kpis={r.kpis} />
       <div className={`results${stacked ? ' stacked' : ''}`}>
         <div className="charts">

@@ -195,6 +195,16 @@ def to_docx(rep: dict) -> bytes:
         r = lv.add_run(LEVELS.get(s['run']['level'], ''))
         r.font.size = Pt(9)
         r.font.color.rgb = RGBColor(0x5B, 0x66, 0x72)
+        if res.get('question') or res.get('setup'):
+            box = doc.add_paragraph()
+            if res.get('question'):
+                box.add_run('Question: ').bold = True
+                box.add_run(f'“{res["question"]}”')
+            if res.get('setup'):
+                if res.get('question'):
+                    box.add_run('\n')
+                box.add_run('What we did: ').bold = True
+                box.add_run(res['setup'])
         if s.get('note'):
             doc.add_paragraph(s['note'])
         if res.get('kpis'):
@@ -348,6 +358,12 @@ def to_xlsx(rep: dict) -> bytes:
         sh['A1'].font = Font(bold=True, size=14)
         sh['A2'] = LEVELS.get(s['run']['level'], '')
         r = 4
+        for label, key in (('Question', 'question'), ('What we did', 'setup')):
+            if res.get(key):
+                sh.cell(r, 1, f'{label}: {res[key]}').alignment = Alignment(wrap_text=True)
+                r += 1
+        if res.get('question') or res.get('setup'):
+            r += 1
         if s.get('note'):
             sh.cell(r, 1, s['note']).alignment = Alignment(wrap_text=True)
             r += 2

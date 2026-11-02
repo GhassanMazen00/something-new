@@ -3,8 +3,14 @@
 Six made-up files with answers planted in them. Make one test client (for example "Test pack"), upload all six on
 the **Files** page, and confirm each one. Files 1 to 5 are read as **Any other table**, and file 6 as a **Sales list**.
 Then open each service below, choose the columns shown, press **Run**, and compare with the planted answer.
-The any-data services don't run by themselves: the app suggests columns only when their names make the role clear
-(“Score after”, “Group”), and waits for you to check them and press **Run**.
+The any-data services don't run by themselves. Each one opens with a short **How to set this up** guide. Write the
+client's question in the box first (any wording, for example “Did the new method raise scores?”), then choose the
+columns. The app checks the settings as you go: **Fix** keeps Run off until it is changed, **Check** is worth a second
+look, and **Tip** suggests a better service. The question and what was done are printed above the result and in Word
+and Excel.
+
+Try a wrong setting on purpose, too: in *What drives an outcome* on file 1, choose “Score before” as the outcome. The
+app stops you, because that would explain the past with the future.
 
 Small differences from the planted numbers are normal: the files include random noise, as real data does.
 
@@ -15,7 +21,7 @@ Small differences from the planted numbers are normal: the files include random 
 | Service | Choose | Planted answer | You should see |
 |---|---|---|---|
 | Group comparison | Measure: Score after · Group: Group | New method +6 points | New method about 6 points higher (+5.8), “Yes”, medium size |
-| Group comparison | Measure: Score before · Group: School | North +3 points | North highest, about 4 points over South, “Yes” |
+| Group comparison | Measure: Score before · Group: School | North +3 points | North highest, about 4 points over South, “Yes”. Expect a **Check** note: this compares where the schools started, which is the point of this run |
 | Before-and-after impact | Before: Score before · After: Score after · Took part: Group | Effect +6 | Effect vs comparison about +5.7 |
 | Survey and questionnaire analysis | Compare answers by: Group | Q5 is the weakest question | Q5 weakest; reliability (alpha) about 0.74 |
 | What drives an outcome | Outcome: Score after | Group and score before matter | Score before, then Group: Usual method −5.7 |

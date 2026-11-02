@@ -192,8 +192,13 @@ def test_any_table_through_the_app(app):
     assert ok['ready'] and ok['health']['types']['Visit date'] == 'date'
     svc = next(s for s in sara.get(f'/api/clients/{cid}/services').json()['services'] if s['id'] == 'group-comparison')
     assert svc['level'] == 'high' and 'Waiting minutes' in svc['choices']['measure'] and 'Clinic' in svc['choices']['group']
-    r = sara.post(f'/api/clients/{cid}/runs', json={'service_id': 'group-comparison', 'params': {'measure': 'Waiting minutes', 'group': 'Clinic'}}, headers=H).json()
+    adv = sara.post(f'/api/clients/{cid}/advise', json={'service_id': 'group-comparison', 'params': {'measure': 'Waiting minutes', 'group': 'Clinic'}}, headers=H).json()
+    assert adv['flags'][0]['setting'] == 'question'  # no question yet: Run stays off
+    stopped = sara.post(f'/api/clients/{cid}/runs', json={'service_id': 'group-comparison', 'params': {'measure': 'Waiting minutes', 'group': 'Clinic'}}, headers=H).json()
+    assert 'question' in stopped['error']
+    r = sara.post(f'/api/clients/{cid}/runs', json={'service_id': 'group-comparison', 'params': {'question': 'Which clinic keeps people waiting longest?', 'measure': 'Waiting minutes', 'group': 'Clinic'}}, headers=H).json()
     assert r['result']['kpis'][0]['value'] == '3' and r['params']['group'] == 'Clinic'
+    assert r['result']['setup'] == 'Compared “Waiting minutes” between the groups in “Clinic”.'
 
 
 def test_failed_check_blocks_until_explained(app, monkeypatch):

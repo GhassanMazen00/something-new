@@ -127,7 +127,7 @@ def run_table(seed: int) -> list[dict]:
             rec('ready', 'needs', r['why'] or '', service=s.id)
             continue
         ch = engine.choices(s, d)
-        variants = [engine.start_params(s, d, info)]
+        variants = [{**engine.start_params(s, d, info), 'question': 'Stress test question'}]
         for _ in range(3):
             v = dict(variants[0])
             for k, opts in ch.items():
@@ -141,7 +141,8 @@ def run_table(seed: int) -> list[dict]:
                 rec('run', 'error', f'{type(e).__name__}: {e}', service=s.id, trace=traceback.format_exc(limit=8), params=p)
                 continue
             if 'error' in out:
-                rec('run', 'error' if 'trace' in out else 'needs', out['error'][:160], service=s.id, trace=out.get('trace'), params=p)
+                stage = 'guard' if out.get('flags') else 'run'
+                rec(stage, 'error' if 'trace' in out else 'needs', out['error'][:160], service=s.id, trace=out.get('trace'), params=p)
                 continue
             res = out['result']
             try:

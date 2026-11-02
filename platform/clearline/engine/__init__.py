@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from . import checks, svc_accounting, svc_data, svc_general, svc_market, svc_marketing, svc_people, svc_sales
+from . import checks, guides, svc_accounting, svc_data, svc_general, svc_market, svc_marketing, svc_people, svc_sales
 from .core import Ctx, Data, Fmt, NeedsData, Service, clean_json, level_for, missing_for
 
 _CATALOG = json.loads((Path(__file__).parent / 'catalog.json').read_text(encoding='utf-8'))
@@ -42,6 +42,8 @@ assert not missing_text, f'Services in the catalogue without an engine: {missing
 
 def describe(s: Service) -> dict:
     t = _TEXT[s.id]
+    helps = guides.HELP.get(s.id, {})
+    params = [asdict(p) | {'help': guides.QUESTION_HELP if p.key == 'question' else helps.get(p.key)} for p in s.params]
     return {
         'id': s.id,
         'dept': s.dept,
@@ -51,7 +53,8 @@ def describe(s: Service) -> dict:
         'data': s.data_text or t['data'],
         'missing': s.missing_text or t['missing'],
         'preview': s.preview,
-        'params': [asdict(p) for p in s.params],
+        'params': params,
+        'guide': guides.GUIDES.get(s.id),
         'needs': {'high': s.high, 'medium': s.medium, 'low': s.low, 'public': s.public},
     }
 
@@ -156,6 +159,8 @@ def _param_value(x, v):
         return None if v in (None, '') else str(v)
     if x.format == 'limit':  # an optional number, such as a specification limit
         return None if v in (None, '') else float(v)
+    if x.format == 'text':
+        return str(v or '')[:500]
     return float(v)
 
 
@@ -197,6 +202,10 @@ def run(service_id: str, data: Data, params: dict | None, client: dict) -> dict:
         p.update({k: _param_value(kinds[k], v) for k, v in (params or {}).items() if k in p})
     except (TypeError, ValueError):
         return {'level': r['level'], 'error': 'One of the settings isn’t a valid number.', 'params': p}
+    flags = guides.advise(s.id, data, p) if s.id in guides.CHECKS else []
+    stops = [f['text'] for f in flags if f['level'] == guides.STOP]
+    if stops:
+        return {'level': r['level'], 'error': ' '.join(stops), 'params': p, 'flags': flags}
     t0 = time.perf_counter()
     try:
         out = s.run(Ctx(data=data, level=r['level'], p=p, fmt=Fmt(client.get('currency', 'EGP')), client=client))
@@ -208,6 +217,13 @@ def run(service_id: str, data: Data, params: dict | None, client: dict) -> dict:
     level = out.pop('level', None) or r['level']
     res = _grammar(clean_json(out))
     res['checks'] = _grammar(checks.run_checks(s, data, res, level, p, client))
+    if s.id in guides.CHECKS:
+        if p.get('question'):
+            res['question'] = p['question']
+        if guides.setup(s.id, p):
+            res['setup'] = guides.setup(s.id, p)
+        for i, f in enumerate(x for x in flags if x['level'] == guides.WARN):
+            res['checks'].append(checks.check(f'settings-{i + 1}', 'Settings fit the question', checks.WARN, f['text']))
     return {'level': level, 'why': r['why'], 'params': p, 'result': res, 'ms': int((time.perf_counter() - t0) * 1000)}
 
 

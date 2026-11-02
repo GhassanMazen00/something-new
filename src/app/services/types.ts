@@ -21,6 +21,8 @@ export type Chart =
 export type Kpi = { label: string; value: string; note?: string; tone?: 'good' | 'bad' }
 export type Finding = { text: string; action?: string; level: Level }
 export type Result = {
+  question?: string
+  setup?: string
   kpis: Kpi[]
   charts: { title: string; chart: Chart; wide?: boolean }[]
   findings: Finding[]

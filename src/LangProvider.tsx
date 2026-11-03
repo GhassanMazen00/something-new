@@ -9,8 +9,9 @@ export function LangProvider({ children }: { children: ReactNode }) {
     const html = document.documentElement
     html.lang = lang
     html.dir = lang === 'ar' ? 'rtl' : 'ltr'
-    if (document.body.dataset.page !== 'services') document.title = meta.title[lang]
-    document.querySelector('meta[name="description"]')?.setAttribute('content', meta.description[lang])
+    if (document.body.dataset.page === 'pilot') document.title = lang === 'ar' ? 'تحليلك الأول مجاني · Clearline Analytics' : 'Your first analysis is free · Clearline Analytics'
+    else if (document.body.dataset.page !== 'services') document.title = meta.title[lang]
+    if (!document.body.dataset.page || document.body.dataset.page === 'home') document.querySelector('meta[name="description"]')?.setAttribute('content', meta.description[lang])
   }, [lang])
 
   const setLang = (next: Lang) => {

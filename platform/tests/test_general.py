@@ -164,3 +164,18 @@ def test_every_any_data_service_has_a_guide_and_help():
             info = engine.describe(s)
             assert info['guide']['steps'] and info['guide']['avoid']
             assert all(p['help'] for p in info['params']), s.id
+
+
+def test_before_and_after_are_recognised_whatever_they_are_called():
+    from clearline.engine.svc_general import time_pairs
+
+    rng = np.random.default_rng(2)
+    for b, a in [('Wave 1 score', 'Wave 2 score'), ('T1', 'T2'), ('Score_2024', 'Score_2025'), ('Baseline income', 'Endline income'), ('الدرجة قبل', 'الدرجة بعد')]:
+        df = pd.DataFrame({'ID': [f'P{i}' for i in range(80)], 'Arm': rng.choice(['A', 'B'], 80), b: rng.normal(50, 5, 80).round(1), a: rng.normal(53, 5, 80).round(1)})
+        d, _ = data_of(df)
+        assert time_pairs(d.files['study.csv']) == [(b, a)], b
+        assert engine.start_params(engine.BY_ID['before-and-after-impact'], d, INFO)['before'] == b
+        assert ('stop', 'outcome') in levels('what-drives-an-outcome', d, outcome=b)
+        assert ('stop', 'before') in levels('before-and-after-impact', d, before=a, after=b)
+    q = pd.DataFrame({'Q1': rng.integers(1, 6, 60), 'Q2': rng.integers(1, 6, 60)})  # survey questions are not rounds
+    assert time_pairs(q) == []

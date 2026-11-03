@@ -28,6 +28,15 @@ AGREE = ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree']
 AGREE_AR = ['لا أوافق بشدة', 'لا أوافق', 'محايد', 'أوافق', 'أوافق بشدة']
 
 
+# The same before/after measurement, named the way different clients name it.
+PAIRS = [
+    ('Score before', 'Score after'), ('Pre-test', 'Post-test'), ('Wave 1 score', 'Wave 2 score'), ('T1', 'T2'),
+    ('Score_2024', 'Score_2025'), ('Round 1 income', 'Round 2 income'), ('Baseline income', 'Endline income'),
+    ('الدرجة قبل', 'الدرجة بعد'), ('Time 1', 'Time 2'), ('Month 0 weight', 'Month 12 weight'), ('pre_score', 'post_score'),
+]
+GROUPS = ['Site', 'School', 'Clinic', 'District', 'Branch', 'Village', 'Ward', 'المدرسة']
+
+
 def make_table(seed: int) -> tuple[str, bytes, dict]:
     """A messy table and what was planted in it."""
     rng = np.random.default_rng(seed)
@@ -41,13 +50,16 @@ def make_table(seed: int) -> tuple[str, bytes, dict]:
     truth['groups'] = groups
     base = rng.normal(50, 10, n) + np.where(g == groups[0], effect * 10, 0)
     cols['ID'] = [f'R{i:05d}' for i in range(n)]
-    cols['Site'] = list(g)
+    before_name, after_name = PAIRS[int(rng.integers(0, len(PAIRS)))]
+    group_name = str(rng.choice(GROUPS))
+    truth.update({'before': before_name, 'after': after_name, 'group': group_name})
+    cols[group_name] = list(g)
     before = base + rng.normal(0, 3, n)
     gain = float(rng.choice([0, 0, 5]))
     truth['gain'] = gain
     after = before + gain + rng.normal(0, 3, n)
-    cols['Score before'] = list(before.round(1))
-    cols['Score after'] = list(after.round(1))
+    cols[before_name] = list(before.round(1))
+    cols[after_name] = list(after.round(1))
     if rng.random() < 0.7:
         start = pd.Timestamp('2020-01-01') + pd.Timedelta(days=int(rng.integers(0, 900)))
         span = int(rng.choice([20, 200, 900, 1600]))
@@ -79,7 +91,7 @@ def make_table(seed: int) -> tuple[str, bytes, dict]:
         df['Weight'] = df['Weight'].map(lambda v: f'{v} kg' if isinstance(v, float) and not np.isnan(v) else v)
     if rng.random() < 0.2:
         tr = str.maketrans('0123456789', '٠١٢٣٤٥٦٧٨٩')
-        df['Score after'] = df['Score after'].map(lambda v: str(v).translate(tr) if v is not None else v)
+        df[after_name] = df[after_name].map(lambda v: str(v).translate(tr) if v is not None else v)
     if rng.random() < 0.2:
         df.loc[len(df)] = ['Total'] + [''] * (df.shape[1] - 1)
     fmt = str(rng.choice(['csv', 'xlsx', 'csv;']))
@@ -112,12 +124,13 @@ def run_table(seed: int) -> list[dict]:
         rec('intake', 'error', f'{type(e).__name__}: {e}', trace=traceback.format_exc(limit=6))
         return recs
     types = health['types']
-    for col, want in (('Score before', 'number'), ('Score after', 'number'), ('Visit date', 'date'), ('ID', 'text')):
+    for col, want in ((truth['before'], 'number'), (truth['after'], 'number'), ('Visit date', 'date'), ('ID', 'text')):
         if col in types and types[col] != want:
             rec('types', 'fail', f'{col} read as {types[col]}')
     std.attrs['file'] = name
     d = engine.build_data({'table': [std]})
     info = {'currency': 'EGP', 'files': [{'name': name, 'kind': 'table', 'store_as': None, 'health': health}]}
+    guard_checks(seed, d, truth, rec)
     rng = np.random.default_rng(seed + 7)
     for s in engine.SERVICES:
         if s.dept != 'general':
@@ -161,10 +174,32 @@ def run_table(seed: int) -> list[dict]:
     return recs
 
 
+def guard_checks(seed, d, truth, rec):
+    """The guards must recognise this table's before/after pair, whatever it is called, and stop the traps."""
+    from clearline.engine import guides
+
+    b, a = truth['before'], truth['after']
+    q = {'question': 'Stress test question'}
+
+    def stopped(sid, **p):
+        return any(f['level'] == 'stop' for f in guides.advise(sid, d, {**q, **p}))
+
+    def caught(name, ok):
+        rec('guardtruth', 'ok' if ok else 'fail', '' if ok else f'{name} not caught ({b} / {a})')
+
+    caught('earlier column as the outcome', stopped('what-drives-an-outcome', outcome=b))
+    caught('before and after swapped', stopped('before-and-after-impact', before=a, after=b, group=None))
+    caught('correct pair wrongly stopped', not stopped('before-and-after-impact', before=b, after=a, group=None))
+    from clearline import engine
+
+    dflt = engine.start_params(engine.BY_ID['before-and-after-impact'], d, {})
+    caught('default pair', dflt['before'] == b and dflt['after'] == a)
+
+
 def truth_checks(seed, sid, p, res, truth, rec):
     kp = {k['label']: k['value'] for k in res['kpis']}
     big = truth['n'] >= 150
-    if sid == 'before-and-after-impact' and p.get('before') == 'Score before' and p.get('after') == 'Score after' and big:
+    if sid == 'before-and-after-impact' and p.get('before') == truth['before'] and p.get('after') == truth['after'] and big:
         found = 'very unlikely' in res['findings'][0]['text'] or 'unlikely to be chance' in res['findings'][0]['text']
         if truth['gain'] and not found:
             rec('truth', 'fail', f'planted gain {truth["gain"]} not found: {res["findings"][0]["text"][:120]}', service=sid)
@@ -172,7 +207,7 @@ def truth_checks(seed, sid, p, res, truth, rec):
             rec('truth', 'warn', 'no gain planted but found one (a 1-in-100 false alarm is expected now and then)', service=sid)
         else:
             rec('truth', 'ok', service=sid)
-    if sid == 'group-comparison' and p.get('group') == 'Site' and p.get('measure') in ('Score before', 'Score after') and big:
+    if sid == 'group-comparison' and p.get('group') == truth['group'] and p.get('measure') in (truth['before'], truth['after']) and big:
         real = kp.get('Real difference?') == 'Yes'
         if truth['group_effect'] and not real:
             rec('truth', 'fail', f'planted group effect not found ({kp})', service=sid)

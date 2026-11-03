@@ -1103,18 +1103,84 @@ def _arm(d: Data, avoid: set[str] = frozenset()) -> str | None:
     return _guess(d, 'category', _PREFER['arm'], avoid, fallback=False)
 
 
+# ---------- Which columns come earlier and later in time ----------
+
+# Words that say before or after, in English and Arabic.
+WORD_BEFORE = re.compile(r'(?i)before|(?<![a-z])pre(?![a-z])|pre[\s_-]|baseline|\bstart|initial|قبل|القبلي|بداية')
+WORD_AFTER = re.compile(r'(?i)after|(?<![a-z])post(?![a-z])|post[\s_-]|endline|final|follow.?up|بعد|البعدي|نهاية')
+# Numbered rounds and years: Wave 1, Round 2, T1, Visit 3, Time 2, Phase 1, Month 6, and 2024, 2025 (not Q1, Q2: those are usually questions).
+MARKER = re.compile(r'(?i)(?:(?<![a-z])(?:wave|round|visit|time|phase|survey|term|session|week|month|year|cycle|stage|موجة|جولة|مرحلة)[\s_\-#.]*(\d{1,2})(?!\d)|(?<![a-z0-9])t(\d{1,2})(?![0-9])|(?<!\d)((?:19|20)\d\d)(?!\d))')
+
+
+def time_marker(name: str) -> tuple[str, float] | None:
+    """(the name without its time marker, its place in time), or None if the name has no time marker.
+    'Score_2024' -> ('score', 2024); 'Wave 2 income' -> ('income', 2); 'Score before' -> ('score', 0)."""
+    n = str(name)
+    m = MARKER.search(n)
+    if m:
+        order = float(next(x for x in m.groups() if x))
+        stem = MARKER.sub(' ', n)
+    elif WORD_BEFORE.search(n):
+        order, stem = 0.0, WORD_BEFORE.sub(' ', n)
+    elif WORD_AFTER.search(n):
+        order, stem = 1.0, WORD_AFTER.sub(' ', n)
+    else:
+        return None
+    stem = re.sub(r'[\s_\-()#.:]+', ' ', stem).strip().lower()
+    stem = re.sub(r'\b(score|test|value)\b', lambda x: x.group(1), stem)
+    return stem, order
+
+
+def time_pairs(df: pd.DataFrame) -> list[tuple[str, str]]:
+    """(earliest, latest) number columns that measure the same thing at different times, by their names."""
+    groups: dict[str, list[tuple[float, str]]] = {}
+    for col in df.columns:
+        if kind_of(str(col), df[col]) not in ('number', 'binary'):
+            continue
+        tm = time_marker(str(col))
+        if tm:
+            groups.setdefault(tm[0], []).append((tm[1], str(col)))
+    out = []
+    for cols in groups.values():
+        orders = {o for o, _ in cols}
+        if len(orders) >= 2:
+            cols.sort()
+            out.append((cols[0][1], cols[-1][1]))
+    return out
+
+
+def is_earlier(col: str, df: pd.DataFrame) -> str | None:
+    """If this column is the earlier one of a before/after pair, the later one."""
+    for a, b in time_pairs(df):
+        if col == a:
+            return b
+    return None
+
+
+def _pair_in(d: Data) -> tuple[str, str] | None:
+    for name, df in d.files.items():
+        pairs = time_pairs(df)
+        if pairs:
+            a, b = pairs[0]
+            many = len(d.files) > 1
+            return (f'{a}{SEP}{name}', f'{b}{SEP}{name}') if many else (a, b)
+    return None
+
+
 # Settings start filled in only where a column's name says what it is; otherwise the analyst chooses.
 
 
 def _d_compare(d: Data, client: dict) -> dict:
-    m = _guess(d, 'outcome', _PREFER['measure'], fallback=False)
+    pair = _pair_in(d)
+    m = pair[1] if pair else _guess(d, 'outcome', _PREFER['measure'], fallback=False)
     avoid = {m} if m else set()
     return {'measure': m, 'group': _arm(d, avoid) or _guess(d, 'category', _PREFER['group'], avoid, fallback=False)}
 
 
 def _d_drivers(d: Data, client: dict) -> dict:
     yes_no = _guess(d, 'binary', [r'^(repaid|passed|success|outcome|result|converted|churned|left|default)', r'repaid|passed|success|outcome|result|converted|churn|default'], fallback=False)
-    return {'outcome': yes_no or _guess(d, 'outcome', _PREFER['outcome'], fallback=False)}
+    pair = _pair_in(d)
+    return {'outcome': yes_no or (pair[1] if pair else None) or _guess(d, 'outcome', _PREFER['outcome'], fallback=False)}
 
 
 def _d_trend(d: Data, client: dict) -> dict:
@@ -1128,8 +1194,12 @@ def _d_survey(d: Data, client: dict) -> dict:
 
 
 def _d_before(d: Data, client: dict) -> dict:
-    b = _guess(d, 'number', _PREFER['before'], fallback=False)
-    a = _guess(d, 'number', _PREFER['after'], {b} if b else set(), fallback=False)
+    pair = _pair_in(d)
+    if pair:
+        b, a = pair
+    else:
+        b = _guess(d, 'number', _PREFER['before'], fallback=False)
+        a = _guess(d, 'number', _PREFER['after'], {b} if b else set(), fallback=False)
     return {'before': b, 'after': a, 'group': _arm(d)}
 
 

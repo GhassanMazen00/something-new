@@ -19,8 +19,8 @@ from . import svc_general as g
 from .core import Data, NeedsData
 
 STOP, WARN, TIP = 'stop', 'warn', 'tip'
-BEFORE = re.compile(r'(?i)before|\bpre\b|^pre[\s_-]|baseline|start|initial|قبل')
-AFTER = re.compile(r'(?i)after|\bpost\b|^post[\s_-]|endline|final|follow.?up|بعد')
+BEFORE = g.WORD_BEFORE
+AFTER = g.WORD_AFTER
 NOT_ADDITIVE = re.compile(r'(?i)score|grade|mark|rate|%|percent|age\b|minutes|time|temperature|weight|height|price|average|mean|rating|satisf|درجة|نسبة|عمر|متوسط')
 PROCESS = re.compile(r'(?i)reading|measure|fill|thickness|diameter|length|temperature|pressure|volume|weight|\bml\b|\bmm\b|\bkg\b|minutes|time|defect|قياس')
 
@@ -149,6 +149,17 @@ def _table(d: Data, p: dict, keys: list[str]) -> tuple[pd.DataFrame | None, dict
     return (d.files.get(file) if file else None), cols
 
 
+def _later(col: str, df: pd.DataFrame) -> str | None:
+    """The later column if this one is the earlier of a pair (by words or numbered rounds), else None."""
+    later = g.is_earlier(col, df)
+    if later:
+        return later
+    if BEFORE.search(col):
+        afters = _others(df, AFTER, {'number', 'binary'})
+        return afters[0] if afters else None
+    return None
+
+
 def _others(df: pd.DataFrame, rx: re.Pattern, kinds: set[str]) -> list[str]:
     return [str(c) for c in df.columns if rx.search(str(c)) and g.kind_of(str(c), df[c]) in kinds]
 
@@ -198,11 +209,10 @@ def _group_checks(df, col, key, label) -> list[dict]:
 def check_compare(d, p, df, cols):
     m, grp = cols['measure'], cols['group']
     out = _group_checks(df, grp, 'group', 'group')
-    if m and BEFORE.search(m):
-        afters = _others(df, AFTER, {'number', 'binary'})
-        if afters:
-            out.append(flag(WARN, f'“{m}” is measured before. This only shows whether the groups started equal. For the result, compare “{afters[0]}”, or use Before-and-after impact.', 'measure'))
-    if m and grp and _others(df, BEFORE, {'number'}) and _others(df, AFTER, {'number'}) and g._arm(d):
+    later = _later(m, df) if m else None
+    if later:
+        out.append(flag(WARN, f'“{m}” is the earlier measurement. This only shows whether the groups started equal. For the result, compare “{later}”, or use Before-and-after impact.', 'measure'))
+    if m and grp and (g.time_pairs(df) or (_others(df, BEFORE, {'number'}) and _others(df, AFTER, {'number'}))) and g._arm(d):
         out.append(flag(TIP, 'This table has before and after values and a group that took part: Before-and-after impact measures the effect more precisely than comparing the after values alone.'))
     if not m or not grp:
         out.append(flag(STOP, 'Choose the measure and the group.'))
@@ -214,9 +224,9 @@ def check_drivers(d, p, df, cols):
     out = []
     if not o:
         return [flag(STOP, 'Choose the outcome to explain.', 'outcome')]
-    afters = _others(df, AFTER, {'number', 'binary'})
-    if BEFORE.search(o) and afters:
-        out.append(flag(STOP, f'“{o}” comes before “{afters[0]}”. Using it as the outcome explains the past with the future. Choose “{afters[0]}”.', 'outcome'))
+    later = _later(o, df)
+    if later:
+        out.append(flag(STOP, f'“{o}” comes before “{later}”. Using it as the outcome explains the past with the future. Choose “{later}”.', 'outcome'))
     n = int(df[o].notna().sum())
     if n < 50:
         out.append(flag(WARN, f'Only {n} rows with an outcome: few factors can be tested reliably, and the result is a rough guide.', 'outcome'))
@@ -258,8 +268,13 @@ def check_before(d, p, df, cols):
     out = []
     if not b or not a:
         return [flag(STOP, 'Choose the measure before and the same measure after.', 'before')]
-    if (AFTER.search(b) and not AFTER.search(a)) or (BEFORE.search(a) and not BEFORE.search(b)):
+    tb, ta = g.time_marker(b), g.time_marker(a)
+    if tb and ta and tb[0] == ta[0] and tb[1] > ta[1]:
+        out.append(flag(STOP, f'“{b}” and “{a}” look swapped: the earlier measurement goes first.', 'before'))
+    elif (AFTER.search(b) and not AFTER.search(a)) or (BEFORE.search(a) and not BEFORE.search(b)):
         out.append(flag(STOP, f'“{b}” and “{a}” look swapped: the measure before goes first.', 'before'))
+    elif tb and ta and tb[0] != ta[0] and tb[0] and ta[0]:
+        out.append(flag(WARN, f'“{b}” and “{a}” have different names apart from the time: are they the same measure?', 'after'))
     mb, ma = df[b].abs().mean(), df[a].abs().mean()
     if mb and ma and max(mb, ma) / min(mb, ma) > 3:
         out.append(flag(WARN, f'“{b}” averages {g.nf(mb)} and “{a}” {g.nf(ma)}: are they the same measure in the same units?', 'after'))

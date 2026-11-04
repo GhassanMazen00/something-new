@@ -84,3 +84,22 @@ def test_dot_is_a_decimal_unless_the_column_is_clearly_european():
     assert to_number(pd.Series(['10.035', '9.87', '10.1'])).tolist() == [10.035, 9.87, 10.1]  # measurements
     assert to_number(pd.Series(['1.250', '3.400,50', '12,5'])).tolist() == [1250, 3400.5, 12.5]  # European money
     assert to_number(pd.Series(['1.234.567', '1.250'])).tolist() == [1234567, 1250]
+
+
+def test_arabic_month_names():
+    import pandas as pd
+
+    from clearline.intake import to_date
+
+    got = to_date(pd.Series(['15 يناير 2025', '٢٠ مارس ٢٠٢٥', '1 كانون الثاني 2024', 'الأحد، 5 مايو 2024']))[0]
+    assert got.dt.date.astype(str).tolist() == ['2025-01-15', '2025-03-20', '2024-01-01', '2024-05-05']
+
+
+def test_arabic_sales_file_in_windows_arabic_encoding():
+    from clearline import intake
+
+    csv = 'التاريخ,رقم الفاتورة,العميل,الصنف,الكمية,السعر,الإجمالي\n' + '\n'.join(f'{d}/01/2025,ف-{d},شركة النور,كرسي مكتب,2,1250.00,2500.00' for d in (15, 16, 17))
+    raw = intake.read_raw('مبيعات.csv', csv.encode('cp1256'))
+    kind, mapping, _ = intake.suggest_kind('مبيعات.csv', raw)
+    std, _ = intake.standardize(kind, raw, mapping, {})
+    assert kind == 'sales' and std['amount'].sum() == 7500 and std['customer'].iloc[0] == 'شركة النور'

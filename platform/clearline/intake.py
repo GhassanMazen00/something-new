@@ -448,6 +448,16 @@ def to_bool(s: pd.Series) -> pd.Series:
     return t.map(lambda v: True if v in yes else False if v in no else None)
 
 
+_AR_MONTHS = {
+    'يناير': 'Jan', 'فبراير': 'Feb', 'مارس': 'Mar', 'أبريل': 'Apr', 'ابريل': 'Apr', 'إبريل': 'Apr', 'مايو': 'May', 'يونيو': 'Jun', 'يونية': 'Jun',
+    'يوليو': 'Jul', 'يولية': 'Jul', 'أغسطس': 'Aug', 'اغسطس': 'Aug', 'سبتمبر': 'Sep', 'أكتوبر': 'Oct', 'اكتوبر': 'Oct', 'نوفمبر': 'Nov', 'ديسمبر': 'Dec',
+    'كانون الثاني': 'Jan', 'شباط': 'Feb', 'آذار': 'Mar', 'نيسان': 'Apr', 'أيار': 'May', 'حزيران': 'Jun', 'تموز': 'Jul', 'آب': 'Aug',
+    'أيلول': 'Sep', 'تشرين الأول': 'Oct', 'تشرين الثاني': 'Nov', 'كانون الأول': 'Dec',
+}
+_AR_MONTH_RE = '|'.join(sorted(map(re.escape, _AR_MONTHS), key=len, reverse=True))
+_AR_DAYS_RE = r'(?:يوم\s+)?(?:السبت|الأحد|الاحد|الإثنين|الاثنين|الثلاثاء|الأربعاء|الاربعاء|الخميس|الجمعة)'
+
+
 def to_date(s: pd.Series, dayfirst: bool | None = None) -> tuple[pd.Series, bool]:
     """Dates from text, Excel serial numbers or real dates. Tries day-first and month-first; keeps the one that parses best."""
     if pd.api.types.is_datetime64_any_dtype(s):
@@ -458,6 +468,10 @@ def to_date(s: pd.Series, dayfirst: bool | None = None) -> tuple[pd.Series, bool
             return pd.to_datetime(n, unit='D', origin='1899-12-30', errors='coerce'), bool(dayfirst)
     t = s.astype(str).str.translate(_AR_DIGITS).str.strip()
     t = t.where(~t.isin(['', 'nan', 'NaT', 'None']))
+    # Arabic month names (Egyptian and Levantine) become English ones the parser knows: "15 يناير 2025" -> "15 Jan 2025".
+    if t.dropna().str.contains(_AR_MONTH_RE, regex=True).mean() > 0.5:
+        t = t.str.replace(_AR_DAYS_RE, ' ', regex=True)  # "الأحد، 5 مايو 2024": the weekday adds nothing
+        t = t.str.replace(_AR_MONTH_RE, lambda m: f' {_AR_MONTHS[m.group(0)]} ', regex=True).str.replace('،', ' ', regex=False).str.replace(r'\s+', ' ', regex=True).str.strip()
     # Weeks like "2024-W05" become the Monday of that week.
     if t.dropna().str.fullmatch(r'\d{4}-?W\d{1,2}').mean() > 0.9:
         return pd.to_datetime(t.str.replace(r'(\d{4})-?W(\d{1,2})', r'\1-W\2-1', regex=True), format='%G-W%V-%u', errors='coerce'), bool(dayfirst)

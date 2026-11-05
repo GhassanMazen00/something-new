@@ -11,11 +11,12 @@ from pathlib import Path
 
 import pandas as pd
 
-from . import checks, guides, svc_accounting, svc_data, svc_general, svc_market, svc_marketing, svc_people, svc_sales
+from . import checks, guides, svc_accounting, svc_collect, svc_data, svc_general, svc_market, svc_marketing, svc_people, svc_sales
 from .core import Ctx, Data, Fmt, NeedsData, Service, clean_json, level_for, missing_for
 
 _CATALOG = json.loads((Path(__file__).parent / 'catalog.json').read_text(encoding='utf-8'))
 _TEXT = {s['id']: s for d in _CATALOG for s in d['services']}
+_TEXT.update({k: {'id': k, **v} for k, v in svc_collect.TEXT.items()})  # services the website doesn't list yet
 DEPTS = [{'id': d['id'], 'name': d['name']} for d in _CATALOG]
 
 # The website describes the full offer; these say what this version actually runs, for reports and the screens.
@@ -33,7 +34,7 @@ METHODS = {
     'pay-fairness-check': 'Regression of pay on role, tenure and gender',
 }
 
-SERVICES: list[Service] = [*svc_data.SERVICES, *svc_sales.SERVICES, *svc_marketing.SERVICES, *svc_accounting.SERVICES, *svc_people.SERVICES, *svc_market.SERVICES, *svc_general.SERVICES]
+SERVICES: list[Service] = [*svc_data.SERVICES, *svc_sales.SERVICES, *svc_marketing.SERVICES, *svc_accounting.SERVICES, *svc_collect.SERVICES, *svc_people.SERVICES, *svc_market.SERVICES, *svc_general.SERVICES]
 BY_ID = {s.id: s for s in SERVICES}
 
 missing_text = set(_TEXT) - set(BY_ID)

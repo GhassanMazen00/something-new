@@ -402,6 +402,11 @@ def retention_sweep(db: Session) -> int:
 # ---------- Files ----------
 
 
+def _source(f: DataFile) -> str:
+    """The name of the file as uploaded (one sheet of a workbook is listed as 'book.xlsx · Sheet')."""
+    return f.options.get('source') or f.name
+
+
 def file_out(f: DataFile) -> dict:
     return {'id': f.id, 'name': f.name, 'size': f.size, 'kind': f.kind, 'kind_label': intake.KINDS[f.kind].label if f.kind in intake.KINDS else None, 'columns': f.columns, 'mapping': f.mapping, 'options': {k: v for k, v in f.options.items() if k not in ('std', 'suggested')}, 'suggested': f.options.get('suggested'), 'rows': f.rows, 'ready': f.ready, 'health': f.health, 'uploaded_at': f.uploaded_at.isoformat()}
 
@@ -427,17 +432,39 @@ async def upload(cid: int, files: list[UploadFile] = File(...), user: User = Dep
             raise HTTPException(413, f'{up.filename} is over {config.MAX_UPLOAD_MB} MB. Split it or save it as CSV.')
         name = (up.filename or 'file').replace('\\', '/').split('/')[-1][:200]
         try:
-            head = intake.read_raw(name, data, nrows=400)
-        except ValueError as e:
-            raise HTTPException(400, f'{name}: {e}') from e
-        except Exception as e:  # noqa: BLE001
-            raise HTTPException(400, f'{name} couldn’t be read. Is it a real CSV or Excel file? ({e})') from e
-        kind, mapping, conf = intake.suggest_kind(name, head)
-        f = DataFile(client_id=c.id, name=name, blob=storage.save(c.data_key, data), size=len(data), kind=kind, columns=list(head.columns), mapping=mapping, options={'suggested': {'kind': kind, 'confidence': round(conf, 2)}, 'sheets': intake.sheets(name, data)}, uploaded_by=user.id)
-        db.add(f)
-        db.commit()
-        audit.log(db, user, f'Uploaded {name} ({len(data) / 1024:,.0f} KB, encrypted)', c.id)
-        out.append(file_out(f))
+            sheet_names = intake.sheets(name, data)
+        except Exception:  # noqa: BLE001
+            sheet_names = []
+        # A workbook with several sheets becomes one file per sheet that holds a table, each with its own type.
+        targets = [None]
+        if len(sheet_names) > 1:
+            targets = []
+            for sh in sheet_names:
+                try:
+                    h = intake.read_raw(name, data, {'sheet': sh}, nrows=400)
+                except Exception:  # noqa: BLE001
+                    continue
+                if len(h) >= 2 and h.shape[1] >= 2:
+                    targets.append(sh)
+            targets = targets or [None]
+        for sh in targets:
+            label = f'{name} · {sh}' if sh else name
+            try:
+                head = intake.read_raw(name, data, {'sheet': sh} if sh else None, nrows=400)
+            except ValueError as e:
+                raise HTTPException(400, f'{label}: {e}') from e
+            except Exception as e:  # noqa: BLE001
+                raise HTTPException(400, f'{label} couldn’t be read. Is it a real CSV or Excel file? ({e})') from e
+            kind, mapping, conf = intake.suggest_kind(f'{name} {sh or ""}', head)
+            opts = {'suggested': {'kind': kind, 'confidence': round(conf, 2)}, 'sheets': sheet_names}
+            if sh:
+                opts['sheet'] = sh
+                opts['source'] = name  # the workbook's own name: its extension says how to read it
+            f = DataFile(client_id=c.id, name=label[:300], blob=storage.save(c.data_key, data), size=len(data), kind=kind, columns=list(head.columns), mapping=mapping, options=opts, uploaded_by=user.id)
+            db.add(f)
+            db.commit()
+            audit.log(db, user, f'Uploaded {label} ({len(data) / 1024:,.0f} KB, encrypted)', c.id)
+            out.append(file_out(f))
     if c.status == 'Intake':
         c.status = 'Analysing'
         db.commit()
@@ -457,7 +484,7 @@ def get_file(fid: int, kind: str | None = None, sheet: str | None = None, header
     if header_row is not None:
         opts['header_row'] = header_row if header_row >= 0 else None
     try:
-        raw = intake.read_raw(f.name, storage.load(c.data_key, f.blob), opts, nrows=400)
+        raw = intake.read_raw(_source(f), storage.load(c.data_key, f.blob), opts, nrows=400)
     except Exception as e:  # noqa: BLE001
         raise HTTPException(400, f'That sheet or header row can’t be read: {e}') from e
     out = {**file_out(f), 'preview': intake.preview(raw, 12), 'preview_columns': list(raw.columns)}
@@ -489,7 +516,9 @@ def set_mapping(fid: int, body: MappingIn, user: User = Depends(current_user), d
     if problems:
         raise HTTPException(400, ' '.join(problems))
     opts = {k: v for k, v in body.options.items() if k in ('sheet', 'header_row', 'dayfirst')}
-    raw = intake.read_raw(f.name, storage.load(c.data_key, f.blob), opts)
+    if not opts.get('sheet') and f.options.get('sheet'):
+        opts['sheet'] = f.options['sheet']  # one sheet of a workbook keeps its sheet
+    raw = intake.read_raw(_source(f), storage.load(c.data_key, f.blob), opts)
     if set(mapping.values()) - set(raw.columns):
         raise HTTPException(400, 'Some chosen columns aren’t in the file. Reload the page and try again.')
     try:

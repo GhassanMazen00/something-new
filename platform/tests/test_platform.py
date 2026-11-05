@@ -126,7 +126,7 @@ def test_upload_map_and_run_everything(app):
             assert r2.status_code == 200, (f['name'], r2.text)
             assert r2.json()['ready'] and r2.json()['rows'] > 0
         svcs = c.get(f'/api/clients/{cid}/services').json()['services']
-        assert len(svcs) == 40
+        assert len(svcs) == len(__import__("clearline").engine.SERVICES)
         done = []
         for s in svcs:
             if s['level'] == 'none':

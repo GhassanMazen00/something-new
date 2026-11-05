@@ -54,7 +54,7 @@ KINDS: dict[str, Kind] = {
                 F('date', 'Date', 'date', DATE + '|invoicedate|sale date', True),
                 F('order_id', 'Order or invoice', 'text', 'order|order id|order no|invoice|invoice no|invoiceno|receipt|bill no|transaction id|رقم الفاتورة|الفاتورة|رقم الطلب'),
                 F('customer', 'Customer', 'text', 'customer|customer id|customerid|client|buyer|account|phone|العميل|رقم العميل|اسم العميل'),
-                F('product', 'Product', 'text', 'product|item|sku|stockcode|stock code|item code|product id|description|product name|الصنف|المنتج|كود الصنف', True),
+                F('product', 'Product', 'text', 'product|item|sku|stockcode|stock code|item code|product id|description|product name|items|products|line items|الصنف|المنتج|كود الصنف|الأصناف|الاصناف|الأصناف المباعة|المنتجات|البنود', True),
                 F('product_name', 'Product name', 'text', 'description|product name|item name|product description|item description|اسم الصنف|اسم المنتج'),
                 F('branch', 'Branch or store', 'text', 'branch|store|shop|location|outlet|country|region|الفرع|المتجر'),
                 F('channel', 'Channel', 'text', 'channel|source|platform|القناة'),
@@ -288,12 +288,26 @@ KINDS: dict[str, Kind] = {
             ],
             hints=['price survey', 'van westendorp', 'pricing survey', 'استبيان الأسعار'],
         ),
+        # A customer account statement: payments, discounts, returns and transfers per customer.
+        Kind(
+            'custledger',
+            'Customer payments and movements',
+            [
+                F('date', 'Date', 'date', DATE, True),
+                F('customer', 'Customer', 'text', 'customer|client|account|party|customer name|العميل|اسم العميل|الحساب', True),
+                F('type', 'Type of movement', 'text', 'type|movement|transaction type|kind|entry type|النوع|نوع الحركة|نوع العملية|الحركة', True),
+                F('amount', 'Amount', 'number', AMOUNT + '|paid|payment', True),
+                F('reference', 'Reference', 'text', 'reference|ref|invoice|invoice no|receipt|الرقم|المرجع|رقم الإيصال|رقم الفاتورة'),
+                F('note', 'Note', 'text', 'note|notes|memo|details|method|الملاحظة|ملاحظات|البيان|طريقة الدفع'),
+            ],
+            hints=['payment', 'payments', 'receipts', 'collections', 'statement', 'movements', 'الدفعات', 'الحركات', 'تحصيل', 'كشف حساب', 'مدفوعات'],
+        ),
         # Anything else: research data, surveys, records, measurements. Every column is kept as it is.
         Kind(
             'table',
             'Any other table (research, survey, records, measurements)',
             [],
-            hints=['survey', 'study', 'research', 'experiment', 'results', 'measurement', 'questionnaire', 'responses', 'students', 'patients', 'grades', 'sensor', 'quality', 'readings', 'trial', 'evaluation', 'beneficiaries', 'استبيان', 'دراسة', 'نتائج'],
+            hints=['cancelled', 'canceled', 'void', 'deleted', 'ملغي', 'ملغية', 'ملغاة', 'الملغية', 'محذوف', 'survey', 'study', 'research', 'experiment', 'results', 'measurement', 'questionnaire', 'responses', 'students', 'patients', 'grades', 'sensor', 'quality', 'readings', 'trial', 'evaluation', 'beneficiaries', 'استبيان', 'دراسة', 'نتائج'],
         ),
     ]
 }
@@ -635,6 +649,9 @@ def suggest_kind(name: str, df: pd.DataFrame) -> tuple[str, dict[str, str], floa
         score = covered * (1 if groups_ok else 0.4) + 0.3 * extra + (0.25 if any(h in low for h in k.hints) else 0)
         if covered < 1:
             score *= 0.6  # a required column is missing: more likely another kind of table
+        score += 0.15 * len(m) / max(df.shape[1], 1)  # between two that fit, the one that explains more of the file
+        if key == 'bank' and not ({'description', 'balance', 'debit', 'credit', 'reference'} & set(m)) and not any(h in low for h in k.hints):
+            score *= 0.4  # a date and an amount alone don't make a bank statement
         if df.shape[1] >= 5 and len(m) / df.shape[1] < 0.34:
             score *= max(0.3, 2 * len(m) / df.shape[1])  # explains only a small part of a wide file: probably something else
         if key == 'adswide':
@@ -650,7 +667,7 @@ def suggest_kind(name: str, df: pd.DataFrame) -> tuple[str, dict[str, str], floa
 
 
 # Files where two identical rows can be a real event (paid twice), so repeats are kept for the scans to judge.
-MONEY_KINDS = {'payroll', 'bank', 'ledger', 'einv', 'bills', 'unpaid'}
+MONEY_KINDS = {'payroll', 'bank', 'ledger', 'einv', 'bills', 'unpaid', 'custledger'}
 
 
 def standardize(kind: str, df: pd.DataFrame, mapping: dict[str, str], options: dict | None = None) -> tuple[pd.DataFrame, dict]:
@@ -700,7 +717,7 @@ def standardize(kind: str, df: pd.DataFrame, mapping: dict[str, str], options: d
     if dupes and kind in MONEY_KINDS:
         health['issues'].append(f'{dupes:,} rows appear twice; kept, since they may be real double payments (the scans check them)')
         health['repeats'] = dupes
-    elif dupes and kind not in ('empsurvey', 'custsurvey', 'abtest'):
+    elif dupes and kind not in ('empsurvey', 'custsurvey', 'abtest') and not health.get('unpacked'):
         health['issues'].append(f'{dupes:,} rows appear twice; the copies were removed')
         health['duplicates'] = dupes
         out = out.drop_duplicates()
@@ -780,9 +797,68 @@ def standardize_table(df: pd.DataFrame, options: dict) -> tuple[pd.DataFrame, di
     return out.reset_index(drop=True), health
 
 
+PACKED_SEP = r'\s*(?:\||\n|؛|;)\s*'
+PACKED_QTY = r'^(.*?)\s*[×xX\*]\s*([\d.,٠-٩]+)\s*$'
+# Lines in an invoice list that aren't sales: balances carried from an earlier system, returns written as lines.
+BALANCE_LINE = r'(?i)رصيد\s*(?:مرحل|سابق|افتتاحي|أول المدة|اول المدة)|مرحل\s*من|opening\s*balance|balance\s*(?:b/?f|brought\s*forward|carried)|carried\s*forward'
+RETURN_LINE = r'(?i)^\s*(?:مرتجع|مرتجعات|return|refund)'
+
+
+def product_key(name) -> str:
+    """One spelling for one product: 'سوسته مسحوره الوان (20)' and 'سوسته مسحورة الوان مقاس 20' are the same thing."""
+    if name is None or (not isinstance(name, str) and pd.isna(name)):
+        return name
+    t = str(name).translate(_AR_DIGITS)
+    t = re.sub('[أإآ]', 'ا', t)
+    t = re.sub('ى(?=\\s|$)', 'ي', t)
+    t = re.sub('ة(?=\\s|$)', 'ه', t)
+    t = re.sub(r'\(\s*(\d+(?:\.\d+)?)\s*\)', r'مقاس \1', t)
+    t = re.sub(r'مقاس\s*مقاس', 'مقاس', t)
+    return re.sub(r'\s+', ' ', t).strip(' -–·')
+
+
+def _unpack_lines(out: pd.DataFrame, health: dict) -> pd.DataFrame:
+    """Invoices that list several products in one cell ("item ×700 | item ×30") become one line per product, with its
+    quantity. The invoice total is shared out by each product's usual unit price, taken from invoices that hold that
+    product alone, so the lines always add up to the invoice total."""
+    prod = out['product'].astype(str)
+    packed = prod.str.contains(PACKED_SEP, regex=True) | prod.str.match(PACKED_QTY)
+    if packed.mean() < 0.3 or 'amount' not in out:
+        return out
+    out = out.copy()
+    out['_inv'] = np.arange(len(out))
+    out['_row'] = out['_inv']
+    parts = out.assign(product=prod.str.split(PACKED_SEP, regex=True)).explode('product')
+    parts = parts[parts['product'].astype(str).str.strip() != '']
+    m = parts['product'].astype(str).str.extract(PACKED_QTY)
+    parts['product'] = m[0].where(m[0].notna(), parts['product']).astype(str).str.strip()
+    q = to_number(m[1]) if m[1].notna().any() else pd.Series(np.nan, index=parts.index)
+    parts['qty'] = q.where(q > 0, 1.0).fillna(1.0).values
+    parts['product'] = parts['product'].map(product_key)
+    parts = parts.reset_index(drop=True)
+    n_lines = parts.groupby('_inv')['product'].transform('size')
+    # Usual unit price per product from invoices with that product alone; else from its family (its first two words).
+    single = parts[(n_lines == 1) & (parts['amount'] > 0) & (parts['qty'] > 0)]
+    unit = (single['amount'] / single['qty']).groupby(single['product']).median()
+    family = parts['product'].astype(str).str.split().str[:2].str.join(' ')
+    fam_unit = (single['amount'] / single['qty']).groupby(family.loc[single.index]).median()
+    price = parts['product'].map(unit)
+    price = price.fillna(family.map(fam_unit))
+    weight = (price.fillna(price.median() if price.notna().any() else 1.0) * parts['qty']).clip(lower=1e-9)
+    share = weight / weight.groupby(parts['_inv']).transform('sum')
+    parts['amount'] = parts['amount'] * share
+    parts['price'] = parts['amount'] / parts['qty'].replace(0, np.nan)
+    many = int((out.assign(n=prod.str.count(PACKED_SEP) + 1)['n'] > 1).sum())
+    health['issues'].append(f'{many:,} invoices listed several products in one cell: split into {len(parts):,} product lines, each invoice total shared by usual unit prices')
+    health['unpacked'] = {'invoices': many, 'lines': int(len(parts)), 'estimated': bool(many)}
+    health['rows_in_lines'] = int(len(parts))
+    return parts.drop(columns=['_inv'])
+
+
 def _shape(kind: str, out: pd.DataFrame, health: dict) -> pd.DataFrame:
     """Kind-specific fixes: derive missing values, split returns, combine debit and credit."""
     if kind == 'sales':
+        out = _unpack_lines(out, health)
         if 'qty' not in out:
             out['qty'] = 1.0
         out['qty'] = out['qty'].fillna(1.0)
@@ -791,7 +867,7 @@ def _shape(kind: str, out: pd.DataFrame, health: dict) -> pd.DataFrame:
         if 'amount' not in out:
             out['amount'] = out['price'] * out['qty']
         out['amount'] = out['amount'].fillna(out['price'] * out['qty'])
-        returns = (out['qty'] < 0) | (out['amount'] < 0)
+        returns = (out['qty'] < 0) | (out['amount'] < 0) | out['product'].astype(str).str.match(RETURN_LINE)
         if returns.any():
             health['issues'].append(f'{int(returns.sum()):,} returns or cancellations kept apart from sales')
             health['returns'] = int(returns.sum())
@@ -799,8 +875,11 @@ def _shape(kind: str, out: pd.DataFrame, health: dict) -> pd.DataFrame:
         for c in ('order_id', 'customer', 'branch', 'channel'):
             if c not in out:
                 out[c] = None
-        if out['order_id'].isna().all():
-            out['order_id'] = out['date'].astype(str) + '-' + out.index.astype(str)
+        # A line without an invoice number is its own invoice (never lumped together with the others missing one).
+        # Lines split from one cell share the cell's position, kept in '_row', so they stay one invoice.
+        own = out['_row'] if '_row' in out else pd.Series(out.index, index=out.index)
+        out['order_id'] = out['order_id'].where(out['order_id'].notna(), 'no-number-' + own.astype(str))
+        out = out.drop(columns=['_row'], errors='ignore')
         out['promo'] = out['promo'].fillna(False).astype(bool) if 'promo' in out else False
         if 'time' in out:
             out['hour'] = pd.to_numeric(out['time'].astype(str).str.extract(r'^\s*(\d{1,2})')[0], errors='coerce')

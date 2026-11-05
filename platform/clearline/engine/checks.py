@@ -222,9 +222,13 @@ def inputs(used: set[str], files: list[dict]) -> dict:
 def sales_reconcile(d: Data, fmt: Fmt) -> list[dict]:
     out = []
     s_all, s = d.sales_all, d.sales
-    kept = s_all.loc[~s_all['is_return'] & (s_all['amount'] > 0), 'amount'].sum()
-    returns = -s_all.loc[s_all['is_return'], 'amount'].sum()
+    from .core import BALANCE_LINE
+
+    carried_mask = s_all['product'].astype(str).str.contains(BALANCE_LINE, regex=True)
+    kept = s_all.loc[~s_all['is_return'] & (s_all['amount'] > 0) & ~carried_mask, 'amount'].sum()
+    returns = s_all.loc[s_all['is_return'] & ~carried_mask, 'amount'].abs().sum()
     cancelled = d.cancelled['value']
+    carried = getattr(d, 'carried', {'value': 0.0})['value']
     used = s['amount'].sum()
     gap = kept - cancelled - used
     status = PASS if abs(gap) <= max(0.005 * kept, 1) else FAIL
@@ -232,7 +236,9 @@ def sales_reconcile(d: Data, fmt: Fmt) -> list[dict]:
         'reconcile', 'Sales add up', status,
         f'{fmt.money(kept, True)} of sales lines − {fmt.money(cancelled, True)} cancelled soon after = {fmt.money(used, True)} analysed'
         + (f' (gap {fmt.money(gap, True)})' if status == FAIL else '')
-        + (f'. Returns of {fmt.money(abs(returns), True)} are shown separately.' if returns else '.'),
+        + (f'. Returns of {fmt.money(abs(returns), True)} are shown separately' if returns else '')
+        + (f'; {fmt.money(carried, True)} of balances carried from before are not sales and are left out' if carried else '')
+        + '.',
     ))
 
     # Months with no sales in the middle of the data usually mean a missing file or export.

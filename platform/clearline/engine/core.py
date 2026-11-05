@@ -150,7 +150,8 @@ def canonical_names(names: pd.Series) -> tuple[pd.Series, list[list[str]]]:
         for group in by_start.values():
             for i, a in enumerate(group):
                 for b in group[i + 1 :]:
-                    if len(a) > 6 and re.sub(r'\D', '', a) == re.sub(r'\D', '', b) and difflib.SequenceMatcher(None, a, b).ratio() >= 0.93:
+                    # Long names only, and nearly identical: 'Abu Amer' and 'Abu Omar' are different people.
+                    if min(len(a), len(b)) >= 10 and re.sub(r'\D', '', a) == re.sub(r'\D', '', b) and difflib.SequenceMatcher(None, a, b).ratio() >= 0.95:
                         parent[b] = parent[a]
     counts = names.astype(str).value_counts()
     groups: dict[str, list[str]] = {}
@@ -172,7 +173,9 @@ def canonical_names(names: pd.Series) -> tuple[pd.Series, list[list[str]]]:
 
 # Lines in a sales export that aren't goods: shipping, fees, discounts and manual corrections. Words that could
 # also be part of a real product's name ("Manual juicer") only count when they are the whole name.
-NOT_GOODS = r'(?i)\b(?:postage|carriage|shipping|delivery charges?|bank charges?|fees?|commission|service charge)\b|شحن|رسوم'
+NOT_GOODS = r'(?i)\b(?:postage|carriage|shipping|delivery charges?|bank charges?|fees?|commission|service charge|samples?)\b|شحن|رسوم|عينات|عينه|عينة'
+# Lines that carry an old balance into the system: money owed, not a sale.
+BALANCE_LINE = r'(?i)رصيد\s*(?:مرحل|سابق|افتتاحي|أول المدة|اول المدة)|مرحل\s*من|opening\s*balance|balance\s*(?:b/?f|brought\s*forward|carried)|carried\s*forward'
 NOT_GOODS_NAMES = {'MANUAL', 'DISCOUNT', 'ADJUSTMENT', 'ADJUST BAD DEBT', 'SAMPLES', 'DELIVERY', 'POST', 'DOT', 'M', 'C2', 'D', 'S', 'B', 'CRUK', 'AMAZONFEE', 'PADS', 'خصم', 'توصيل'}
 
 
@@ -257,6 +260,9 @@ class Data:
         """Sales lines, without returns and without orders cancelled in full soon after (same customer, product and
         quantity returned within 30 days): those were never really sold."""
         s = self.sales_all
+        carried = s['product'].astype(str).str.contains(BALANCE_LINE, regex=True)
+        self.carried = {'lines': int(carried.sum()), 'value': float(s.loc[carried, 'amount'].sum())}
+        s = s[~carried]
         ret = s[s['is_return']]
         out = s[~s['is_return'] & (s['amount'] > 0)]
         self.cancelled = {'lines': 0, 'value': 0.0}

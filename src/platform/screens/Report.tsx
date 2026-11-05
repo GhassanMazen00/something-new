@@ -15,6 +15,7 @@ export function ReportTab({ client, changed }: { client: ClientT; changed: () =>
   const rep = useLoad(() => api.get<ReportT>(`/clients/${client.id}/report`), [client.id])
   const a = useAction()
   const [summary, setSummary] = useState<string | null>(null)
+  const [summaryAr, setSummaryAr] = useState<string | null>(null)
   const [comment, setComment] = useState('')
   const isAnalyst = me.role === 'admin' || client.analyst?.id === me.id
   const isReviewer = me.role === 'admin' || client.reviewer?.id === me.id
@@ -24,6 +25,7 @@ export function ReportTab({ client, changed }: { client: ClientT; changed: () =>
   if (!rep.data) return <div className="empty panel">Loading the report…</div>
   const r = rep.data
   const text = summary ?? r.summary
+  const textAr = summaryAr ?? r.summary_ar
   const act = async (path: string, body?: object) => {
     if (await a.run(() => api.post(`/clients/${client.id}/report/${path}`, body))) {
       rep.reload()
@@ -33,6 +35,10 @@ export function ReportTab({ client, changed }: { client: ClientT; changed: () =>
   const saveSummary = async () => {
     if (summary === null || summary === r.summary) return
     if (await a.run(() => api.put(`/clients/${client.id}/report/summary`, { text: summary }))) rep.reload()
+  }
+  const saveSummaryAr = async () => {
+    if (summaryAr === null || summaryAr === r.summary_ar) return
+    if (await a.run(() => api.put(`/clients/${client.id}/report/summary`, { text_ar: summaryAr }))) rep.reload()
   }
   const accept = async (sectionId: number, checkId: string, reason: string) => {
     const out = await a.run(() => api.post<ReportT>(`/sections/${sectionId}/acks`, { check_id: checkId, reason }))
@@ -73,6 +79,12 @@ export function ReportTab({ client, changed }: { client: ClientT; changed: () =>
                 </a>
                 <a className="btn btn-sm" href={`/api/clients/${client.id}/report.xlsx`} download>
                   Excel
+                </a>
+                <a className="btn btn-sm" href={`/api/clients/${client.id}/report.docx?lang=ar`} download title={r.arabic_gaps.length ? `${r.arabic_gaps.length} parts still in English: see the list under the summary` : 'Everything is in Arabic'}>
+                  Word عربي
+                </a>
+                <a className="btn btn-sm" href={`/api/clients/${client.id}/report.xlsx?lang=ar`} download title={r.arabic_gaps.length ? `${r.arabic_gaps.length} parts still in English: see the list under the summary` : 'Everything is in Arabic'}>
+                  Excel عربي
                 </a>
               </>
             )}
@@ -138,6 +150,26 @@ export function ReportTab({ client, changed }: { client: ClientT; changed: () =>
         ) : (
           <p className="muted">No summary written.</p>
         )}
+        <h4 className="ar-head">الملخص بالعربية</h4>
+        {canEdit ? (
+          <textarea className="summary-edit" dir="rtl" lang="ar" rows={5} placeholder="الملخص للعميل بالعربية. يظهر في تقرير Word وExcel العربي. الأرقام تُراجع مقابل النتائج كما في الملخص الإنجليزي." value={textAr} onChange={(e) => setSummaryAr(e.target.value)} onBlur={saveSummaryAr} />
+        ) : textAr ? (
+          <p className="pre" dir="rtl" lang="ar">{textAr}</p>
+        ) : (
+          <p className="muted">No Arabic summary written.</p>
+        )}
+        {r.arabic_gaps.length > 0 && (
+          <details className="ar-gaps no-print">
+            <summary>
+              Arabic report: {r.arabic_gaps.length} part{r.arabic_gaps.length > 1 ? 's' : ''} still in English
+            </summary>
+            <ul>
+              {r.arabic_gaps.slice(0, 30).map((g) => (
+                <li key={g}>{g}</li>
+              ))}
+            </ul>
+          </details>
+        )}
         <div className="ai-box no-print">
           {icons.spark}
           <span>
@@ -176,6 +208,7 @@ export function ReportTab({ client, changed }: { client: ClientT; changed: () =>
             <SectionChecks s={s} />
           </p>
           <Note s={s} canEdit={canEdit} save={(note) => section(s, { note })} />
+          <Note s={s} ar canEdit={canEdit} save={(note_ar) => section(s, { note_ar })} />
           <ResultView r={s.run.result} />
         </section>
       ))}
@@ -200,8 +233,10 @@ function SectionChecks({ s }: { s: Section }) {
   )
 }
 
-function Note({ s, canEdit, save }: { s: Section; canEdit: boolean; save: (note: string) => void }) {
-  const [v, setV] = useState(s.note)
-  if (!canEdit) return s.note ? <p className="analyst-note">{s.note}</p> : null
-  return <textarea className="note-edit no-print-empty" rows={2} placeholder="Your note on this section for the client (optional)" value={v} onChange={(e) => setV(e.target.value)} onBlur={() => v !== s.note && save(v)} />
+function Note({ s, ar, canEdit, save }: { s: Section; ar?: boolean; canEdit: boolean; save: (note: string) => void }) {
+  const saved = (ar ? s.note_ar : s.note) ?? ''
+  const [v, setV] = useState(saved)
+  const lang = ar ? { dir: 'rtl' as const, lang: 'ar' } : {}
+  if (!canEdit) return saved ? <p className="analyst-note" {...lang}>{saved}</p> : null
+  return <textarea className="note-edit no-print-empty" {...lang} rows={2} placeholder={ar ? 'ملاحظتك على هذا القسم بالعربية (للتقرير العربي)' : 'Your note on this section for the client (optional)'} value={v} onChange={(e) => setV(e.target.value)} onBlur={() => v !== saved && save(v)} />
 }

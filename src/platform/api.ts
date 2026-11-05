@@ -104,7 +104,7 @@ export type ParamT = {
   max: number
   step: number
   value: number | string | null
-  format: 'num' | 'pct' | 'share' | 'rate' | 'money' | 'column' | 'choice' | 'limit' | 'text'
+  format: 'num' | 'pct' | 'share' | 'rate' | 'money' | 'column' | 'choice' | 'limit' | 'text' | 'table'
   options?: string | string[] | null
   optional?: boolean
   help?: string | null
@@ -132,6 +132,6 @@ export type CheckT = { id: string; title: string; status: 'pass' | 'warn' | 'fai
 export type Ack = { reason: string; by: string; at: string }
 export type ReportCheck = CheckT & { section_id: number | null; service: string | null; ack: Ack | null }
 export type RunT = { id: number; service_id: string; level: Level; params: Record<string, ParamValue>; created_at: string; ms: number; result: Result & { currency?: string; checks?: CheckT[]; question?: string; setup?: string }; why?: string | null }
-export type Section = { id: number; position: number; note: string; run: RunT; files: string[]; acks: Record<string, Ack>; service: ServiceT }
-export type ReportT = { client: ClientT; summary: string; sections: Section[]; checks: { blocking: number; accepted: number; warnings: number; passed: number; items: ReportCheck[] } }
+export type Section = { id: number; position: number; note: string; note_ar: string; run: RunT; files: string[]; acks: Record<string, Ack>; service: ServiceT }
+export type ReportT = { client: ClientT; summary: string; summary_ar: string; arabic_gaps: string[]; sections: Section[]; checks: { blocking: number; accepted: number; warnings: number; passed: number; items: ReportCheck[] } }
 export type ActivityT = { entries: { at: string; who: string; client: string | null; what: string }[]; chain_intact: boolean | null }

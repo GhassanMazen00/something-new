@@ -16,7 +16,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import audit, config, engine, intake, security, storage
+from . import arabic, audit, config, engine, intake, security, storage
 from .engine import checks
 from .engine.calendar import market_settings
 from .db import Activity, Client, DataFile, LoginSession, ReportSection, Run, User, get_db, now
@@ -385,6 +385,7 @@ def shred(db: Session, c: Client, reason: str, user: User | None = None) -> None
         db.delete(r)
     c.data_key = None
     c.summary = None
+    c.summary_ar = None
     c.shredded = True
     c.status = 'Deleted'
     db.commit()
@@ -676,13 +677,19 @@ def report_out(c: Client, db: Session) -> dict:
     for s in secs:
         r = db.get(Run, s.run_id)
         if r:
-            out.append({'id': s.id, 'position': s.position, 'note': security.decrypt_text(c.data_key, s.note), 'run': run_out(r, c), 'files': r.files, 'acks': section_acks(c, s), 'service': engine.describe(engine.BY_ID[r.service_id])})
+            out.append({'id': s.id, 'position': s.position, 'note': security.decrypt_text(c.data_key, s.note), 'note_ar': security.decrypt_text(c.data_key, s.note_ar), 'run': run_out(r, c), 'files': r.files, 'acks': section_acks(c, s), 'service': engine.describe(engine.BY_ID[r.service_id])})
     summary = security.decrypt_text(c.data_key, c.summary)
+    summary_ar = security.decrypt_text(c.data_key, c.summary_ar)
     current = sorted(f.name for f in db.scalars(select(DataFile).where(DataFile.client_id == c.id, DataFile.ready.is_(True))))
-    return {'client': client_out(c, db), 'summary': summary, 'sections': out, 'checks': report_checks(out, summary, current)}
+    rep = {'client': client_out(c, db), 'summary': summary, 'summary_ar': summary_ar, 'sections': out}
+    from . import reports
+
+    rep['checks'] = report_checks(out, summary, current, summary_ar, c.settings.get('currency', 'EGP'))
+    rep['arabic_gaps'] = reports.arabic_gaps(rep)
+    return rep
 
 
-def report_checks(sections: list[dict], summary: str, current_files: list[str]) -> dict:
+def report_checks(sections: list[dict], summary: str, current_files: list[str], summary_ar: str = '', currency: str = 'EGP') -> dict:
     """Every check on every section, plus the report's own: current files, and numbers in the writing that the results back up."""
     items = []
 
@@ -701,11 +708,17 @@ def report_checks(sections: list[dict], summary: str, current_files: list[str]) 
         stray = checks.unbacked_numbers(sec['note'], [res])
         if stray:
             add(sec, checks.check('note-numbers', 'Numbers in the note are backed', checks.WARN, f'Not found in this section’s results: {", ".join(stray[:6])}. Check them, or point to where they come from.'))
+        stray = checks.unbacked_numbers(arabic.as_english_figures(sec.get('note_ar') or '', currency), [res])
+        if stray:
+            add(sec, checks.check('note-ar-numbers', 'Numbers in the Arabic note are backed', checks.WARN, f'Not found in this section’s results: {", ".join(stray[:6])}. Check them, or point to where they come from.'))
     stray = checks.unbacked_numbers(summary, [s['run']['result'] for s in sections])
     if not summary.strip():
         add(None, checks.check('summary', 'Summary written', checks.WARN, 'The report has no summary yet.'))
     elif stray:
         add(None, checks.check('summary-numbers', 'Numbers in the summary are backed', checks.WARN, f'Not found in any section: {", ".join(stray[:6])}. Check them, or add the section they come from.'))
+    stray = checks.unbacked_numbers(arabic.as_english_figures(summary_ar or '', currency), [s['run']['result'] for s in sections])
+    if stray:
+        add(None, checks.check('summary-ar-numbers', 'Numbers in the Arabic summary are backed', checks.WARN, f'Not found in any section: {", ".join(stray[:6])}. Check them, or add the section they come from.'))
     blocking = [i for i in items if i['status'] == checks.FAIL and not i['ack']]
     return {
         'blocking': len(blocking),
@@ -756,6 +769,7 @@ def add_section(cid: int, body: SectionIn, user: User = Depends(current_user), d
 
 class SectionPatch(BaseModel):
     note: str | None = None
+    note_ar: str | None = None
     position: int | None = None
 
 
@@ -767,6 +781,8 @@ def update_section(sid: int, body: SectionPatch, user: User = Depends(current_us
     c = visible(db, user, s.client_id, write=True)
     if body.note is not None:
         s.note = security.encrypt_text(c.data_key, body.note[:5000])
+    if body.note_ar is not None:
+        s.note_ar = security.encrypt_text(c.data_key, body.note_ar[:5000])
     if body.position is not None:
         secs = db.scalars(select(ReportSection).where(ReportSection.client_id == c.id).order_by(ReportSection.position, ReportSection.id)).all()
         secs.remove(s)
@@ -827,13 +843,17 @@ def delete_section(sid: int, user: User = Depends(current_user), db: Session = D
 
 
 class SummaryIn(BaseModel):
-    text: str
+    text: str | None = None
+    text_ar: str | None = None
 
 
 @api.put('/clients/{cid}/report/summary')
 def set_summary(cid: int, body: SummaryIn, user: User = Depends(current_user), db: Session = Depends(get_db)):
     c = visible(db, user, cid, write=True)
-    c.summary = security.encrypt_text(c.data_key, body.text[:20000])
+    if body.text is not None:
+        c.summary = security.encrypt_text(c.data_key, body.text[:20000])
+    if body.text_ar is not None:
+        c.summary_ar = security.encrypt_text(c.data_key, body.text_ar[:20000])
     db.commit()
     return {'ok': True}
 
@@ -886,7 +906,7 @@ def deliver(cid: int, user: User = Depends(current_user), db: Session = Depends(
 
 
 @api.get('/clients/{cid}/report.{fmt}')
-def export(cid: int, fmt: str, user: User = Depends(current_user), db: Session = Depends(get_db)):
+def export(cid: int, fmt: str, lang: str = 'en', user: User = Depends(current_user), db: Session = Depends(get_db)):
     from . import reports
 
     c = visible(db, user, cid)
@@ -895,15 +915,17 @@ def export(cid: int, fmt: str, user: User = Depends(current_user), db: Session =
         raise HTTPException(400, 'The report has no sections yet.')
     if c.status not in ('Approved', 'Delivered'):  # approved reports passed the checks when they were sent for review
         _gate(rep)
+    if lang not in ('en', 'ar'):
+        raise HTTPException(404, 'Choose English (en) or Arabic (ar).')
     if fmt == 'docx':
-        data, mime = reports.to_docx(rep), 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        data, mime = reports.to_docx(rep, lang), 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     elif fmt == 'xlsx':
-        data, mime = reports.to_xlsx(rep), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        data, mime = reports.to_xlsx(rep, lang), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     else:
         raise HTTPException(404, 'Choose docx or xlsx.')
-    audit.log(db, user, f'Exported the report as {fmt.upper()}', c.id)
+    audit.log(db, user, f'Exported the report as {fmt.upper()}{" in Arabic" if lang == "ar" else ""}', c.id)
     safe = ''.join(ch for ch in c.name if ch.isalnum() or ch in ' -_').strip().replace(' ', '_') or 'report'
-    return Response(data, media_type=mime, headers={'Content-Disposition': f'attachment; filename="{safe}_report.{fmt}"'})
+    return Response(data, media_type=mime, headers={'Content-Disposition': f'attachment; filename="{safe}_report{"_ar" if lang == "ar" else ""}.{fmt}"'})
 
 
 # ---------- Activity ----------

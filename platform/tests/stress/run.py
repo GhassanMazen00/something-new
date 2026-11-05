@@ -301,7 +301,7 @@ def truth_checks(c, sid, out, mapped_ok, rec, data):
 
     st = t.get('sales')
     if sid == 'business-snapshot' and st and mapped_ok.get('sales'):
-        v = money_value(kpi(res, 'Sales, last 12') or '')
+        v = money_value(kpi(res, 'Sales, ') or '')
         if v is not None and st['sales_12m'] > 0:
             err = abs(v / st['sales_12m'] - 1)
             check('sales total', err < 0.02, f'reported {v:,.0f} vs true {st["sales_12m"]:,.0f} ({err:.1%})')

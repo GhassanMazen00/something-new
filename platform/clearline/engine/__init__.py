@@ -152,11 +152,13 @@ def choices(s: Service, data: Data) -> dict[str, list[str]]:
             out[x.key] = svc_general.column_choices(data, x.options or 'any')
         elif x.format == 'choice':
             out[x.key] = list(x.options or [])
+        elif x.format == 'table':
+            out[x.key] = ['All tables', *data.files]
     return out
 
 
 def _param_value(x, v):
-    if x.format in ('column', 'choice'):
+    if x.format in ('column', 'choice', 'table'):
         return None if v in (None, '') else str(v)
     if x.format == 'limit':  # an optional number, such as a specification limit
         return None if v in (None, '') else float(v)

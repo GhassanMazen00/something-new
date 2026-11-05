@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import re
 from datetime import date
 
 import matplotlib
@@ -18,9 +19,50 @@ from openpyxl import Workbook  # noqa: E402
 from openpyxl.styles import Alignment, Font, PatternFill  # noqa: E402
 from openpyxl.utils import get_column_letter  # noqa: E402
 
+from . import arabic  # noqa: E402
+
 INK = '#16202b'
 TONES = {'accent': '#2f6fd6', 'muted': '#9aa5b1', 'green': '#2e9e6a', 'amber': '#d39b1f', 'orange': '#e2702d', 'red': '#d0433a'}
 LEVELS = {'high': 'High confidence', 'medium': 'Medium confidence', 'low': 'Low confidence: a first read'}
+ABOUT = 'Your files were kept encrypted on our systems and are deleted 30 days after this report is delivered. Figures are estimates from the data you sent; where the data was thin, the confidence level says so.'
+_ARABIC_CHARS = re.compile(r'[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]')
+
+
+class English:
+    """The report as the engine wrote it."""
+
+    missing: list[str] = []
+
+    def __call__(self, s, record: bool = True):  # noqa: ANN001
+        if s == 'About your data text':
+            return ABOUT
+        if s == 'Chart failed':
+            return '(This chart could not be drawn; its figures are in the Excel file.)'
+        return s
+
+    cell = __call__
+
+    @staticmethod
+    def date(d) -> str:  # noqa: ANN001
+        return f'{d:%d %B %Y}'
+
+
+def language(lang: str):
+    return arabic.Arabic() if lang == 'ar' else English()
+
+
+_MPL_SHAPES = tuple(int(x) for x in re.findall(r'\d+', matplotlib.__version__)[:2]) >= (3, 11)
+
+
+def _shape(s) -> str:  # noqa: ANN001
+    """Arabic on a chart: letters joined and read right to left. Matplotlib 3.11 does this itself; older versions need help."""
+    s = '' if s is None else str(s)
+    if not _ARABIC_CHARS.search(s) or _MPL_SHAPES:
+        return s
+    from arabic_reshaper import reshape
+    from bidi.algorithm import get_display
+
+    return get_display(reshape(s))
 
 
 def _short(v: float) -> str:
@@ -41,8 +83,13 @@ def _axis(fmt: str | None):
 # ---------- Charts as pictures ----------
 
 
-def chart_png(c: dict, currency: str) -> bytes | None:
+def chart_png(c: dict, currency: str, T=None) -> bytes | None:  # noqa: ANN001
     kind = c.get('type')
+    T = T or English()
+
+    def lab(v):  # noqa: ANN001
+        return _shape(T.cell(v))
+
     if kind not in ('line', 'bars', 'heatmap'):
         return None
     plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 8.5, 'axes.edgecolor': '#c9d1da', 'axes.labelcolor': INK, 'xtick.color': '#5b6672', 'ytick.color': '#5b6672'})
@@ -53,14 +100,14 @@ def chart_png(c: dict, currency: str) -> bytes | None:
         x = list(range(len(c['x'])))
         if c.get('band'):
             b = c['band']
-            ax.fill_between(x, [v if v is not None else float('nan') for v in b['lo']], [v if v is not None else float('nan') for v in b['hi']], color=TONES['accent'], alpha=0.14, lw=0, label=b.get('name'))
+            ax.fill_between(x, [v if v is not None else float('nan') for v in b['lo']], [v if v is not None else float('nan') for v in b['hi']], color=TONES['accent'], alpha=0.14, lw=0, label=lab(b.get('name')) if b.get('name') else None)
         for s in c['series']:
-            ax.plot(x, [v if v is not None else float('nan') for v in s['values']], color=TONES.get(s.get('tone') or 'accent', TONES['accent']), lw=1.8, ls='--' if s.get('dashed') else '-', label=s['name'])
+            ax.plot(x, [v if v is not None else float('nan') for v in s['values']], color=TONES.get(s.get('tone') or 'accent', TONES['accent']), lw=1.8, ls='--' if s.get('dashed') else '-', label=lab(s['name']))
         for m in c.get('marks') or []:
             ax.axvline(m['index'], color=TONES.get(m.get('tone') or 'muted', '#9aa5b1'), lw=0.8, ls=':')
-            ax.annotate(m['label'], (m['index'], 1), xycoords=('data', 'axes fraction'), fontsize=7, color='#5b6672', ha='left', va='top', xytext=(3, -2), textcoords='offset points')
+            ax.annotate(lab(m['label']), (m['index'], 1), xycoords=('data', 'axes fraction'), fontsize=7, color='#5b6672', ha='left', va='top', xytext=(3, -2), textcoords='offset points')
         step = max(1, len(x) // 8)
-        ax.set_xticks(x[::step], [c['x'][i] for i in x[::step]])
+        ax.set_xticks(x[::step], [lab(c['x'][i]) for i in x[::step]])
         if c.get('zero'):
             ax.set_ylim(bottom=min(0, ax.get_ylim()[0]))
         ax.yaxis.set_major_formatter(_axis(fmt))
@@ -68,7 +115,7 @@ def chart_png(c: dict, currency: str) -> bytes | None:
         if len(c['series']) > 1 or c.get('band'):
             ax.legend(frameon=False, fontsize=7.5, loc='upper left')
     elif kind == 'bars':
-        labels = [lab[:28] for lab in c['labels']]
+        labels = [lab(str(v)[:28]) for v in c['labels']]
         tones = c.get('tones') or []
         colors = [TONES.get(tones[i] if i < len(tones) and tones[i] else 'accent') for i in range(len(labels))]
         vals = [v if v is not None else float('nan') for v in c['values']]
@@ -80,31 +127,31 @@ def chart_png(c: dict, currency: str) -> bytes | None:
             y = list(range(len(labels)))[::-1]
             ax.barh(y, vals, color=colors, height=0.62)
             if c.get('extra'):
-                ax.barh([v - 0.3 for v in y], c['extra']['values'], color=TONES['muted'], height=0.3, label=c['extra']['name'])
+                ax.barh([v - 0.3 for v in y], c['extra']['values'], color=TONES['muted'], height=0.3, label=lab(c['extra']['name']))
             ax.set_yticks(y, labels)
             ax.xaxis.set_major_formatter(_axis(fmt))
             ax.grid(axis='x', color='#e6eaee', lw=0.6)
             if c.get('ref'):
-                ax.axvline(c['ref']['value'], color=INK, lw=0.8, ls='--', label=c['ref']['label'])
+                ax.axvline(c['ref']['value'], color=INK, lw=0.8, ls='--', label=lab(c['ref']['label']))
         else:
             x = list(range(len(labels)))
             width = 0.4 if c.get('extra') else 0.66
             ax.bar([i - (width / 2 if c.get('extra') else 0) for i in x], vals, color=colors, width=width)
             if c.get('extra'):
-                ax.bar([i + width / 2 for i in x], c['extra']['values'], color=TONES['muted'], width=width, label=c['extra']['name'])
+                ax.bar([i + width / 2 for i in x], c['extra']['values'], color=TONES['muted'], width=width, label=lab(c['extra']['name']))
             ax.set_xticks(x, labels, rotation=30 if len(labels) > 6 else 0, ha='right' if len(labels) > 6 else 'center')
             ax.yaxis.set_major_formatter(_axis(fmt))
             ax.grid(axis='y', color='#e6eaee', lw=0.6)
             if c.get('ref'):
-                ax.axhline(c['ref']['value'], color=INK, lw=0.8, ls='--', label=c['ref']['label'])
+                ax.axhline(c['ref']['value'], color=INK, lw=0.8, ls='--', label=lab(c['ref']['label']))
         if c.get('ref') or c.get('extra'):
             ax.legend(frameon=False, fontsize=7.5)
     else:
         vals = [[v if v is not None else float('nan') for v in row] for row in c['values']]
         fig.set_size_inches(6.6, max(2.2, 0.3 * len(c['rows']) + 0.8))
         ax.imshow(vals, aspect='auto', cmap='Blues')
-        ax.set_xticks(range(len(c['cols'])), c['cols'])
-        ax.set_yticks(range(len(c['rows'])), c['rows'])
+        ax.set_xticks(range(len(c['cols'])), [lab(v) for v in c['cols']])
+        ax.set_yticks(range(len(c['rows'])), [lab(v) for v in c['rows']])
         ax.spines[:].set_visible(False)
         if len(c['rows']) * len(c['cols']) <= 220:
             top = max((v for row in vals for v in row if v == v), default=1) or 1
@@ -131,19 +178,20 @@ def _shade(cell, hex_fill: str) -> None:
     tc.append(shd)
 
 
-def _table(doc, columns: list[str], rows: list[list[str]], numeric: list[bool] | None = None, limit: int = 40) -> None:
+def _table(doc, columns: list[str], rows: list[list[str]], numeric: list[bool] | None = None, limit: int = 40, T=None) -> None:  # noqa: ANN001
+    T = T or English()
     t = doc.add_table(rows=1, cols=len(columns))
     t.style = 'Table Grid'
     for i, col in enumerate(columns):
         cell = t.rows[0].cells[i]
-        cell.text = str(col)
+        cell.text = str(T(col))
         cell.paragraphs[0].runs[0].bold = True
         _shade(cell, 'EEF2F6')
     for r in rows[:limit]:
         cells = t.add_row().cells
         for i, v in enumerate(r[: len(columns)]):
-            cells[i].text = str(v)
-            if numeric and i < len(numeric) and numeric[i]:
+            cells[i].text = str(T.cell(v))
+            if numeric and i < len(numeric) and numeric[i] and not isinstance(T, arabic.Arabic):
                 cells[i].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
     for row in t.rows:
         for cell in row.cells:
@@ -151,116 +199,236 @@ def _table(doc, columns: list[str], rows: list[list[str]], numeric: list[bool] |
                 for run in p.runs:
                     run.font.size = Pt(8.5)
     if len(rows) > limit:
-        doc.add_paragraph(f'The first {limit} of {len(rows)} rows are shown; the Excel file has them all.').runs[0].italic = True
+        more = f'تظهر أول {limit} من {len(rows)} صفًا هنا، وملف Excel يضمها كلها.' if isinstance(T, arabic.Arabic) else f'The first {limit} of {len(rows)} rows are shown; the Excel file has them all.'
+        doc.add_paragraph(more).runs[0].italic = True
 
 
-def to_docx(rep: dict) -> bytes:
+def _fonts(doc, rtl: bool) -> None:
+    """Arabic letters use Word's complex-script font; give every style one that has them, and the same size."""
+    for name in ('Normal', 'Title', 'Heading 1', 'Heading 2', 'Heading 3', 'List Bullet'):
+        try:
+            st = doc.styles[name]
+        except KeyError:
+            continue
+        rpr = st.element.get_or_add_rPr()
+        fonts = rpr.find(qn('w:rFonts'))
+        if fonts is None:
+            fonts = OxmlElement('w:rFonts')
+            rpr.insert(0, fonts)
+        fonts.set(qn('w:cs'), 'Arial')
+        if rtl:
+            for attr in ('w:ascii', 'w:hAnsi'):
+                fonts.set(qn(attr), 'Arial')
+            for a in ('w:asciiTheme', 'w:hAnsiTheme', 'w:cstheme'):
+                if fonts.get(qn(a)) is not None:
+                    del fonts.attrib[qn(a)]
+        sz = rpr.find(qn('w:sz'))
+        if sz is not None and rpr.find(qn('w:szCs')) is None:
+            cs = OxmlElement('w:szCs')
+            cs.set(qn('w:val'), sz.get(qn('w:val')))
+            rpr.append(cs)
+        if rtl:
+            lang = rpr.find(qn('w:lang'))
+            if lang is None:
+                lang = OxmlElement('w:lang')
+                rpr.append(lang)
+            lang.set(qn('w:bidi'), 'ar-EG')
+
+
+def _right_to_left(doc) -> None:
+    """Every paragraph reads right to left and every table starts on the right."""
+    def para(p):  # noqa: ANN001
+        ppr = p._p.get_or_add_pPr()
+        if ppr.find(qn('w:bidi')) is None:
+            b = OxmlElement('w:bidi')
+            ppr.insert(0, b)
+        for r in p.runs:
+            rpr = r._r.get_or_add_rPr()
+            if rpr.find(qn('w:rtl')) is None and _ARABIC_CHARS.search(r.text or ''):
+                rpr.append(OxmlElement('w:rtl'))
+
+    for p in doc.paragraphs:
+        para(p)
+    for t in doc.tables:
+        tpr = t._tbl.tblPr
+        if tpr.find(qn('w:bidiVisual')) is None:
+            tpr.append(OxmlElement('w:bidiVisual'))
+        for row in t.rows:
+            for cell in row.cells:
+                for p in cell.paragraphs:
+                    para(p)
+    for sec in doc.sections:
+        for p in sec.footer.paragraphs:
+            para(p)
+        spr = sec._sectPr
+        if spr.find(qn('w:bidi')) is None:
+            spr.append(OxmlElement('w:bidi'))
+
+
+def _summary(rep: dict, lang: str, T) -> str:  # noqa: ANN001
+    if lang == 'ar':
+        if (rep.get('summary_ar') or '').strip():
+            return rep['summary_ar']
+        if (rep.get('summary') or '').strip():
+            T.missing.append('The summary (write it in Arabic in the report screen)')
+        return rep.get('summary') or ''
+    return rep.get('summary') or ''
+
+
+def _note(s: dict, lang: str, T) -> str:  # noqa: ANN001
+    if lang == 'ar':
+        if (s.get('note_ar') or '').strip():
+            return s['note_ar']
+        if (s.get('note') or '').strip():
+            T.missing.append(f'The note on “{s["service"]["name"]}” (write it in Arabic in the report screen)')
+    return s.get('note') or ''
+
+
+def to_docx(rep: dict, lang: str = 'en') -> bytes:
     c = rep['client']
+    T = language(lang)
+    ar = lang == 'ar'
     doc = Document()
     for s in doc.sections:
         s.left_margin = s.right_margin = Cm(2.2)
         s.top_margin = s.bottom_margin = Cm(2)
-        s.footer.paragraphs[0].text = f'Clearline Analytics · Confidential · prepared for {c["name"]}'
+        s.footer.paragraphs[0].text = f'Clearline Analytics · سري · أُعدّ لـ {c["name"]}' if ar else f'Clearline Analytics · Confidential · prepared for {c["name"]}'
         s.footer.paragraphs[0].runs[0].font.size = Pt(8)
     st = doc.styles['Normal']
-    st.font.name = 'Calibri'
+    st.font.name = 'Arial' if ar else 'Calibri'
     st.font.size = Pt(10.5)
+    _fonts(doc, ar)
 
     title = doc.add_heading(c['name'], 0)
     title.runs[0].font.color.rgb = RGBColor(0x16, 0x20, 0x2B)
     meta = doc.add_paragraph()
-    meta.add_run(f'Findings report · {date.today():%d %B %Y}').bold = True
-    who = [f'Analyst: {c["analyst"]["name"]}' if c.get('analyst') else None, f'Reviewed by: {c["reviewer"]["name"]}' if c.get('reviewer') else None]
+    meta.add_run(f'{T("Findings report")} · {T.date(date.today())}').bold = True
+    who = [f'{T("Analyst")}: {c["analyst"]["name"]}' if c.get('analyst') else None, f'{T("Reviewed by")}: {c["reviewer"]["name"]}' if c.get('reviewer') else None]
     if any(who):
         meta.add_run('\n' + ' · '.join(w for w in who if w))
     if c.get('question'):
-        doc.add_paragraph().add_run(f'Your question: {c["question"]}').italic = True
+        doc.add_paragraph().add_run(f'{T("Your question")}: {c["question"]}').italic = True
 
-    if rep.get('summary'):
-        doc.add_heading('Summary', 1)
-        for para in rep['summary'].split('\n\n'):
+    summary = _summary(rep, lang, T)
+    if summary:
+        doc.add_heading(T('Summary'), 1)
+        for para in summary.split('\n\n'):
             doc.add_paragraph(para.strip())
 
-    doc.add_heading('What this report covers', 1)
+    doc.add_heading(T('What this report covers'), 1)
     for s in rep['sections']:
-        doc.add_paragraph(f'{s["service"]["name"]} ({LEVELS.get(s["run"]["level"], s["run"]["level"]).split(":")[0].lower()})', style='List Bullet')
+        level = T(LEVELS.get(s['run']['level'], s['run']['level'])).split(':')[0]
+        doc.add_paragraph(f'{T(s["service"]["name"])} ({level if ar else level.lower()})', style='List Bullet')
 
     cur = None
     for s in rep['sections']:
         res = s['run']['result']
         cur = res.get('currency', cur)
         doc.add_page_break()
-        doc.add_heading(s['service']['name'], 1)
+        doc.add_heading(T(s['service']['name']), 1)
         lv = doc.add_paragraph()
-        r = lv.add_run(LEVELS.get(s['run']['level'], ''))
+        r = lv.add_run(T(LEVELS.get(s['run']['level'], '')))
         r.font.size = Pt(9)
         r.font.color.rgb = RGBColor(0x5B, 0x66, 0x72)
         if res.get('question') or res.get('setup'):
             box = doc.add_paragraph()
             if res.get('question'):
-                box.add_run('Question: ').bold = True
+                box.add_run(f'{T("Question")}: ').bold = True
                 box.add_run(f'“{res["question"]}”')
             if res.get('setup'):
                 if res.get('question'):
                     box.add_run('\n')
-                box.add_run('What we did: ').bold = True
-                box.add_run(res['setup'])
-        if s.get('note'):
-            doc.add_paragraph(s['note'])
+                box.add_run(f'{T("What we did")}: ').bold = True
+                box.add_run(T(res['setup']))
+        note = _note(s, lang, T)
+        if note:
+            doc.add_paragraph(note)
         if res.get('kpis'):
             k = res['kpis']
             t = doc.add_table(rows=2, cols=len(k))
             for i, x in enumerate(k):
-                t.rows[0].cells[i].text = x['label']
+                t.rows[0].cells[i].text = T(x['label'])
                 t.rows[0].cells[i].paragraphs[0].runs[0].font.size = Pt(8)
                 p = t.rows[1].cells[i].paragraphs[0]
-                run = p.add_run(x['value'])
+                run = p.add_run(T.cell(x['value']))
                 run.bold = True
                 run.font.size = Pt(13)
                 if x.get('note'):
-                    n = p.add_run('\n' + x['note'])
+                    n = p.add_run('\n' + T(x['note']))
                     n.font.size = Pt(7.5)
                     n.font.color.rgb = RGBColor(0x5B, 0x66, 0x72)
                 for cell in (t.rows[0].cells[i], t.rows[1].cells[i]):
                     _shade(cell, 'F4F6F9')
         if res.get('findings'):
-            doc.add_heading('What we found', 2)
+            doc.add_heading(T('What we found'), 2)
             for f in res['findings']:
                 p = doc.add_paragraph(style='List Bullet')
-                p.add_run(f['text'])
+                p.add_run(T(f['text']))
                 if f.get('action'):
-                    a = p.add_run(f'\nWhat to do: {f["action"]}')
+                    a = p.add_run(f'\n{T("What to do:")} {T(f["action"])}')
                     a.italic = True
         for ch in res.get('charts', []):
             spec = ch['chart']
             head = doc.add_paragraph()
-            head.add_run(ch['title']).bold = True
+            head.add_run(T(ch['title'])).bold = True
             head.paragraph_format.keep_with_next = True
             if spec.get('type') == 'table':
-                _table(doc, spec['columns'], spec['rows'], spec.get('numeric'))
+                _table(doc, spec['columns'], spec['rows'], spec.get('numeric'), T=T)
             else:
                 try:
-                    png = chart_png(spec, cur or 'EGP')
+                    png = chart_png(spec, cur or 'EGP', T)
                 except Exception:  # noqa: BLE001 - one chart must never stop the whole report
                     plt.close('all')
                     png = None
-                    doc.add_paragraph('(This chart could not be drawn; its figures are in the Excel file.)').runs[0].italic = True
+                    doc.add_paragraph(T('Chart failed')).runs[0].italic = True
                 if png:
                     doc.add_picture(io.BytesIO(png), width=Cm(16.4))
         if res.get('accuracy'):
-            doc.add_paragraph().add_run(f'How sure we are: {res["accuracy"]}').italic = True
-        doc.add_heading('How we worked it out', 3)
-        doc.add_paragraph(s['service'].get('method', ''))
+            doc.add_paragraph().add_run(f'{T("How sure we are:")} {T(res["accuracy"])}').italic = True
+        doc.add_heading(T('How we worked it out'), 3)
+        doc.add_paragraph(T(s['service'].get('method', '')))
         for n in res.get('notes', []):
-            p = doc.add_paragraph(n, style='List Bullet')
+            p = doc.add_paragraph(T(n), style='List Bullet')
             p.runs[0].font.size = Pt(9)
 
     doc.add_page_break()
-    doc.add_heading('About your data', 1)
-    doc.add_paragraph('Your files were kept encrypted on our systems and are deleted 30 days after this report is delivered. Figures are estimates from the data you sent; where the data was thin, the confidence level says so.')
+    doc.add_heading(T('About your data'), 1)
+    doc.add_paragraph(T('About your data text'))
+    if ar:
+        _right_to_left(doc)
     buf = io.BytesIO()
     doc.save(buf)
     return buf.getvalue()
+
+
+def arabic_gaps(rep: dict) -> list[str]:
+    """What would still be in English in the Arabic report: run before export so the analyst can fill it in."""
+    T = arabic.Arabic()
+    _summary(rep, 'ar', T)
+    for s in rep['sections']:
+        res = s['run']['result']
+        T(s['service']['name'])
+        T(s['service'].get('method', ''))
+        _note(s, 'ar', T)
+        if res.get('setup'):
+            T(res['setup'])
+        for x in res.get('kpis', []):
+            T(x['label'])
+            T(x.get('note'))
+        for f in res.get('findings', []):
+            T(f['text'])
+            T(f.get('action'))
+        for ch in res.get('charts', []):
+            T(ch['title'])
+            spec = ch['chart']
+            for col in spec.get('columns', []):
+                T(col)
+            for sr in spec.get('series', []):
+                T(sr['name'])
+        T(res.get('accuracy'))
+        for n in res.get('notes', []):
+            T(n)
+    return T.missing
 
 
 # ---------- Excel ----------
@@ -302,87 +470,96 @@ def _num(v):
         return s
 
 
-def chart_rows(c: dict) -> tuple[list, list[list]]:
+def chart_rows(c: dict, T=None) -> tuple[list, list[list]]:  # noqa: ANN001
+    T = T or English()
     kind = c.get('type')
     if kind == 'line':
-        cols = ['Period', *[s['name'] for s in c['series']]]
+        cols = [T('Period'), *[T(s['name']) for s in c['series']]]
         if c.get('band'):
-            cols += [f'{c["band"].get("name") or "Range"} (low)', f'{c["band"].get("name") or "Range"} (high)']
+            name = T(c['band'].get('name') or 'Range')
+            cols += [f'{name} ({"الأدنى" if isinstance(T, arabic.Arabic) else "low"})', f'{name} ({"الأعلى" if isinstance(T, arabic.Arabic) else "high"})']
         rows = []
         for i, x in enumerate(c['x']):
-            r = [x, *[s['values'][i] if i < len(s['values']) else None for s in c['series']]]
+            r = [T.cell(x), *[s['values'][i] if i < len(s['values']) else None for s in c['series']]]
             if c.get('band'):
                 r += [c['band']['lo'][i], c['band']['hi'][i]]
             rows.append(r)
         return cols, rows
     if kind == 'bars':
-        cols = ['', 'Value'] + ([c['extra']['name']] if c.get('extra') else [])
-        return cols, [[lab, v, *([c['extra']['values'][i]] if c.get('extra') else [])] for i, (lab, v) in enumerate(zip(c['labels'], c['values']))]
+        cols = ['', T('Value')] + ([T(c['extra']['name'])] if c.get('extra') else [])
+        return cols, [[T.cell(lab), v, *([c['extra']['values'][i]] if c.get('extra') else [])] for i, (lab, v) in enumerate(zip(c['labels'], c['values']))]
     if kind == 'table':
-        return c['columns'], c['rows']
+        return [T(col) for col in c['columns']], [[T.cell(v) for v in r] for r in c['rows']]
     if kind == 'heatmap':
-        return ['', *c['cols']], [[r, *vals] for r, vals in zip(c['rows'], c['values'])]
+        return ['', *[T.cell(v) for v in c['cols']]], [[T.cell(r), *vals] for r, vals in zip(c['rows'], c['values'])]
     return [], []
 
 
-def to_xlsx(rep: dict) -> bytes:
+def to_xlsx(rep: dict, lang: str = 'en') -> bytes:
     c = rep['client']
+    T = language(lang)
+    ar = lang == 'ar'
     wb = Workbook()
     ws = wb.active
-    ws.title = 'Summary'
+    ws.title = T('Summary')
+    ws.sheet_view.rightToLeft = ar
     ws['A1'] = c['name']
     ws['A1'].font = Font(bold=True, size=16)
-    ws['A2'] = f'Findings report · {date.today():%d %B %Y}'
+    ws['A2'] = f'{T("Findings report")} · {T.date(date.today())}'
     row = 4
-    if rep.get('summary'):
-        ws.cell(row, 1, rep['summary']).alignment = Alignment(wrap_text=True, vertical='top')
+    summary = _summary(rep, lang, T)
+    if summary:
+        ws.cell(row, 1, summary).alignment = Alignment(wrap_text=True, vertical='top')
         ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=6)
-        ws.row_dimensions[row].height = min(400, 15 * (rep['summary'].count('\n') + len(rep['summary']) // 110 + 1))
+        ws.row_dimensions[row].height = min(400, 15 * (summary.count('\n') + len(summary) // 110 + 1))
         row += 2
     for j, h in enumerate(['Section', 'Confidence', 'Measure', 'Value', 'Note'], 1):
-        cell = ws.cell(row, j, h)
+        cell = ws.cell(row, j, T(h))
         cell.font, cell.fill = HEAD, HEAD_FILL
     for s in rep['sections']:
         for k in s['run']['result'].get('kpis', []):
             row += 1
-            for j, v in enumerate([s['service']['name'], s['run']['level'], k['label'], k['value'], k.get('note', '')], 1):
+            for j, v in enumerate([T(s['service']['name']), T(s['run']['level']), T(k['label']), T.cell(k['value']), T(k.get('note', '')) or ''], 1):
                 ws.cell(row, j, v)
     for col, w in zip('ABCDE', (34, 12, 30, 18, 46)):
         ws.column_dimensions[col].width = w
 
-    used = {'summary'}
+    used = {ws.title.lower()}
     for s in rep['sections']:
         res = s['run']['result']
-        sh = wb.create_sheet(_sheet_name(s['service']['name'], used))
-        sh['A1'] = s['service']['name']
+        name = T(s['service']['name'])
+        sh = wb.create_sheet(_sheet_name(name, used))
+        sh.sheet_view.rightToLeft = ar
+        sh['A1'] = name
         sh['A1'].font = Font(bold=True, size=14)
-        sh['A2'] = LEVELS.get(s['run']['level'], '')
+        sh['A2'] = T(LEVELS.get(s['run']['level'], ''))
         r = 4
         for label, key in (('Question', 'question'), ('What we did', 'setup')):
             if res.get(key):
-                sh.cell(r, 1, f'{label}: {res[key]}').alignment = Alignment(wrap_text=True)
+                sh.cell(r, 1, f'{T(label)}: {T(res[key]) if key == "setup" else res[key]}').alignment = Alignment(wrap_text=True)
                 r += 1
         if res.get('question') or res.get('setup'):
             r += 1
-        if s.get('note'):
-            sh.cell(r, 1, s['note']).alignment = Alignment(wrap_text=True)
+        note = _note(s, lang, T)
+        if note:
+            sh.cell(r, 1, note).alignment = Alignment(wrap_text=True)
             r += 2
         if res.get('findings'):
-            sh.cell(r, 1, 'What we found').font = BOLD
+            sh.cell(r, 1, T('What we found')).font = BOLD
             r += 1
             for f in res['findings']:
-                sh.cell(r, 1, f['text'])
-                sh.cell(r, 2, f.get('action', ''))
+                sh.cell(r, 1, T(f['text']))
+                sh.cell(r, 2, T(f.get('action', '')) or '')
                 r += 1
             r += 1
         for ch in res.get('charts', []):
-            cols, rows = chart_rows(ch['chart'])
+            cols, rows = chart_rows(ch['chart'], T)
             if not cols:
                 continue
-            sh.cell(r, 1, ch['title']).font = BOLD
+            sh.cell(r, 1, T(ch['title'])).font = BOLD
             r = _write_table(sh, r + 1, cols, rows)
         if res.get('accuracy'):
-            sh.cell(r, 1, f'How sure we are: {res["accuracy"]}')
+            sh.cell(r, 1, f'{T("How sure we are:")} {T(res["accuracy"])}')
         for j in range(1, 12):
             sh.column_dimensions[get_column_letter(j)].width = 16
         if res.get('findings'):

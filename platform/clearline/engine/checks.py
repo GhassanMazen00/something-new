@@ -364,12 +364,12 @@ def snapshot_recount(d: Data, res: dict, fmt: Fmt) -> list[dict]:
     total, true_orders = float(by_order.sum()), len(by_order)
     got = {k['label']: k['value'] for k in res['kpis']}
     bad = []
-    shown = got.get('Sales, last 12 months', '')
+    shown = next((v for k, v in got.items() if k.startswith('Sales, ')), '')
     figs = _figures(shown)
     sales = figs[0][1] if figs else None
     rounding = figs[0][2] if figs else 0  # "29K" can be anything from 28.5K to 29.5K
     if sales is not None and abs(sales - total) > rounding + 0.001 * max(total, 1):
-        bad.append(f'sales {got["Sales, last 12 months"]} vs {fmt.money(total, True)} recounted')
+        bad.append(f'sales {shown} vs {fmt.money(total, True)} recounted')
     orders = _plain(got.get('Orders', ''))
     if orders is not None and abs(orders - true_orders) > 0.001 * true_orders + 0.5:
         bad.append(f'orders {orders:,.0f} vs {true_orders:,} recounted')

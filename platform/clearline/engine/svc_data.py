@@ -8,7 +8,7 @@ import statsmodels.api as sm
 from statsmodels.tsa.seasonal import STL
 
 from .calendar import covers_ramadan, in_ramadan, pre_ramadan
-from .core import Ctx, NeedsData, Service, bars, chart, finding, kpi, line, month_label, result, series, table
+from .core import product_family, Ctx, NeedsData, Service, bars, chart, finding, kpi, line, month_label, result, series, table
 
 DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -66,27 +66,32 @@ def snapshot(c: Ctx) -> dict:
     has_prev = (d.end - d.sales['date'].min()).days >= 700
     orders = recent['order_id'].nunique()
     custs = recent['customer'].nunique() if recent['customer'].notna().any() else None
-    prod = d.goods(recent).groupby('product')['amount'].sum().sort_values(ascending=False)
+    goods = d.goods(recent)
+    families = goods['product'].nunique() > 400
+    key = product_family(goods['product']) if families else goods['product']
+    prod = goods.groupby(key)['amount'].sum().sort_values(ascending=False)
     top5 = prod.head(5)
     share5 = top5.sum() / last12
+    span_days = (d.end - d.sales['date'].min()).days
     charts = [
         chart('Monthly sales', line([month_label(p) for p in m.index], [series('Sales', m.values)], zero=True), wide=True),
-        chart('Top products, last 12 months', bars(top5.index, top5.values, horizontal=True)),
+        chart(f'Top {"product families" if families else "products"}, ' + ('last 12 months' if span_days >= 360 else 'in the data'), bars(top5.index, top5.values, horizontal=True)),
     ]
     findings = []
     if has_prev and prev > 0:
         findings.append(finding(f'Sales {"grew" if last12 >= prev else "fell"} {f.spct(last12 / prev - 1)} over the last 12 months.', 'high'))
-    findings.append(finding(f'Five products bring {f.pct(share5, 0)} of sales, led by {top5.index[0]}.', 'high', 'Keep these in stock first; they carry the business.'))
+    what = 'product families' if families else 'products'
+    findings.append(finding(f'Five {what} bring {f.pct(share5, 0)} of sales, led by {top5.index[0]}.', 'high', 'Keep these in stock first; they carry the business.' if share5 >= 0.4 else 'Sales are spread across many products: look at the ranking by family before cutting the range.'))
     if recent['branch'] is not None and recent['branch'].nunique() > 1:
         br = recent.groupby('branch')['amount'].sum().sort_values(ascending=False)
         charts.append(chart('Sales by branch, last 12 months', bars(br.index, br.values, horizontal=True, tones=['orange' if i == len(br) - 1 else 'accent' for i in range(len(br))])))
         findings.append(finding(f'{br.index[0]} sells the most; {br.index[-1]} the least ({f.pct(br.iloc[-1] / last12, 0)} of sales).', 'medium', 'See branch benchmarking for a fair comparison by size.'))
     elif custs:
         top = recent.groupby('customer')['amount'].sum().sort_values(ascending=False).head(6)
-        charts.append(chart('Top customers, last 12 months', bars(top.index, top.values, horizontal=True)))
+        charts.append(chart('Top customers, ' + ('last 12 months' if span_days >= 360 else 'in the data'), bars(top.index, top.values, horizontal=True)))
     return result(
         [
-            kpi('Sales, last 12 months', f.money(last12), f'{f.spct(last12 / prev - 1)} on the year before' if has_prev and prev > 0 else f'{len(m)} full months of data', 'good' if has_prev and last12 >= prev else None),
+            kpi('Sales, last 12 months' if span_days >= 360 else f'Sales, {d.sales["date"].min():%b} to {d.end:%b %y}', f.money(last12), f'{f.spct(last12 / prev - 1)} on the year before' if has_prev and prev > 0 else f'{len(m)} full months of data', 'good' if has_prev and last12 >= prev else None),
             kpi('Orders', f.num(orders)),
             kpi('Average order', f.money(last12 / max(orders, 1))),
             kpi('Customers', f.num(custs) if custs else '–'),
@@ -182,7 +187,11 @@ def trends(c: Ctx) -> dict:
         method = '3-month moving average'
     daily = d.daily
     avg = daily.mean()
-    wd = [daily[daily.index.dayofweek == k].mean() / avg for k in range(7)]
+    raw = [daily[daily.index.dayofweek == k].mean() / avg for k in range(7)]
+    # A day the business is closed (almost no sales) would make every open day look busier than it is.
+    closed = [k for k in range(7) if raw[k] < 0.05]
+    open_avg = daily[~daily.index.dayofweek.isin(closed)].mean() if closed and len(closed) < 7 else avg
+    wd = [0.0 if k in closed else daily[daily.index.dayofweek == k].mean() / open_avg for k in range(7)]
     cal = [daily[daily.index.month == k + 1].mean() / avg if (daily.index.month == k + 1).any() else 0 for k in range(12)]
     order = sorted([(v, k) for k, v in enumerate(cal) if v > 0], reverse=True)
     best_days = sorted([(v, k) for k, v in enumerate(wd)], reverse=True)
@@ -200,6 +209,7 @@ def trends(c: Ctx) -> dict:
         kpis += [kpi('Two weeks before Ramadan', f.spct(p_eff, 0), tone='good' if p_eff > 0 else 'bad'), kpi('During Ramadan', f.spct(r_eff, 0), tone='good' if r_eff > 0 else 'bad')]
         findings.append(finding(f'Sales change {f.spct(p_eff, 0)} in the two weeks before Ramadan and {f.spct(r_eff, 0)} during it.', 'high', 'Order stock and plan campaigns six weeks ahead of Ramadan.'))
     findings.append(finding(f'{MONTHS[order[0][1]]} is the strongest month and {MONTHS[order[-1][1]]} the weakest.', 'high' if len(m) >= 24 else 'medium'))
+    notes = [f'Closed on {" and ".join(DAYS[k] for k in closed)} (almost no sales): {"that day is" if len(closed) == 1 else "those days are"} left out of the average day.'] if closed and len(closed) < 7 else []
     return result(
         kpis,
         [
@@ -208,6 +218,7 @@ def trends(c: Ctx) -> dict:
             chart('Month of the year (100 = average)', bars(MONTHS, [v * 100 for v in cal], 'num', ref={'value': 100, 'label': 'Average'})),
         ],
         findings,
+        notes=notes,
     )
 
 

@@ -10,7 +10,7 @@ import statsmodels.api as sm
 from scipy.stats import norm
 
 from .calendar import covers_ramadan, days_in_month, in_ramadan, pre_ramadan
-from .core import Ctx, NeedsData, Param, Service, bars, chart, finding, kpi, line, month_label, result, series, table
+from .core import product_family, Ctx, NeedsData, Param, Service, bars, chart, finding, kpi, line, month_label, result, series, table
 
 
 def _mape(a, f) -> float:
@@ -197,7 +197,7 @@ def ranking(c: Ctx) -> dict:
     # Thousands of product names (colours and sizes spelled out) rank better by family: the first two words.
     family = None
     if r['product'].nunique() > 400:
-        family = r['product'].astype(str).str.split().str[:2].str.join(' ')
+        family = product_family(r['product'])
         if 3 <= family.nunique() <= r['product'].nunique() / 5:
             r = r.assign(product=family)
         else:

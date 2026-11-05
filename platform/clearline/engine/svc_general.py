@@ -203,10 +203,20 @@ def _level_by_n(n: int, hi: int, mid: int) -> str:
 # ---------- 1. Data profile ----------
 
 
+def _short(name: str) -> str:
+    """'book.xlsx · Cancelled invoices' -> 'Cancelled invoices'."""
+    return name.split(' · ', 1)[1] if ' · ' in name else name
+
+
 def profile(c: Ctx) -> dict:
     d = c.data
     if not d.files:
         raise NeedsData('Upload the table and confirm it as “Any other table” on the Files page.')
+    pick = c.p.get('table')
+    if pick and pick != 'All tables':
+        if pick not in d.files:
+            raise NeedsData(f'There is no table “{pick}” any more. Choose again.')
+        d = Data(d.tables, d.settings, {pick: d.files[pick]})
     kpis_rows = sum(len(df) for df in d.files.values())
     charts, findings, notes = [], [], []
     total_cells = filled_cells = 0
@@ -243,14 +253,14 @@ def profile(c: Ctx) -> dict:
                 gappy.append((share, f'{col} ({int(s.isna().sum()):,} blank, {share:.0%} filled)'))
             if odd:
                 findings.append(finding(f'“{col}” has {odd}: check they are real and not typing mistakes.', 'high', 'Look at those rows before using this column in a comparison.'))
-        label = f' · {name}' if len(d.files) > 1 else ''
+        label = f'{_short(name)}: ' if len(d.files) > 1 or ' · ' in name else ''
         filled.sort(key=lambda x: x[1])
-        charts.append(chart(f'How complete each column is (%){label}', bars([f[0] for f in filled[:25]], [f[1] for f in filled[:25]], 'pct', horizontal=True, tones=['orange' if f[1] < 80 else 'accent' for f in filled[:25]])))
-        charts.append(chart(f'Column by column{label}', table(['Column', 'Holds', 'Filled', 'Different values', 'Summary', 'Unusual'], rows), wide=True))
+        charts.append(chart(f'{label}share of rows with each column filled in (%)', bars([f[0] for f in filled[:25]], [f[1] for f in filled[:25]], 'pct', horizontal=True, tones=['orange' if f[1] < 80 else 'accent' for f in filled[:25]])))
+        charts.append(chart(f'{label}column by column' if label else 'Column by column', table(['Column', 'Holds', 'Filled', 'Different values', 'Summary', 'Unusual'], rows), wide=True))
         nums = [col for col in df.columns if kind_of(str(col), df[col]) == 'number'][:12]
         if len(nums) >= 2 and len(df) >= 10:
             r = df[nums].corr(method='spearman')
-            charts.append(chart(f'Which numbers move together{label} (rank correlation)', heatmap([str(x) for x in nums], [str(x) for x in nums], [[None if not np.isfinite(v) else round(float(v), 2) for v in row] for row in r.values]), wide=True))
+            charts.append(chart(f'{label}which numbers move together (rank correlation)', heatmap([str(x) for x in nums], [str(x) for x in nums], [[None if not np.isfinite(v) else round(float(v), 2) for v in row] for row in r.values]), wide=True))
             pairs = [(abs(r.iloc[i, j]), nums[i], nums[j], r.iloc[i, j]) for i in range(len(nums)) for j in range(i + 1, len(nums)) if np.isfinite(r.iloc[i, j])]
             for _, a, b, v in sorted(pairs, reverse=True)[:3]:
                 if abs(v) >= 0.6:
@@ -1216,7 +1226,7 @@ QUESTION = Param('question', 'The client’s question', 0, 0, 0, None, 'text')
 ANY = [['table']]
 NEED_ANY = 'Upload a table and confirm it as “Any other table” on the Files page.'
 SERVICES = [
-    Service('data-profile', 'general', 'Data profile', ANY, profile, data_text='Any table: Excel, CSV, a system export or a survey download', missing_text=NEED_ANY),
+    Service('data-profile', 'general', 'Data profile', ANY, profile, params=[Param('table', 'Table', 0, 0, 0, 'All tables', 'table')], defaults=lambda d, client: {'table': 'All tables'}, data_text='Any table: Excel, CSV, a system export or a survey download', missing_text=NEED_ANY),
     Service('group-comparison', 'general', 'Group comparison', ANY, compare_groups, params=[QUESTION, column_param('measure', 'Measure to compare', 'outcome'), column_param('group', 'Column naming the group', 'category')], defaults=_d_compare, adjust=_needs([('outcome', 1), ('category', 1)], 'Needs a number column and a column naming the groups.')),
     Service('what-drives-an-outcome', 'general', 'What drives an outcome', ANY, drivers, params=[QUESTION, column_param('outcome', 'Outcome to explain', 'outcome')], defaults=_d_drivers, adjust=_needs([('outcome', 1), ('any', 2)], 'Needs an outcome column and at least one other column to test.')),
     Service('trend-and-forecast-for-any-measure', 'general', 'Trend and forecast for any measure', ANY, trend_forecast, params=[QUESTION, column_param('date', 'Date column', 'date'), column_param('measure', 'Measure', 'number', optional=True), choice_param('how', 'Add up by', ['Total', 'Average', 'Count of rows'])], defaults=_d_trend, adjust=_needs([('date', 1)], 'Needs a date column.')),

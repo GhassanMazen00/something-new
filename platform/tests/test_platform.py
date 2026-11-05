@@ -10,6 +10,7 @@ import pandas as pd
 import pyotp
 import pytest
 from docx import Document
+from docx.oxml.ns import qn
 from fastapi.testclient import TestClient
 from openpyxl import load_workbook
 
@@ -160,6 +161,14 @@ def test_report_review_and_export(app):
     assert chk['blocking'] == 0 and chk['passed'] > 20, chk
     assert any(i['id'] == 'summary-numbers' and '912.4%' in i['detail'] for i in chk['items'])  # a made-up figure is caught
     sara.put(f'/api/clients/{cid}/report/summary', json={'text': 'Three things to fix this quarter.'}, headers=H)
+    # The Arabic summary and notes are the analyst's own; their figures are checked the same way.
+    sara.patch(f'/api/sections/{first}', json={'note_ar': 'المبيعات موسمية حول رمضان.'}, headers=H)
+    sara.put(f'/api/clients/{cid}/report/summary', json={'text_ar': 'ثلاثة أمور يجب إصلاحها. نمت المبيعات 912.4% العام الماضي.'}, headers=H)
+    rep = sara.get(f'/api/clients/{cid}/report').json()
+    assert rep['summary'] == 'Three things to fix this quarter.' and rep['summary_ar'].startswith('ثلاثة')
+    assert any(i['id'] == 'summary-ar-numbers' and '912.4%' in i['detail'] for i in rep['checks']['items'])
+    sara.put(f'/api/clients/{cid}/report/summary', json={'text_ar': 'ثلاثة أمور يجب إصلاحها هذا الربع.'}, headers=H)
+    assert isinstance(rep['arabic_gaps'], list)
     assert mona.post(f'/api/clients/{cid}/report/review', json={'approve': True}, headers=H).status_code == 400  # not submitted
     assert sara.post(f'/api/clients/{cid}/report/submit', headers=H).json()['status'] == 'In review'
     assert sara.post(f'/api/clients/{cid}/report/review', json={'approve': True}, headers=H).status_code == 403
@@ -172,6 +181,15 @@ def test_report_review_and_export(app):
     assert 'Sales are seasonal around Ramadan.' in text and 'Three things to fix' in text
     xlsx = sara.get(f'/api/clients/{cid}/report.xlsx')
     assert len(load_workbook(io.BytesIO(xlsx.content)).sheetnames) == 7
+    ar = sara.get(f'/api/clients/{cid}/report.docx?lang=ar')
+    assert ar.status_code == 200 and '_ar.docx' in ar.headers['content-disposition']
+    doc = Document(io.BytesIO(ar.content))
+    text = '\n'.join(p.text for p in doc.paragraphs)
+    assert 'ثلاثة أمور يجب إصلاحها' in text and 'المبيعات موسمية حول رمضان.' in text and 'الملخص' in text
+    assert doc.paragraphs[0]._p.pPr.find(qn('w:bidi')) is not None  # reads right to left
+    wb = load_workbook(io.BytesIO(sara.get(f'/api/clients/{cid}/report.xlsx?lang=ar').content))
+    assert wb.sheetnames[0] == 'الملخص' and wb.active.sheet_view.rightToLeft
+    assert sara.get(f'/api/clients/{cid}/report.docx?lang=fr').status_code == 404
     out = sara.post(f'/api/clients/{cid}/report/deliver', headers=H).json()
     assert out['status'] == 'Delivered'
     out_dir = os.environ.get('CLEARLINE_REPORT_OUT')  # set it to keep the sample report files

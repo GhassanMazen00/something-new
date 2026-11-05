@@ -78,7 +78,7 @@ def _fifo(inv: pd.DataFrame, credits: pd.DataFrame, end: pd.Timestamp) -> tuple[
             while left > 0.005 and i < len(queue):
                 take = min(left, queue[i][1])
                 if take > 0 and p.kind == 'payment':
-                    days.append(((p.date - queue[i][0]).days, take))
+                    days.append((max(0, (p.date - queue[i][0]).days), take))  # paid ahead: zero days, never negative
                 queue[i][1] -= take
                 left -= take
                 if queue[i][1] <= 0.005:

@@ -92,7 +92,7 @@ def test_recount_allows_display_rounding():
     d = sales_data()
     out = engine.run('business-snapshot', d, None, {'currency': 'EGP', 'files': []})
     r = out['result']
-    k = next(x for x in r['kpis'] if x['label'] == 'Sales, last 12 months')
+    k = next(x for x in r['kpis'] if x['label'].startswith('Sales, '))
     total = d.recent(365).groupby(d.recent(365)['order_id'].astype(str))['amount'].sum().sum()
     k['value'] = f'EGP {round(total / 1e3) + 0.4:.0f}K'  # rounded the way the page shows it
     assert checks.snapshot_recount(d, r, engine.Fmt('EGP'))[0]['status'] == 'pass'

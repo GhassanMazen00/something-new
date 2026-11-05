@@ -173,9 +173,29 @@ def canonical_names(names: pd.Series) -> tuple[pd.Series, list[list[str]]]:
 
 # Lines in a sales export that aren't goods: shipping, fees, discounts and manual corrections. Words that could
 # also be part of a real product's name ("Manual juicer") only count when they are the whole name.
-NOT_GOODS = r'(?i)\b(?:postage|carriage|shipping|delivery charges?|bank charges?|fees?|commission|service charge|samples?)\b|شحن|رسوم|عينات|عينه|عينة'
-# Lines that carry an old balance into the system: money owed, not a sale.
-BALANCE_LINE = r'(?i)رصيد\s*(?:مرحل|سابق|افتتاحي|أول المدة|اول المدة)|مرحل\s*من|opening\s*balance|balance\s*(?:b/?f|brought\s*forward|carried)|carried\s*forward'
+NOT_GOODS = r'(?i)\b(?:postage|carriage|shipping|delivery charges?|bank charges?|fees?|commission|service charge|samples?|vat|sales tax|tax)\b|شحن|رسوم|عينات|عينه|عينة|ضريبه|ضريبة|القيمه المضافه|القيمة المضافة'
+# Lines in an invoice list that are account movements, not sales: balances carried from an earlier system, transfers
+# and payments typed in as invoice lines, and account corrections. They count towards what a customer owes.
+BALANCE_LINE = (
+    r'(?i)رصيد\s*(?:مرحل|سابق|افتتاحي|أول المدة|اول المدة)|مرحل\s*من|opening\s*balance|balance\s*(?:b/?f|brought\s*forward|carried)|carried\s*forward'
+    r'|^\s*ترحيل|تم\s*السداد|^\s*من\s*حساب|تصفير\s*الحساب|تقفيل\s*حساب|^\s*(?:payment|transfer)\b'
+)
+
+
+def product_family(names: pd.Series) -> pd.Series:
+    """A product's family, from its first two words: 'سوسته بلاستيك اسود مقاس 40' -> 'سوسته بلاستيك'. A size stuck to a
+    word is split off first ('بلاستيك3ملي'), and a rare spelling close to a common family joins it ('سوسته بلاستيط')."""
+    t = names.astype(str).str.replace(r'(?<=[^\d\s])(?=\d)|(?<=\d)(?=[^\d\s.,])', ' ', regex=True)
+    fam = t.str.split().str[:2].str.join(' ')
+    counts = fam.value_counts()
+    common = [k for k, v in counts.items() if v >= 20]
+    merge = {}
+    for k, v in counts.items():
+        if v < 20 and common:
+            best = max(common, key=lambda c: difflib.SequenceMatcher(None, k, c).ratio())
+            if difflib.SequenceMatcher(None, k, best).ratio() >= 0.85:
+                merge[k] = best
+    return fam.replace(merge)
 NOT_GOODS_NAMES = {'MANUAL', 'DISCOUNT', 'ADJUSTMENT', 'ADJUST BAD DEBT', 'SAMPLES', 'DELIVERY', 'POST', 'DOT', 'M', 'C2', 'D', 'S', 'B', 'CRUK', 'AMAZONFEE', 'PADS', 'خصم', 'توصيل'}
 
 

@@ -60,6 +60,7 @@ class Client(Base):
     shredded: Mapped[bool] = mapped_column(Boolean, default=False)
     settings: Mapped[dict] = mapped_column(JSON, default=dict)
     summary: Mapped[bytes | None] = mapped_column(LargeBinary)  # report summary, encrypted
+    summary_ar: Mapped[bytes | None] = mapped_column(LargeBinary)  # the same summary in Arabic, encrypted
     review_comment: Mapped[str] = mapped_column(Text, default='')
     analyst: Mapped[User | None] = relationship(foreign_keys=[analyst_id])
     reviewer: Mapped[User | None] = relationship(foreign_keys=[reviewer_id])
@@ -104,6 +105,7 @@ class ReportSection(Base):
     run_id: Mapped[int] = mapped_column(ForeignKey('runs.id'))
     position: Mapped[int] = mapped_column(Integer, default=0)
     note: Mapped[bytes | None] = mapped_column(LargeBinary)  # analyst's commentary, encrypted
+    note_ar: Mapped[bytes | None] = mapped_column(LargeBinary)  # the same note in Arabic, encrypted
     acks: Mapped[bytes | None] = mapped_column(LargeBinary)  # reasons a failed check is fine, encrypted JSON
 
 

@@ -402,7 +402,7 @@ function ParamControl({ p, value, currency, choices, flag, onChange }: { p: Para
       </label>
     )
   // A column of the client's table, or one of a fixed list.
-  if (p.format === 'column' || p.format === 'choice')
+  if (p.format === 'column' || p.format === 'choice' || p.format === 'table')
     return (
       <label className={`param${flag ? ` pflag-${flag}` : ''}`}>
         <span className="spread">{p.label}</span>

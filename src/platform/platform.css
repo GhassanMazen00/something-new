@@ -291,6 +291,34 @@ details.hint code {
 .pre {
   white-space: pre-wrap;
 }
+.ar-head {
+  margin-top: 18px;
+  font-size: 0.9rem;
+  text-align: right;
+}
+[dir='rtl'].summary-edit,
+[dir='rtl'].note-edit,
+[dir='rtl'].pre {
+  font-family: 'Noto Sans Arabic', Tahoma, Arial, sans-serif;
+  line-height: 1.7;
+}
+[dir='rtl'].analyst-note {
+  border-left: 0;
+  border-right: 3px solid var(--accent);
+  border-radius: 10px 0 0 10px;
+}
+.ar-gaps {
+  margin-top: 10px;
+  font-size: 0.82rem;
+  color: var(--muted, #5b6672);
+}
+.ar-gaps summary {
+  cursor: pointer;
+  color: var(--warn, #b06b00);
+}
+.ar-gaps ul {
+  margin: 8px 0 0 18px;
+}
 .icon-btn[disabled] {
   opacity: 0.35;
   cursor: not-allowed;

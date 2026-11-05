@@ -121,6 +121,7 @@ HELP: dict[str, dict[str, str]] = {
     'survey-and-questionnaire-analysis': {'group': 'Optional: compare answers between groups (school, village, took part).'},
     'before-and-after-impact': {'before': 'The value before the change.', 'after': 'The same measure, in the same units, after the change.', 'group': 'Who got the programme. With it, the effect is measured against those who didn’t.'},
     'quality-and-process-control': {'measure': 'One number measured again and again on a process.', 'order': 'The time of each measurement, if the rows aren’t already in time order.', 'sample': 'If several items are measured together each time.', 'lsl': 'The lowest allowed value, if there is a specification.', 'usl': 'The highest allowed value, if there is a specification.'},
+    'data-profile': {'table': 'Which table to describe. One table at a time reads more clearly.'},
     'natural-groups': {'k': '0 lets the data choose the number of groups.', 'label': 'Optional: a known label to compare the groups with.'},
 }
 

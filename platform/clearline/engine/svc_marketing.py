@@ -14,6 +14,16 @@ from .core import Ctx, NeedsData, Service, bars, chart, finding, heatmap, kpi, m
 # ---------- Customer groups (RFM) ----------
 
 
+def _named(g: pd.DataFrame, f, end) -> list:
+    """The customers to call, by name: at risk first, then those who need attention, largest spenders first."""
+    out = []
+    for seg, title in (('At risk', 'Customers at risk: bought regularly, now quiet'), ('Need attention', 'Customers who need attention')):
+        x = g[g['seg'] == seg].sort_values('m', ascending=False).head(40)
+        if len(x):
+            out.append(chart(title, table(['Customer', 'Sales', 'Orders', 'Last order', 'Days since'], [[i, f.money(r.m, True), f.num(r.f), r['last'].strftime('%d %b %Y'), f.num(r.r)] for i, r in x.iterrows()], [False, True, True, False, True]), wide=True))
+    return out
+
+
 def customer_groups(c: Ctx) -> dict:
     d, f = c.data, c.fmt
     r = d.recent(365)
@@ -40,13 +50,14 @@ def customer_groups(c: Ctx) -> dict:
         findings.append(finding(f'{int(b.n):,} best customers ({f.pct(b.n / len(g), 0)}) bring {f.pct(b.rev / total, 0)} of sales.', 'high', 'Give them early access and a named contact.'))
     if 'At risk' in grp.index:
         a = grp.loc['At risk']
-        findings.append(finding(f'{int(a.n):,} customers who used to buy have gone quiet (no order for {f.num(a.rec)} days on average); they spent {f.money(a.rev)} last year.', 'high', 'A win-back message this month, before they are lost.'))
+        findings.append(finding(f'{int(a.n):,} customers who used to buy have gone quiet (no order for {f.num(a.rec)} days on average); they spent {f.money(a.rev)} before going quiet.', 'high', 'Call the largest ones this month, before they are lost: the list is below.'))
     findings.append(finding(f'{f.pct(repeat, 0)} of customers bought more than once in the year.', 'high', 'Most buy once, normal for big purchases: focus on referrals and accessories.' if repeat < 0.2 else 'Repeat buying is healthy; protect it.'))
     return result(
         [kpi('Customers, last 12 months', f.num(len(g))), kpi('Bought more than once', f.pct(repeat, 0)), kpi('Best customers', f.num(grp.loc['Best customers', 'n']) if 'Best customers' in grp.index else '0'), kpi('At risk', f.num(grp.loc['At risk', 'n']) if 'At risk' in grp.index else '0', tone='bad')],
         [
             chart('Share of sales by group (%)', bars(grp.index, (grp['rev'] / total * 100).values, 'num', horizontal=True, tones=[tone.get(i, 'accent') for i in grp.index])),
             chart('Groups', table(['Group', 'Customers', 'Sales', 'Days since last order'], [[i, f.num(r_.n), f.money(r_.rev), f.num(r_.rec)] for i, r_ in grp.iterrows()], [False, True, True, True])),
+            *_named(g, f, d.end),
         ],
         findings,
     )
@@ -276,7 +287,9 @@ def churn(c: Ctx) -> dict:
     # A few large business customers: watch each account instead.
     if len(now) < 500:
         rec = s[s['date'] > d.end - pd.Timedelta(days=365)]
-        g = rec.groupby('customer').apply(lambda x: pd.Series({'recent': x[x['date'] > d.end - pd.Timedelta(days=91)]['amount'].sum() / 3, 'before': x[x['date'] <= d.end - pd.Timedelta(days=91)]['amount'].sum() / 9, 'last': (d.end - x['date'].max()).days}), include_groups=False)
+        # Under a year of data, the months before the last three are fewer than nine: divide by what is there.
+        months_before = max(1.0, min(9.0, (d.end - pd.Timedelta(days=91) - rec['date'].min()).days / 30.44))
+        g = rec.groupby('customer').apply(lambda x: pd.Series({'recent': x[x['date'] > d.end - pd.Timedelta(days=91)]['amount'].sum() / 3, 'before': x[x['date'] <= d.end - pd.Timedelta(days=91)]['amount'].sum() / months_before, 'last': (d.end - x['date'].max()).days}), include_groups=False)
         g = g[g['before'] > 0]
         g['change'] = g['recent'] / g['before'] - 1
         floor = g['before'].quantile(0.33)
@@ -284,7 +297,7 @@ def churn(c: Ctx) -> dict:
         stake = ((falling['before'] - falling['recent']) * 12).sum()
         return result(
             [kpi('Active accounts', f.num(len(g))), kpi('Ordering less than half as much', f.num(len(falling)), tone='bad' if len(falling) else 'good'), kpi('Sales at stake', f.money(stake), 'a year, if they don’t come back', 'bad' if len(falling) else None)],
-            [chart('Accounts whose orders fell most (last 3 months vs the 9 before)', table(['Account', 'Monthly before', 'Monthly now', 'Change', 'Days since last order'], [[i, f.money(r.before), f.money(r.recent), f.spct(r.change, 0), f.num(r['last'])] for i, r in falling.head(12).iterrows()], [False, True, True, True, True], ['red' if r.recent == 0 else 'orange' for _, r in falling.head(12).iterrows()]), wide=True)],
+            [chart('Accounts whose orders fell most (last 3 months vs the 9 before)' if months_before >= 8.5 else f'Accounts whose orders fell most (last 3 months vs the {months_before:.0f} before)', table(['Account', 'Monthly before', 'Monthly now', 'Change', 'Days since last order'], [[i, f.money(r.before), f.money(r.recent), f.spct(r.change, 0), f.num(r['last'])] for i, r in falling.head(12).iterrows()], [False, True, True, True, True], ['red' if r.recent == 0 else 'orange' for _, r in falling.head(12).iterrows()]), wide=True)],
             [
                 finding(f'{len(falling)} accounts now order less than half what they used to; {int((falling["recent"] == 0).sum())} have stopped completely.', 'high', 'A sales visit this month: ask what changed before a competitor’s terms become habit.') if len(falling) else finding('No account has cut its orders sharply.', 'high'),
                 finding('With few, large customers, each account is watched one by one instead of using a churn model.', 'high'),

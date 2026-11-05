@@ -878,6 +878,10 @@ def _shape(kind: str, out: pd.DataFrame, health: dict) -> pd.DataFrame:
         # A line without an invoice number is its own invoice (never lumped together with the others missing one).
         # Lines split from one cell share the cell's position, kept in '_row', so they stay one invoice.
         own = out['_row'] if '_row' in out else pd.Series(out.index, index=out.index)
+        missing = out['order_id'].isna()
+        if missing.any() and not missing.all():
+            n = int(own[missing].nunique())
+            health['issues'].append(f'{n:,} invoice{"s have" if n > 1 else " has"} no invoice number: each kept as its own invoice')
         out['order_id'] = out['order_id'].where(out['order_id'].notna(), 'no-number-' + own.astype(str))
         out = out.drop(columns=['_row'], errors='ignore')
         out['promo'] = out['promo'].fillna(False).astype(bool) if 'promo' in out else False

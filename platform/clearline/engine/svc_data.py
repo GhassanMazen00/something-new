@@ -142,32 +142,66 @@ def kpi_dashboard(c: Ctx) -> dict:
     if len(per) < 3:
         raise NeedsData('Fewer than three full months.')
     n = len(per)
-    growth = per['rev'].iloc[-12:].sum() / per['rev'].iloc[-24:-12].sum() if n >= 24 else 1.1
-    target = [per['rev'].iloc[i - 12] * growth if i >= 12 else None for i in range(n)]
+    per['avg'] = per['rev'] / per['orders'].clip(lower=1)
     labels = [month_label(p) for p in per.index]
     has_cost = per['cost'].notna().any()
+    has_custs = per['custs'].sum() > 0
+    last, prev = per.iloc[-1], per.iloc[-2]
+
+    def vs(col):  # noqa: ANN001
+        return f'{f.spct(last[col] / prev[col] - 1, 0)} on {labels[-2]}' if prev[col] else None
+
+    # Under 13 months there is no same month last year to aim at: track the months against each other instead.
+    if n < 13:
+        cols = ['Month', 'Sales', 'Orders', 'Avg order'] + (['Customers buying'] if has_custs else []) + (['Margin'] if has_cost else [])
+        rows = [[labels[k], f.money(r['rev']), f.num(r['orders']), f.money(r['avg'])] + ([f.num(r['custs'])] if has_custs else []) + ([f.pct((r['rev'] - r['cost']) / r['rev']) if pd.notna(r['cost']) else '–'] if has_cost else []) for k, (_, r) in enumerate(per.iterrows())]
+        peak = int(per['rev'].values.argmax())
+        findings = []
+        if peak < n - 1:
+            findings.append(finding(f'Sales peaked in {labels[peak]} at {f.money(per["rev"].iloc[peak])}; {labels[-1]} was {f.spct(last["rev"] / per["rev"].iloc[peak] - 1, 0)} on that.', 'high'))
+        if n >= 6:
+            r3, b3 = per.iloc[-3:], per.iloc[-6:-3]
+            o_ch, a_ch = r3['orders'].sum() / b3['orders'].sum() - 1, (r3['rev'].sum() / r3['orders'].sum()) / (b3['rev'].sum() / b3['orders'].sum()) - 1
+            why = 'more orders, each smaller' if o_ch > 0.05 and a_ch < -0.05 else 'fewer orders' if o_ch < -0.05 else 'smaller orders' if a_ch < -0.05 else 'larger orders' if a_ch > 0.05 else 'more orders' if o_ch > 0.05 else 'about the same orders'
+            findings.append(finding(f'Last three months against the three before: sales {f.spct(r3["rev"].sum() / b3["rev"].sum() - 1, 0)}, orders {f.spct(o_ch, 0)}, average order {f.spct(a_ch, 0)}: {why}.', 'high', 'Smaller orders from the same customers usually mean they split purchases or buy part elsewhere: ask the largest ones.' if a_ch < -0.1 else None))
+        findings.append(finding('Targets against the same month last year start once there are 13 months of data.', 'high'))
+        return result(
+            [
+                kpi(f'Sales, {labels[-1]}', f.money(last['rev']), vs('rev'), 'good' if last['rev'] >= prev['rev'] else 'bad'),
+                kpi('Orders', f.num(last['orders']), vs('orders')),
+                kpi('Average order', f.money(last['avg']), vs('avg')),
+                *([kpi('Customers buying', f.num(last['custs']), vs('custs'))] if has_custs else []),
+            ],
+            [
+                chart('Average order by month', bars(labels, per['avg'].values, tones=['orange' if k >= n - 3 and per['avg'].iloc[k] < per['avg'].iloc[:-3].mean() else 'accent' for k in range(n)])),
+                chart('Month by month', table(cols, rows, [False] + [True] * (len(cols) - 1)), wide=True),
+            ],
+            findings,
+        )
+    growth = per['rev'].iloc[-12:].sum() / per['rev'].iloc[-24:-12].sum() if n >= 24 else 1.1
+    target = [per['rev'].iloc[i - 12] * growth if i >= 12 else None for i in range(n)]
     rows = []
     for k in range(max(0, n - 6), n):
         r = per.iloc[k]
         t = target[k]
-        rows.append([labels[k], f.money(r['rev']), f.pct((r['rev'] - r['cost']) / r['rev']) if has_cost and pd.notna(r['cost']) else '–', f.num(r['orders']), f.money(r['rev'] / max(r['orders'], 1)), f.spct(r['rev'] / t - 1) if t else '–'])
-    last = per.iloc[-1]
+        rows.append([labels[k], f.money(r['rev'])] + ([f.pct((r['rev'] - r['cost']) / r['rev']) if pd.notna(r['cost']) else '–'] if has_cost else []) + [f.num(r['orders']), f.money(r['avg']), f.spct(r['rev'] / t - 1) if t else '–'])
     lt = target[-1]
     hit = sum(1 for k in range(max(0, n - 6), n) if target[k] and per['rev'].iloc[k] >= target[k])
+    cols = ['Month', 'Sales'] + (['Margin'] if has_cost else []) + ['Orders', 'Avg order', 'vs target']
     return result(
         [
-            kpi(f'Sales, {labels[-1]}', f.money(last['rev']), f'{f.spct(last["rev"] / lt - 1)} vs target' if lt else None, ('good' if last['rev'] >= lt else 'bad') if lt else None),
+            kpi(f'Sales, {labels[-1]}', f.money(last['rev']), f'{f.spct(last["rev"] / lt - 1)} vs target', 'good' if last['rev'] >= lt else 'bad'),
             kpi('Gross margin', f.pct((last['rev'] - last['cost']) / last['rev']) if has_cost and pd.notna(last['cost']) else '–', None if has_cost else 'needs costs'),
-            kpi('Orders', f.num(last['orders'])),
-            kpi('Targets met, last 6 months', f'{hit} of {min(6, sum(1 for t in target[-6:] if t))}' if lt else '–', tone=('good' if hit >= 4 else 'bad') if lt else None),
+            kpi('Orders', f.num(last['orders']), vs('orders')),
+            kpi('Targets met, last 6 months', f'{hit} of {min(6, sum(1 for t in target[-6:] if t))}', tone='good' if hit >= 4 else 'bad'),
         ],
         [
             chart('Sales against suggested target', line(labels, [series('Sales', per['rev'].values), series('Target', target, 'muted', True)], zero=True), wide=True),
-            chart('Last six months', table(['Month', 'Sales', 'Margin', 'Orders', 'Avg order', 'vs target'], rows, [False, True, True, True, True, True]), wide=True),
+            chart('Last six months', table(cols, rows, [False] + [True] * (len(cols) - 1)), wide=True),
         ],
         [
             finding(f'Suggested target: the same month last year plus {f.spct(growth - 1, 0)}, the business’s own growth.', 'high' if n >= 24 else 'medium', 'Agree targets with the client; the dashboard refreshes every month.'),
-            finding(f'Targets met in {hit} of the last 6 months.' if lt else 'Targets start once there are 13 months of data.', 'high'),
+            finding(f'Targets met in {hit} of the last 6 months.', 'high'),
         ],
     )
 

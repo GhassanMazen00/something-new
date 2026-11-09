@@ -63,6 +63,7 @@ export type ClientT = {
   sector: string
   contact: string
   question: string
+  question_ar?: string
   status: string
   analyst: Ref
   reviewer: Ref

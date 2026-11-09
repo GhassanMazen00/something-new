@@ -24,6 +24,13 @@ from . import arabic  # noqa: E402
 INK = '#16202b'
 TONES = {'accent': '#2f6fd6', 'muted': '#9aa5b1', 'green': '#2e9e6a', 'amber': '#d39b1f', 'orange': '#e2702d', 'red': '#d0433a'}
 LEVELS = {'high': 'High confidence', 'medium': 'Medium confidence', 'low': 'Low confidence: a first read'}
+# Each confidence level has its own colour everywhere in the report: the text colour and a light fill behind it.
+LEVEL_COLOURS = {'high': ('1E7F53', 'E3F4EB'), 'medium': ('9A6A00', 'FBF0D6'), 'low': ('B3352C', 'FBE4E2')}
+LEVEL_MEANING = {
+    'high': 'Solid figures from complete data: fine to act on.',
+    'medium': 'The direction is reliable; the exact figures are approximate.',
+    'low': 'A first read on thin or estimated data: treat it as a direction, not a figure to plan on.',
+}
 ABOUT = 'Your files were kept encrypted on our systems and are deleted 30 days after this report is delivered. Figures are estimates from the data you sent; where the data was thin, the confidence level says so.'
 _ARABIC_CHARS = re.compile(r'[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]')
 
@@ -198,9 +205,61 @@ def _table(doc, columns: list[str], rows: list[list[str]], numeric: list[bool] |
             for p in cell.paragraphs:
                 for run in p.runs:
                     run.font.size = Pt(8.5)
+    _widths(t, columns, rows[:limit])
     if len(rows) > limit:
         more = f'تظهر أول {limit} من {len(rows)} صفًا هنا، وملف Excel يضمها كلها.' if isinstance(T, arabic.Arabic) else f'The first {limit} of {len(rows)} rows are shown; the Excel file has them all.'
         doc.add_paragraph(more).runs[0].italic = True
+
+
+def _widths(t, columns: list, rows: list) -> None:  # noqa: ANN001
+    """Give each column room for what it holds: never break a number or a word, and give long text the rest."""
+    if not columns:
+        return
+    cells = [[str(columns[i])] + [str(r[i]) for r in rows if i < len(r)] for i in range(len(columns))]
+    # The narrowest each column can be: its longest single word or number, at about 0.19 cm a character at 8.5 pt.
+    floor = [0.45 + 0.19 * max(len(w) for c in col for w in (c.split() or [''])) for col in cells]
+    weight = [min(max(len(c) for c in col), 80) for col in cells]
+    page = 16.4
+    spare = max(0.0, page - sum(floor))
+    total = sum(weight) or 1
+    t.autofit = False
+    for i in range(len(columns)):
+        width = Cm(min(page, floor[i] + spare * weight[i] / total))
+        t.columns[i].width = width  # the table grid, read by LibreOffice and older Word
+        for cell in t.columns[i].cells:
+            cell.width = width
+
+
+def _rgb(hex6: str) -> RGBColor:
+    return RGBColor(int(hex6[:2], 16), int(hex6[2:4], 16), int(hex6[4:], 16))
+
+
+def _dot(p, level: str, T, label: bool = True, size: float = 9):  # noqa: ANN001
+    """A coloured dot and the confidence level, in that level's colour."""
+    ink = LEVEL_COLOURS.get(level, LEVEL_COLOURS['medium'])[0]
+    r = p.add_run('● ')
+    r.font.color.rgb = _rgb(ink)
+    r.font.size = Pt(size)
+    if label:
+        t = p.add_run(T(LEVELS.get(level, level)).split(':')[0])
+        t.font.color.rgb = _rgb(ink)
+        t.font.size = Pt(size)
+        t.bold = True
+    return r
+
+
+def _level_box(doc, level: str, T) -> None:  # noqa: ANN001
+    """A coloured band under a section heading: how far the client can lean on this section."""
+    ink, fill = LEVEL_COLOURS.get(level, LEVEL_COLOURS['medium'])
+    t = doc.add_table(rows=1, cols=1)
+    cell = t.rows[0].cells[0]
+    _shade(cell, fill)
+    p = cell.paragraphs[0]
+    _dot(p, level, T, size=10)
+    m = p.add_run(f'  {T(LEVEL_MEANING.get(level, ""))}')
+    m.font.size = Pt(9)
+    m.font.color.rgb = _rgb(ink)
+    doc.add_paragraph().paragraph_format.space_after = Pt(2)
 
 
 def _fonts(doc, rtl: bool) -> None:
@@ -306,19 +365,42 @@ def to_docx(rep: dict, lang: str = 'en') -> bytes:
     who = [f'{T("Analyst")}: {c["analyst"]["name"]}' if c.get('analyst') else None, f'{T("Reviewed by")}: {c["reviewer"]["name"]}' if c.get('reviewer') else None]
     if any(who):
         meta.add_run('\n' + ' · '.join(w for w in who if w))
-    if c.get('question'):
-        doc.add_paragraph().add_run(f'{T("Your question")}: {c["question"]}').italic = True
+    question = (c.get('question_ar') or '') if ar else ''
+    if ar and c.get('question') and not question:
+        T.missing.append('The client’s question (add it in Arabic on the client’s overview)')
+    question = question or c.get('question')
+    if question:
+        doc.add_paragraph().add_run(f'{T("Your question")}: {question}').italic = True
 
     summary = _summary(rep, lang, T)
     if summary:
         doc.add_heading(T('Summary'), 1)
         for para in summary.split('\n\n'):
-            doc.add_paragraph(para.strip())
+            para = para.strip()
+            if para.endswith(':') and len(para) < 70 and '\n' not in para:  # a short line ending in a colon heads what follows
+                doc.add_heading(para.rstrip(':').strip(), 3)
+            else:
+                doc.add_paragraph(para)
 
     doc.add_heading(T('What this report covers'), 1)
     for s in rep['sections']:
+        p = doc.add_paragraph()
+        _dot(p, s['run']['level'], T, label=False, size=11)
+        p.add_run(T(s['service']['name']) + '  ')
         level = T(LEVELS.get(s['run']['level'], s['run']['level'])).split(':')[0]
-        doc.add_paragraph(f'{T(s["service"]["name"])} ({level if ar else level.lower()})', style='List Bullet')
+        q = p.add_run(f'({level if ar else level.lower()})')
+        q.font.size = Pt(9)
+        q.font.color.rgb = _rgb(LEVEL_COLOURS.get(s['run']['level'], LEVEL_COLOURS['medium'])[0])
+        p.paragraph_format.space_after = Pt(2)
+    key = doc.add_paragraph()
+    key.paragraph_format.space_before = Pt(8)
+    head = key.add_run(T('How to read the colours:') + '\n')
+    head.bold = True
+    head.font.size = Pt(9)
+    for lv in ('high', 'medium', 'low'):
+        _dot(key, lv, T)
+        m = key.add_run(f'  {T(LEVEL_MEANING[lv])}' + ('\n' if lv != 'low' else ''))
+        m.font.size = Pt(9)
 
     cur = None
     for s in rep['sections']:
@@ -326,10 +408,7 @@ def to_docx(rep: dict, lang: str = 'en') -> bytes:
         cur = res.get('currency', cur)
         doc.add_page_break()
         doc.add_heading(T(s['service']['name']), 1)
-        lv = doc.add_paragraph()
-        r = lv.add_run(T(LEVELS.get(s['run']['level'], '')))
-        r.font.size = Pt(9)
-        r.font.color.rgb = RGBColor(0x5B, 0x66, 0x72)
+        _level_box(doc, s['run']['level'], T)
         if res.get('question') or res.get('setup'):
             box = doc.add_paragraph()
             if res.get('question'):
@@ -362,7 +441,9 @@ def to_docx(rep: dict, lang: str = 'en') -> bytes:
         if res.get('findings'):
             doc.add_heading(T('What we found'), 2)
             for f in res['findings']:
-                p = doc.add_paragraph(style='List Bullet')
+                p = doc.add_paragraph()
+                p.paragraph_format.space_after = Pt(6)
+                _dot(p, f.get('level', s['run']['level']), T, label=False, size=11)
                 p.add_run(T(f['text']))
                 if f.get('action'):
                     a = p.add_run(f'\n{T("What to do:")} {T(f["action"])}')
@@ -404,6 +485,8 @@ def to_docx(rep: dict, lang: str = 'en') -> bytes:
 def arabic_gaps(rep: dict) -> list[str]:
     """What would still be in English in the Arabic report: run before export so the analyst can fill it in."""
     T = arabic.Arabic()
+    if rep['client'].get('question') and not rep['client'].get('question_ar'):
+        T.missing.append('The client’s question (add it in Arabic on the client’s overview)')
     _summary(rep, 'ar', T)
     for s in rep['sections']:
         res = s['run']['result']
@@ -470,6 +553,12 @@ def _num(v):
         return s
 
 
+def _xl_level(cell, level: str) -> None:  # noqa: ANN001
+    ink, fill = LEVEL_COLOURS.get(level, LEVEL_COLOURS['medium'])
+    cell.font = Font(bold=True, color=ink)
+    cell.fill = PatternFill('solid', fgColor=fill)
+
+
 def chart_rows(c: dict, T=None) -> tuple[list, list[list]]:  # noqa: ANN001
     T = T or English()
     kind = c.get('type')
@@ -521,6 +610,7 @@ def to_xlsx(rep: dict, lang: str = 'en') -> bytes:
             row += 1
             for j, v in enumerate([T(s['service']['name']), T(s['run']['level']), T(k['label']), T.cell(k['value']), T(k.get('note', '')) or ''], 1):
                 ws.cell(row, j, v)
+            _xl_level(ws.cell(row, 2), s['run']['level'])
     for col, w in zip('ABCDE', (34, 12, 30, 18, 46)):
         ws.column_dimensions[col].width = w
 
@@ -532,7 +622,8 @@ def to_xlsx(rep: dict, lang: str = 'en') -> bytes:
         sh.sheet_view.rightToLeft = ar
         sh['A1'] = name
         sh['A1'].font = Font(bold=True, size=14)
-        sh['A2'] = T(LEVELS.get(s['run']['level'], ''))
+        sh['A2'] = f'● {T(LEVELS.get(s["run"]["level"], ""))} · {T(LEVEL_MEANING.get(s["run"]["level"], ""))}'
+        _xl_level(sh['A2'], s['run']['level'])
         r = 4
         for label, key in (('Question', 'question'), ('What we did', 'setup')):
             if res.get(key):
@@ -550,6 +641,8 @@ def to_xlsx(rep: dict, lang: str = 'en') -> bytes:
             for f in res['findings']:
                 sh.cell(r, 1, T(f['text']))
                 sh.cell(r, 2, T(f.get('action', '')) or '')
+                lv = f.get('level', s['run']['level'])
+                _xl_level(sh.cell(r, 3, T(LEVELS.get(lv, lv)).split(':')[0]), lv)
                 r += 1
             r += 1
         for ch in res.get('charts', []):

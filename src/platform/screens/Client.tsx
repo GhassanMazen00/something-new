@@ -236,7 +236,7 @@ function Overview({ client, changed }: { client: ClientT; changed: () => void })
 
 function EditDetails({ client, changed }: { client: ClientT; changed: () => void }) {
   const [open, setOpen] = useState(false)
-  const [f, setF] = useState({ name: client.name, industry: client.industry, sector: client.sector, contact: client.contact, question: client.question, currency: client.currency, calendar: client.calendar })
+  const [f, setF] = useState({ name: client.name, industry: client.industry, sector: client.sector, contact: client.contact, question: client.question, question_ar: client.question_ar ?? '', currency: client.currency, calendar: client.calendar })
   const a = useAction()
   const { me } = useSession()
   if (me.role !== 'admin' && client.analyst?.id !== me.id) return null
@@ -301,6 +301,10 @@ function EditDetails({ client, changed }: { client: ClientT; changed: () => void
       <label className="field">
         Their question
         <textarea value={f.question} onChange={set('question')} rows={2} />
+      </label>
+      <label className="field">
+        Their question in Arabic (for the Arabic report)
+        <textarea dir="rtl" lang="ar" value={f.question_ar} onChange={set('question_ar')} rows={2} />
       </label>
       {a.error && <p className="error">{a.error}</p>}
       <div className="row" style={{ marginTop: 14 }}>

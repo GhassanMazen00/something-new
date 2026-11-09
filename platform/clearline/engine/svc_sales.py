@@ -222,7 +222,7 @@ def ranking(c: Ctx) -> dict:
         findings.append(finding(f'The top 20% of customers bring {f.pct(top20, 0)} of sales to known customers' + (f' ({f.pct(unnamed, 0)} of sales carry no customer).' if unnamed >= 0.02 else '.'), 'high', 'Look after them: a loyalty offer or a named contact.' if top20 > 0.6 else 'Sales are well spread across customers.'))
     return result(
         [kpi(f'A {what} (80% of sales)', f'{cnt.get("A", 0):,} of {len(prod):,}'), kpi(f'C {what} (last 5%)', f'{cnt.get("C", 0):,}', tone='bad' if cnt.get('C', 0) > len(prod) * 0.3 else None), kpi('Top 20% of customers bring', f.pct(top20, 0) if np.isfinite(top20) else '–')],
-        [chart(f'{"Product families" if family is not None else "Products"} by sales, last 12 months (A · B · C)', bars(show.index, show['rev'].values, tones=tones), wide=True), chart(f'Ranking (top {len(show)})', table(['Product family' if family is not None else 'Product', 'Class', 'Sales', 'Share', 'Profit'], rows, [False, False, True, True, True]), wide=True)],
+        [chart(f'{"Product families" if family is not None else "Products"} by sales, last 12 months (A · B · C)', bars(show.index[:15], show['rev'].values[:15], tones=tones[:15], horizontal=True), wide=True), chart(f'Ranking (top {len(show)})', table(['Product family' if family is not None else 'Product', 'Class', 'Sales', 'Share', 'Profit'], rows, [False, False, True, True, True]), wide=True)],
         findings,
         notes=[f'{r_all["product"].nunique():,} product names were grouped into {len(prod):,} families by their first two words, so the ranking reads clearly.'] if family is not None else [],
     )

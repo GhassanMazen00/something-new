@@ -272,6 +272,7 @@ def client_out(c: Client, db: Session, full: bool = False) -> dict:
         'sector': c.sector,
         'contact': c.contact,
         'question': c.question,
+        'question_ar': c.settings.get('question_ar', ''),
         'status': c.status,
         'analyst': {'id': c.analyst.id, 'name': c.analyst.name} if c.analyst else None,
         'reviewer': {'id': c.reviewer.id, 'name': c.reviewer.name} if c.reviewer else None,
@@ -323,6 +324,7 @@ class ClientPatch(BaseModel):
     sector: str | None = None
     contact: str | None = None
     question: str | None = None
+    question_ar: str | None = None  # the client's question in Arabic, for the Arabic report
     analyst_id: int | None = None
     reviewer_id: int | None = None
     currency: str | None = None
@@ -342,6 +344,8 @@ def update_client(cid: int, body: ClientPatch, user: User = Depends(current_user
             setattr(c, k, changes[k])
     if 'currency' in changes:
         c.settings = {**c.settings, 'currency': (changes['currency'] or 'EGP').upper()}
+    if 'question_ar' in changes:
+        c.settings = {**c.settings, 'question_ar': (changes['question_ar'] or '').strip()[:1000]}
     if 'calendar' in changes:
         cal = {'mena': {'ramadan': True, 'weekend': [4, 5]}, 'gulf': {'ramadan': True, 'weekend': [5, 6]}, 'other': {'ramadan': False, 'weekend': [5, 6]}}.get(changes['calendar'] or 'auto', {})
         c.settings = {**{k: v for k, v in c.settings.items() if k not in ('ramadan', 'weekend')}, **cal}

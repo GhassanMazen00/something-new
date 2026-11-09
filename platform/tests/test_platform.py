@@ -187,6 +187,7 @@ def test_report_review_and_export(app):
     text = '\n'.join(p.text for p in doc.paragraphs)
     assert 'ثلاثة أمور يجب إصلاحها' in text and 'المبيعات موسمية حول رمضان.' in text and 'الملخص' in text
     assert doc.paragraphs[0]._p.pPr.find(qn('w:bidi')) is not None  # reads right to left
+    assert 'دليل الألوان' in text and '●' in text  # confidence marked with a colour, and the colours explained
     wb = load_workbook(io.BytesIO(sara.get(f'/api/clients/{cid}/report.xlsx?lang=ar').content))
     assert wb.sheetnames[0] == 'الملخص' and wb.active.sheet_view.rightToLeft
     assert sara.get(f'/api/clients/{cid}/report.docx?lang=fr').status_code == 404
